@@ -1,0 +1,148 @@
+<div class="studio" [class.studio--locked]="!unlocked">
+  <iframe
+    #siteFrame
+    class="studio__frame"
+    src="/"
+    title="Sobral Psico"
+    [attr.aria-hidden]="!unlocked"
+  ></iframe>
+
+  <div
+    class="studio__snip"
+    *ngIf="snipping"
+    (pointerdown)="onSnipPointerDown($event)"
+    (pointermove)="onSnipPointerMove($event)"
+    (pointerup)="onSnipPointerUp($event)"
+  >
+    <p class="studio__snip-hint" *ngIf="snipHint">{{ 'studio.snipHint' | t }}</p>
+    <div
+      class="studio__snip-rect"
+      *ngIf="draft"
+      [style.left.px]="draft.x"
+      [style.top.px]="draft.y"
+      [style.width.px]="draft.width"
+      [style.height.px]="draft.height"
+    ></div>
+  </div>
+
+  <aside
+    #panel
+    class="studio-panel"
+    *ngIf="unlocked"
+    [class.studio-panel--bottom]="panelFromBottom"
+    [class.studio-panel--snipping]="snipping"
+    [style.left.px]="panelLeft"
+    [style.top.px]="panelFromBottom ? null : panelTop"
+    (pointerdown)="startDrag($event)"
+    (pointermove)="onDragMove($event)"
+    (pointerup)="endDrag()"
+    (pointercancel)="endDrag()"
+  >
+    <header class="studio-panel__bar">
+      <span class="studio-panel__grip" aria-hidden="true"></span>
+      <p class="studio-panel__title">{{ 'studio.panelTitle' | t }}</p>
+      <div class="studio-panel__actions">
+        <button type="button" class="studio-btn" (click)="startSnip(); $event.stopPropagation()">
+          {{ 'studio.snip' | t }}
+        </button>
+        <button type="button" class="studio-btn" (click)="openFiles(); $event.stopPropagation()">
+          {{ 'studio.upload' | t }}
+        </button>
+        <button type="button" class="studio-btn" (click)="clearComposer(); $event.stopPropagation()">
+          {{ 'studio.clear' | t }}
+        </button>
+        <button
+          type="button"
+          class="studio-btn studio-btn--primary"
+          (click)="openPreview(); $event.stopPropagation()"
+        >
+          {{ 'studio.submit' | t }}
+        </button>
+      </div>
+    </header>
+
+    <div
+      #composer
+      class="studio-panel__editor"
+      contenteditable="true"
+      role="textbox"
+      [attr.aria-label]="'studio.editorAria' | t"
+      (paste)="onEditorPaste($event)"
+      (pointerdown)="$event.stopPropagation()"
+    ></div>
+    <p class="studio-panel__hint">{{ 'studio.editorHint' | t }}</p>
+    <p class="studio-panel__error" *ngIf="submitError && !previewOpen">{{ submitError | t }}</p>
+  </aside>
+
+  <input
+    #fileInput
+    class="studio__file"
+    type="file"
+    accept="image/*"
+    multiple
+    (change)="onFiles($event)"
+  />
+
+  <div class="studio-gate" *ngIf="!unlocked" role="dialog" aria-modal="true">
+    <form class="studio-gate__card" (ngSubmit)="unlock()">
+      <h1>{{ 'studio.gateTitle' | t }}</h1>
+      <p>{{ 'studio.gateLead' | t }}</p>
+      <p class="studio-gate__missing" *ngIf="status && !status.configured">
+        {{ 'studio.notConfigured' | t }}
+        <span *ngIf="status.missing.length"> {{ status.missing.join(', ') }}</span>
+      </p>
+      <label class="studio-field">
+        <span>{{ 'studio.token' | t }}</span>
+        <input
+          type="password"
+          name="studio-token"
+          autocomplete="current-password"
+          [(ngModel)]="token"
+        />
+      </label>
+      <button type="submit" class="btn btn--primary" [disabled]="unlocking || !token.trim()">
+        {{ unlocking ? ('studio.unlocking' | t) : ('studio.unlock' | t) }}
+      </button>
+      <p class="studio-panel__error" *ngIf="gateError">{{ gateError | t }}</p>
+    </form>
+  </div>
+
+  <div class="studio-modal" *ngIf="previewOpen" role="dialog" aria-modal="true">
+    <div class="studio-modal__card">
+      <h2>{{ 'studio.previewTitle' | t }}</h2>
+      <label class="studio-field">
+        <span>{{ 'studio.issueTitle' | t }}</span>
+        <input
+          type="text"
+          name="issue-title"
+          [(ngModel)]="issueTitle"
+          [attr.placeholder]="'studio.issueTitlePlaceholder' | t"
+        />
+      </label>
+      <div class="studio-preview" [attr.aria-label]="'studio.issueBody' | t">
+        <ng-container *ngFor="let block of previewBlocks; trackBy: trackPreview">
+          <p *ngIf="block.type === 'text'">{{ block.text }}</p>
+          <img *ngIf="block.type === 'image'" [src]="block.dataUrl" [alt]="block.name" />
+        </ng-container>
+      </div>
+      <p class="studio-panel__error" *ngIf="submitError">{{ submitError | t }}</p>
+      <p class="studio-modal__ok" *ngIf="issueUrl">
+        <a [href]="issueUrl" target="_blank" rel="noopener noreferrer">{{ issueUrl }}</a>
+      </p>
+      <p class="studio-modal__ok" *ngIf="sent && !issueUrl">{{ 'studio.localDryRun' | t }}</p>
+      <div class="studio-modal__actions">
+        <button type="button" class="btn btn--outline" (click)="closePreview()" [disabled]="submitting">
+          {{ sent ? ('studio.close' | t) : ('studio.cancel' | t) }}
+        </button>
+        <button
+          type="button"
+          class="btn btn--primary"
+          (click)="sendIssue()"
+          [disabled]="submitting || !issueTitle.trim() || sent"
+        >
+          {{ submitting ? ('studio.sending' | t) : ('studio.send' | t) }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

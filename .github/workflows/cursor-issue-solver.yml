@@ -1,0 +1,164 @@
+name: "🔧 AI AGENT"
+
+run-name: "🔧 AI AGENT — ${{ github.event.issue.number || inputs.issue_number || github.run_id }}"
+
+# Diagram: docs/workflows/ai-agent.md
+# Automatic runs, only:
+# 1. Issue labeled `solve` (covers new issues opened with that label)
+# 2. Issue comment whose body starts with `[CORRECTION]`
+# 3. Issue comment whose body starts with `[POST]` on an issue labeled `law-research`
+# GitHub still fires `issues` / `issue_comment` for pull requests, so the job
+# also checks that the payload is not a pull request.
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to process (required)"
+        required: true
+        type: string
+      trigger:
+        description: "Which agent task to run"
+        required: false
+        default: "solve"
+        type: choice
+        options:
+          - solve
+          - correction
+          - post
+      comment_id:
+        description: "Issue comment ID (required for correction / post)"
+        required: false
+        default: ""
+      dry_run:
+        description: "If true, do not call Cursor API"
+        required: false
+        default: "true"
+      base_ref:
+        description: "Base branch for generated fix branches"
+        required: false
+        default: ""
+      model:
+        description: "Cursor model ID"
+        required: false
+        default: "composer-2.5"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  launch-issue-agents:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'solve' &&
+       github.event.issue.pull_request == null) ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request == null &&
+       startsWith(github.event.comment.body, '[CORRECTION]')) ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request == null &&
+       startsWith(github.event.comment.body, '[POST]') &&
+       contains(github.event.issue.labels.*.name, 'law-research'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency:
+      group: ai-agent-${{ github.event.issue.number || inputs.issue_number || github.run_id }}
+      cancel-in-progress: false
+    env:
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve parameters
+        id: params
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          IS_POST_COMMENT: ${{ github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '[POST]') }}
+          DISPATCH_TRIGGER: ${{ inputs.trigger }}
+          DISPATCH_ISSUE: ${{ inputs.issue_number }}
+          DISPATCH_COMMENT_ID: ${{ inputs.comment_id }}
+          DISPATCH_DRY_RUN: ${{ inputs.dry_run }}
+          DISPATCH_MODEL: ${{ inputs.model }}
+          DISPATCH_BASE_REF: ${{ inputs.base_ref }}
+          EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+          EVENT_COMMENT_ID: ${{ github.event.comment.id }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TRIGGER="${DISPATCH_TRIGGER:-solve}"
+            DRY_RUN="${DISPATCH_DRY_RUN:-true}"
+            MODEL="${DISPATCH_MODEL:-composer-2.5}"
+            BASE_REF="$DISPATCH_BASE_REF"
+            ISSUE_NUMBER="$DISPATCH_ISSUE"
+            COMMENT_ID="$DISPATCH_COMMENT_ID"
+          elif [ "$EVENT_NAME" = "issue_comment" ]; then
+            DRY_RUN="false"
+            MODEL="composer-2.5"
+            BASE_REF=""
+            ISSUE_NUMBER="$EVENT_ISSUE_NUMBER"
+            COMMENT_ID="$EVENT_COMMENT_ID"
+            if [ "$IS_POST_COMMENT" = "true" ]; then
+              TRIGGER="post"
+            else
+              TRIGGER="correction"
+            fi
+          else
+            TRIGGER="solve"
+            DRY_RUN="false"
+            MODEL="composer-2.5"
+            BASE_REF=""
+            ISSUE_NUMBER="$EVENT_ISSUE_NUMBER"
+            COMMENT_ID=""
+          fi
+
+          if [ -z "$BASE_REF" ]; then
+            BASE_REF="$DEFAULT_BRANCH"
+          fi
+
+          if [ -z "$ISSUE_NUMBER" ]; then
+            echo "issue_number is required" >&2
+            exit 1
+          fi
+
+          echo "trigger=$TRIGGER" >> "$GITHUB_OUTPUT"
+          echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "base_ref=$BASE_REF" >> "$GITHUB_OUTPUT"
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "comment_id=$COMMENT_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Launch Cursor agent for triggering issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          REPO: ${{ github.repository }}
+        run: |
+          EXTRA_FLAGS=""
+          if [ "${{ steps.params.outputs.dry_run }}" = "true" ]; then
+            EXTRA_FLAGS="$EXTRA_FLAGS --dry-run"
+          fi
+          if [ -n "${{ steps.params.outputs.comment_id }}" ]; then
+            EXTRA_FLAGS="$EXTRA_FLAGS --comment-id ${{ steps.params.outputs.comment_id }}"
+          fi
+
+          python scripts/run_issue_solver_agents.py \
+            --repo "$REPO" \
+            --repo-url "https://github.com/$REPO" \
+            --base-ref "${{ steps.params.outputs.base_ref }}" \
+            --issue-number "${{ steps.params.outputs.issue_number }}" \
+            --trigger "${{ steps.params.outputs.trigger }}" \
+            --model "${{ steps.params.outputs.model }}" \
+            $EXTRA_FLAGS

@@ -1,0 +1,12 @@
+---
+description: Sobral Psico shell — keep product content out until it is requested
+globs:
+  - frontend/**/*
+  - backend/**/*
+  - .github/**/*
+alwaysApply: false
+---
+
+This repo is the empty shell for an anonymous employee welfare questionnaire under Brazil's updated NR-1 (psychosocial risks). Do not import content, branding, or data from other projects.
+
+Frontend calls the API only through `ApiService` and `environment.apiUrl`. Production uses the Netlify `/api/v1` proxy. `/studio` stays off the public nav. Studio issues must not receive the `solve` label automatically.

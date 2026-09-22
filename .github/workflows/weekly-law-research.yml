@@ -1,0 +1,151 @@
+name: "🔬 WEEKLY LAW REPORT"
+
+run-name: "🔬 WEEKLY LAW REPORT${{ inputs.date && format(' ({0})', inputs.date) || '' }}"
+
+# Diagram: docs/workflows/weekly-law-report.md
+# Gathers official and peer-reviewed sources on NR-1 psychosocial risks
+# and anonymous employee welfare questionnaires.
+
+on:
+  schedule:
+    # Mondays 06:30 UTC
+    - cron: "30 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Report date override (YYYY-MM-DD)"
+        required: false
+        default: ""
+      model:
+        description: "Cursor model ID"
+        required: false
+        default: "composer-2.5"
+      max_papers:
+        description: "Maximum sources to request"
+        required: false
+        default: "12"
+      min_confidence:
+        description: "Minimum reliability confidence (0-1)"
+        required: false
+        default: "0.7"
+      cleanup_older_than_days:
+        description: "Close research digests older than this many days (0 disables)"
+        required: false
+        default: "30"
+      cleanup_only:
+        description: "If true, only close stale research issues (no new digest)"
+        required: false
+        default: "false"
+      dry_run:
+        description: "If true, print planned actions without calling Cursor / closing issues"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: weekly-law-research
+  cancel-in-progress: false
+
+jobs:
+  gather-research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve parameters
+        id: params
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            DATE="${{ inputs.date }}"
+            MODEL="${{ inputs.model }}"
+            MAX_PAPERS="${{ inputs.max_papers }}"
+            MIN_CONFIDENCE="${{ inputs.min_confidence }}"
+            CLEANUP_DAYS="${{ inputs.cleanup_older_than_days }}"
+            CLEANUP_ONLY="${{ inputs.cleanup_only }}"
+            DRY_RUN="${{ inputs.dry_run }}"
+          else
+            DATE=""
+            MODEL="composer-2.5"
+            MAX_PAPERS="12"
+            MIN_CONFIDENCE="0.7"
+            CLEANUP_DAYS="30"
+            CLEANUP_ONLY="false"
+            DRY_RUN="false"
+          fi
+
+          if [ -z "$DATE" ]; then
+            DATE="$(date -u +%F)"
+          fi
+
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          echo "model=$MODEL" >> "$GITHUB_OUTPUT"
+          echo "max_papers=$MAX_PAPERS" >> "$GITHUB_OUTPUT"
+          echo "min_confidence=$MIN_CONFIDENCE" >> "$GITHUB_OUTPUT"
+          echo "cleanup_older_than_days=$CLEANUP_DAYS" >> "$GITHUB_OUTPUT"
+          echo "cleanup_only=$CLEANUP_ONLY" >> "$GITHUB_OUTPUT"
+          echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+
+      - name: Gather NR-1 and questionnaire sources
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          EXTRA_FLAGS=""
+          if [ "${{ steps.params.outputs.dry_run }}" = "true" ]; then
+            EXTRA_FLAGS="$EXTRA_FLAGS --dry-run"
+          fi
+          if [ "${{ steps.params.outputs.cleanup_only }}" = "true" ]; then
+            EXTRA_FLAGS="$EXTRA_FLAGS --cleanup-only"
+          fi
+
+          python scripts/run_weekly_law_research.py \
+            --repo "$REPO" \
+            --repo-url "https://github.com/$REPO" \
+            --base-ref "${{ github.event.repository.default_branch }}" \
+            --date "${{ steps.params.outputs.date }}" \
+            --model "${{ steps.params.outputs.model }}" \
+            --max-papers "${{ steps.params.outputs.max_papers }}" \
+            --min-confidence "${{ steps.params.outputs.min_confidence }}" \
+            --cleanup-older-than-days "${{ steps.params.outputs.cleanup_older_than_days }}" \
+            --catalog "agents/data/discovered_sources.json" \
+            --max-age-days 31 \
+            --output-dir "agents/output/law_research" \
+            $EXTRA_FLAGS
+
+      - name: Commit updated source catalog
+        if: steps.params.outputs.dry_run != 'true' && steps.params.outputs.cleanup_only != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add agents/data/discovered_sources.json
+          if git diff --cached --quiet; then
+            echo "Source catalog unchanged."
+            exit 0
+          fi
+          git commit -m "chore: record sources from weekly law report ${{ steps.params.outputs.date }}"
+          git push origin "HEAD:${{ github.ref_name }}"
+
+      - name: Upload report
+        if: always() && steps.params.outputs.dry_run != 'true' && steps.params.outputs.cleanup_only != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-law-report-${{ steps.params.outputs.date }}
+          path: agents/output/law_research/
+          if-no-files-found: warn
+          retention-days: 90

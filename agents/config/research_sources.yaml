@@ -1,0 +1,25 @@
+# Starting points for the weekly NR-1 report.
+# The GitHub Action prompt in scripts/run_weekly_law_research.py is what the
+# cloud agent actually follows. This file is the human reading list.
+
+topics:
+  - id: nr-1
+    title: NR-1 chapter 1.5 and Portaria MTE nº 1.419/2024
+    notes: Psychosocial occupational risks inside the GRO/PGR.
+  - id: enforcement
+    title: Portaria MTE nº 765/2025 and the 26 May 2026 enforcement window
+    notes: The psychosocial text was deferred; inspection guidance still matters.
+  - id: anonymity
+    title: Anonymous questionnaires in the MTE guide and GRO/PGR manual
+    notes: A questionnaire is allowed and should be anonymous. It is not, by itself, mandatory.
+  - id: lgpd
+    title: LGPD limits on worker health and survey data
+    notes: Answers about health are sensitive personal data when a person is identifiable.
+
+sources:
+  - name: Normas regulamentadoras vigentes
+    url: https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes
+  - name: Guia de fatores de riscos psicossociais
+    url: https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/guia-nr-01-revisado.pdf
+  - name: Perguntas e respostas do capítulo 1.5
+    url: https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/perguntas-e-respostas-2013-capitulo-1-5-da-nr-1-1

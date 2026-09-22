@@ -1,0 +1,33 @@
+@import '../../../styles/variables';
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background: $color-bg-dark;
+  color: #fff;
+}
+
+.brand {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+nav a,
+nav button {
+  color: $color-primary-light;
+  background: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}

@@ -1,0 +1,12 @@
+@import '../../../styles/variables';
+
+footer {
+  padding: 1.25rem 1.5rem 2rem;
+  color: $color-text-muted;
+  font-size: 0.9rem;
+}
+
+footer p {
+  margin: 0;
+  max-width: $container-max;
+}

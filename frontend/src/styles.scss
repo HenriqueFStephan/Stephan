@@ -1,0 +1,45 @@
+@import 'styles/variables';
+
+:root {
+  --color-primary: #{$color-primary};
+  --color-bg: #{$color-bg};
+  --color-text: #{$color-text};
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: $font-body;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: $color-text;
+  background: $color-bg;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: $font-heading;
+  font-weight: 700;
+  line-height: 1.25;
+  color: $color-primary;
+}
+
+a {
+  color: $color-primary-mid;
+}
+
+.container {
+  width: 100%;
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}

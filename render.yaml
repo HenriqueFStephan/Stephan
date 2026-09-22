@@ -1,0 +1,50 @@
+# Render Blueprint — https://dashboard.render.com
+# New + → Blueprint → select the SobralPsico repo.
+# After the first Netlify URL exists, set FRONTEND_URL to that exact origin and redeploy.
+# Secrets marked sync: false must be typed in the Render dashboard. They are not in git.
+
+services:
+  - type: web
+    name: sobralpsico-api
+    runtime: python
+    repo: https://github.com/HenriqueFStephan/SobralPsico
+    branch: main
+    rootDir: backend
+    plan: free
+    autoDeployTrigger: commit
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: APP_ENV
+        value: production
+      - key: LLM_PROVIDER
+        value: placeholder
+      - key: FRONTEND_URL
+        value: https://sobralpsico.netlify.app
+      - key: AUTHOR_NAME
+        value: Sobral Psico
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: CONSULTING_NOTIFY_TO
+        sync: false
+      - key: GITHUB_REPO
+        value: HenriqueFStephan/SobralPsico
+      - key: GITHUB_STUDIO_TOKEN
+        sync: false
+      - key: STUDIO_ACCESS_TOKEN
+        sync: false

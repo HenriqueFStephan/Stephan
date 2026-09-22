@@ -1,0 +1,338 @@
+@import '../../../styles/variables';
+
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.studio {
+  position: relative;
+  height: 100vh;
+  background: $color-bg-dark;
+}
+
+.studio__frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: $color-bg;
+}
+
+.studio__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.studio__snip {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  cursor: crosshair;
+  background: color-mix(in srgb, $color-bg-dark 28%, transparent);
+}
+
+.studio__snip-hint {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.4rem 0.85rem;
+  border-radius: $radius-md;
+  background: $color-bg-dark;
+  color: #fff;
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.studio__snip-rect {
+  position: absolute;
+  border: 2px solid $color-accent;
+  background: color-mix(in srgb, $color-accent 18%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, $color-bg-dark 40%, transparent);
+  pointer-events: none;
+}
+
+.studio-panel {
+  position: fixed;
+  z-index: 30;
+  width: min(28rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem 0.75rem;
+  border: 1px solid color-mix(in srgb, $color-border 70%, transparent);
+  border-radius: $radius-lg;
+  background: color-mix(in srgb, $color-surface 72%, transparent);
+  color: $color-text;
+  box-shadow: 0 12px 40px color-mix(in srgb, $color-bg-dark 28%, transparent);
+  backdrop-filter: blur(10px);
+  cursor: grab;
+
+  &--bottom {
+    bottom: 1.5rem;
+    top: auto;
+  }
+
+  &--snipping {
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.studio-panel__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.studio-panel__grip {
+  width: 0.85rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      $color-text-muted,
+      $color-text-muted 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  opacity: 0.7;
+}
+
+.studio-panel__title {
+  margin: 0;
+  flex: 1 1 auto;
+  font-family: $font-heading;
+  font-size: 1rem;
+  color: $color-primary;
+}
+
+.studio-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.studio-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border: 1.5px solid $color-primary;
+  border-radius: 6px;
+  background: color-mix(in srgb, $color-surface 55%, transparent);
+  color: $color-primary;
+  font-family: $font-body;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, $color-primary 10%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 3px solid $color-secondary;
+    outline-offset: 2px;
+  }
+
+  &--primary {
+    background: $color-primary;
+    color: #fff;
+    border-color: $color-primary;
+
+    &:hover {
+      background: $color-primary-mid;
+    }
+  }
+}
+
+.studio-panel__editor {
+  min-height: 7.5rem;
+  max-height: min(40vh, 18rem);
+  overflow: auto;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid color-mix(in srgb, $color-border 85%, $color-primary);
+  border-radius: $radius-md;
+  background: color-mix(in srgb, $color-surface 88%, transparent);
+  color: $color-text;
+  font-family: $font-body;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  cursor: text;
+  opacity: 1;
+
+  &:focus-visible {
+    outline: 3px solid $color-secondary;
+    outline-offset: 2px;
+  }
+}
+
+.studio-panel__editor ::ng-deep .studio-chip {
+  display: inline-block;
+  max-width: 7rem;
+  max-height: 4.5rem;
+  margin: 0 0.25rem;
+  vertical-align: middle;
+  border-radius: 4px;
+  border: 1px solid $color-border;
+  object-fit: cover;
+}
+
+.studio-panel__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: $color-text-muted;
+}
+
+.studio-panel__error {
+  margin: 0;
+  color: #8a1f16;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.studio-gate,
+.studio-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: color-mix(in srgb, $color-bg-dark 62%, transparent);
+}
+
+.studio-gate__card,
+.studio-modal__card {
+  width: min(36rem, 100%);
+  max-height: min(90vh, 52rem);
+  overflow: auto;
+  padding: 1.75rem 1.5rem 1.5rem;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: 0 16px 48px color-mix(in srgb, $color-bg-dark 35%, transparent);
+  animation: studio-in 0.22s ease both;
+
+  h1,
+  h2 {
+    margin: 0 0 0.5rem;
+    color: $color-primary;
+  }
+
+  > p {
+    margin: 0 0 1rem;
+    color: $color-text-muted;
+  }
+}
+
+.studio-gate__missing {
+  color: $color-earth !important;
+  font-weight: 600;
+}
+
+.studio-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  input {
+    padding: 0.75rem 1rem;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    font-family: $font-body;
+    font-size: 1rem;
+    font-weight: 400;
+    color: $color-text;
+    background: $color-surface;
+
+    &:focus {
+      outline: 2px solid rgba($color-primary, 0.3);
+      border-color: $color-primary;
+    }
+  }
+}
+
+.studio-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 8rem;
+  max-height: min(50vh, 24rem);
+  overflow: auto;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-bg;
+  color: $color-text;
+
+  p {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  img {
+    max-width: 100%;
+    border-radius: $radius-sm;
+    border: 1px solid $color-border;
+  }
+}
+
+.studio-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.studio-modal__ok {
+  margin: 0 0 1rem !important;
+  color: $color-primary !important;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+@keyframes studio-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-gate__card,
+  .studio-modal__card {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .studio-panel {
+    width: calc(100vw - 1rem);
+    left: 0.5rem !important;
+  }
+
+  .studio-panel__actions {
+    width: 100%;
+  }
+}

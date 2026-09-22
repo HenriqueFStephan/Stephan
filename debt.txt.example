@@ -1,0 +1,28 @@
+# Local secrets template. Copy to debt.txt (gitignored) and fill values.
+# The API reads repo-root debt.txt and backend/.env. Never commit either.
+
+APP_ENV=development
+APP_SECRET_KEY=
+API_BASE_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:4200
+
+AUTHOR_EMAIL=
+AUTHOR_NAME=Sobral Psico
+
+LLM_PROVIDER=placeholder
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+LLM_MODEL=gpt-4o
+
+RESEARCH_DIGEST_TO=
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USERNAME=
+SMTP_PASSWORD=
+SMTP_FROM=
+CONSULTING_NOTIFY_TO=
+
+GITHUB_REPO=HenriqueFStephan/SobralPsico
+GITHUB_STUDIO_TOKEN=
+STUDIO_ACCESS_TOKEN=
+STUDIO_ATTACHMENTS_BRANCH=studio-attachments

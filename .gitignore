@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+.angular/
+
+# Environment & secrets
+.env
+debt.txt
+*.local
+
+# Data & logs
+backend/data/*
+*.db
+*.log
+agents/output/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+frontend/dist/
+coverage/

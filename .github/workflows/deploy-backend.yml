@@ -1,0 +1,27 @@
+name: "🚀 DEPLOY BACKEND"
+
+# Diagram: docs/workflows/deploy-backend.md
+# Render's GitHub auto-deploy is easy to lose after a repo rename or if Auto-Deploy
+# is off in the dashboard. This workflow POSTs the service deploy hook instead.
+# Secret: RENDER_DEPLOY_HOOK_URL from Render → sobralpsico-api → Settings → Deploy Hook.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+  workflow_dispatch:
+
+jobs:
+  trigger-render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::Set GitHub secret RENDER_DEPLOY_HOOK_URL (Render → sobralpsico-api → Settings → Deploy Hook). Skipping deploy."
+            exit 0
+          fi
+          curl -fsS "$HOOK"

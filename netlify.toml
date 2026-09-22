@@ -1,0 +1,27 @@
+# Netlify — https://app.netlify.com
+# Same-origin /api/v1 is proxied to the Render FastAPI service.
+# After Render finishes the first deploy, replace the host below if the
+# service URL is not exactly https://sobralpsico-api.onrender.com.
+
+[build]
+  base = "frontend"
+  command = "npm ci && npm run build:ci"
+  publish = "dist/sobralpsico"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NG_APP_API_URL = "/api/v1"
+
+# Proxy API calls to Render so the browser stays same-origin (no CORS).
+# Must sit above the Angular SPA catch-all.
+[[redirects]]
+  from = "/api/v1/*"
+  to = "https://sobralpsico-api.onrender.com/api/v1/:splat"
+  status = 200
+  force = true
+
+# Angular SPA catch-all (must be last)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
