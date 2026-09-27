@@ -34,25 +34,45 @@
     <h2>{{ 'method.title' | t }}</h2>
     <p class="intro">{{ 'method.lead' | t }}</p>
     <ol class="thread">
-      <li>
-        <span>01</span>
-        <h3>{{ 'method.company.title' | t }}</h3>
-        <p>{{ 'method.company.body' | t }}</p>
+      <li class="thread__segment thread__segment--text-first">
+        <div class="thread__copy">
+          <span class="thread__index">01</span>
+          <h3>{{ 'method.company.title' | t }}</h3>
+          <p>{{ 'method.company.body' | t }}</p>
+        </div>
+        <figure class="thread__figure">
+          <img src="assets/method/method-company.svg" alt="" width="640" height="480" loading="lazy" />
+        </figure>
       </li>
-      <li>
-        <span>02</span>
-        <h3>{{ 'method.observe.title' | t }}</h3>
-        <p>{{ 'method.observe.body' | t }}</p>
+      <li class="thread__segment thread__segment--image-first">
+        <figure class="thread__figure">
+          <img src="assets/method/method-observe.svg" alt="" width="640" height="480" loading="lazy" />
+        </figure>
+        <div class="thread__copy">
+          <span class="thread__index">02</span>
+          <h3>{{ 'method.observe.title' | t }}</h3>
+          <p>{{ 'method.observe.body' | t }}</p>
+        </div>
       </li>
-      <li>
-        <span>03</span>
-        <h3>{{ 'method.hse.title' | t }}</h3>
-        <p>{{ 'method.hse.body' | t }}</p>
+      <li class="thread__segment thread__segment--text-first">
+        <div class="thread__copy">
+          <span class="thread__index">03</span>
+          <h3>{{ 'method.hse.title' | t }}</h3>
+          <p>{{ 'method.hse.body' | t }}</p>
+        </div>
+        <figure class="thread__figure">
+          <img src="assets/method/method-hse.svg" alt="" width="640" height="480" loading="lazy" />
+        </figure>
       </li>
-      <li>
-        <span>04</span>
-        <h3>{{ 'method.groups.title' | t }}</h3>
-        <p>{{ 'method.groups.body' | t }}</p>
+      <li class="thread__segment thread__segment--image-first">
+        <figure class="thread__figure">
+          <img src="assets/method/method-groups.svg" alt="" width="640" height="480" loading="lazy" />
+        </figure>
+        <div class="thread__copy">
+          <span class="thread__index">04</span>
+          <h3>{{ 'method.groups.title' | t }}</h3>
+          <p>{{ 'method.groups.body' | t }}</p>
+        </div>
       </li>
     </ol>
   </div>
