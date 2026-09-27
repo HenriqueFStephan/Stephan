@@ -47,4 +47,22 @@ describe('studio-blocks', () => {
     expect(chip?.src).toContain('QQ==');
     editor.remove();
   });
+
+  it('inserts a chip where the caret was, not at the start', () => {
+    const editor = document.createElement('div');
+    editor.appendChild(document.createTextNode('Hello world'));
+    document.body.appendChild(editor);
+    const text = editor.firstChild as Text;
+    const range = document.createRange();
+    range.setStart(text, 5);
+    range.collapse(true);
+    insertImageChip(editor, 'data:image/png;base64,QQ==', 'mid', range);
+    const blocks = blocksFromEditor(editor);
+    expect(blocks.map((block) => (block.type === 'text' ? block.text : block.name))).toEqual([
+      'Hello',
+      'mid',
+      'world',
+    ]);
+    editor.remove();
+  });
 });

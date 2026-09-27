@@ -93,10 +93,7 @@ def safe_alt_text(name: str, fallback: str) -> str:
 
 
 def render_issue_body(blocks: list[StudioBlock], image_urls: dict[str, str]) -> str:
-    parts = [
-        "_Filed from the Stephan studio. Add the `solve` label to start the AI agent._",
-        "",
-    ]
+    parts: list[str] = []
     image_index = 0
     for offset, block in enumerate(blocks):
         key = str(offset)
@@ -228,11 +225,14 @@ class GitHubStudioClient:
             )
         return download_url
 
-    def create_issue(self, title: str, body: str) -> dict[str, Any]:
+    def create_issue(self, title: str, body: str, labels: list[str] | None = None) -> dict[str, Any]:
+        payload_body: dict[str, Any] = {"title": title, "body": body}
+        if labels:
+            payload_body["labels"] = labels
         status, payload = self._call(
             "POST",
             f"/repos/{self.repo}/issues",
-            {"title": title, "body": body},
+            payload_body,
         )
         payload = self._require_ok(status, payload, "create issue")
         if not isinstance(payload, dict) or not payload.get("number"):
@@ -261,4 +261,5 @@ class GitHubStudioClient:
             image_urls[str(offset)] = self.upload_image(data, extension)
 
         body = render_issue_body(blocks, image_urls)
-        return self.create_issue(title, body)
+        self.ensure_solve_label()
+        return self.create_issue(title, body, labels=[SOLVE_LABEL])

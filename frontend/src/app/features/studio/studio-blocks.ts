@@ -100,7 +100,24 @@ export function toApiBlocks(blocks: StudioComposerBlock[]): StudioApiBlock[] {
   });
 }
 
-export function insertImageChip(editor: HTMLElement, dataUrl: string, name: string): void {
+export function caretInEditor(editor: HTMLElement): Range | null {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) {
+    return null;
+  }
+  const range = selection.getRangeAt(0);
+  if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) {
+    return null;
+  }
+  return range.cloneRange();
+}
+
+export function insertImageChip(
+  editor: HTMLElement,
+  dataUrl: string,
+  name: string,
+  at?: Range | null,
+): void {
   const img = document.createElement('img');
   img.setAttribute(STUDIO_CHIP_ATTR, '1');
   img.src = dataUrl;
@@ -109,19 +126,19 @@ export function insertImageChip(editor: HTMLElement, dataUrl: string, name: stri
   img.contentEditable = 'false';
   img.draggable = false;
 
-  const selection = window.getSelection();
-  const anchor = selection?.anchorNode ?? null;
-  if (selection && selection.rangeCount && anchor && editor.contains(anchor)) {
-    const range = selection.getRangeAt(0);
-    range.deleteContents();
-    range.insertNode(img);
-    range.setStartAfter(img);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
+  const range =
+    at && editor.contains(at.startContainer) && editor.contains(at.endContainer) ? at : null;
+  if (!range) {
+    editor.appendChild(img);
     return;
   }
-  editor.appendChild(img);
+  range.deleteContents();
+  range.insertNode(img);
+  range.setStartAfter(img);
+  range.collapse(true);
+  const selection = window.getSelection();
+  selection?.removeAllRanges();
+  selection?.addRange(range);
 }
 
 export function hasComposerContent(blocks: StudioComposerBlock[]): boolean {

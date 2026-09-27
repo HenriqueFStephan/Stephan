@@ -17,6 +17,7 @@ import { TranslatePipe } from '../../core/i18n';
 import { captureIframeRegion, normalizeImageDataUrl, readFileAsDataUrl, SnipRect } from './snip-capture';
 import {
   blocksFromEditor,
+  caretInEditor,
   hasComposerContent,
   insertImageChip,
   StudioComposerBlock,
@@ -69,8 +70,16 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
   sendMessage = '';
   sent = false;
   snipCount = 0;
+  private savedCaret: Range | null = null;
 
   constructor(private api: ApiService) {}
+
+  get needsGithubToken(): boolean {
+    return (
+      isLocalStudioHost(window.location.hostname) &&
+      (this.status?.missing ?? []).includes('GITHUB_STUDIO_TOKEN')
+    );
+  }
 
   ngOnInit(): void {
     if (typeof window !== 'undefined' && window.self !== window.top) {
@@ -123,6 +132,17 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
           err.status === 503 ? 'studio.notConfigured' : 'studio.badToken';
       },
     });
+  }
+
+  rememberCaret(): void {
+    const editor = this.composer?.nativeElement;
+    if (!editor || document.activeElement !== editor) {
+      return;
+    }
+    const caret = caretInEditor(editor);
+    if (caret) {
+      this.savedCaret = caret;
+    }
   }
 
   startSnip(): void {
@@ -195,7 +215,8 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
       const dataUrl = await captureIframeRegion(iframe, rect);
       this.snipCount += 1;
       this.insertImage(dataUrl, `snip-${this.snipCount}`);
-    } catch {
+    } catch (err) {
+      console.error(err);
       this.submitError = 'studio.snipFailed';
     }
   }
@@ -220,6 +241,7 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async onEditorPaste(event: ClipboardEvent): Promise<void> {
+    this.rememberCaret();
     const items = Array.from(event.clipboardData?.items || []);
     const image = items.find((item) => item.type.startsWith('image/'));
     if (!image) {
@@ -286,10 +308,10 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this.submitting = false;
-          this.sent = true;
-          this.issueUrl = res.issue_url;
-          this.sendMessage = res.message || '';
           this.clearComposer();
+          this.sent = true;
+          this.issueUrl = res.issue_url || '';
+          this.sendMessage = res.message || '';
         },
         error: (err: HttpErrorResponse) => {
           this.submitting = false;
@@ -361,8 +383,12 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!editor) {
       return;
     }
+    insertImageChip(editor, dataUrl, name, this.savedCaret);
+    const placed = caretInEditor(editor);
+    if (placed) {
+      this.savedCaret = placed;
+    }
     editor.focus();
-    insertImageChip(editor, dataUrl, name);
   }
 
   private placePanelDefault(): void {

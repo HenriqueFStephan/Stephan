@@ -9,7 +9,7 @@ Triggers:
 
 The launched agent is instructed to:
 - assess change complexity on a 1–5 scale
-- merge complexity 1–3 directly into the base branch
+- commit complexity 1–3 directly on the base branch
 - open a pull request only for complexity 4–5
 - include validation notes
 """
@@ -409,11 +409,10 @@ def _delivery_rules(
         5 — Major: architecture, migration, large refactor, or uncertain design.
 
         Delivery rules (follow exactly):
-        - Complexity 1–3: merge directly into `{base_ref}`. Do not leave an open
-          pull request. Prefer merging your working branch into `{base_ref}` and
-          pushing `{base_ref}`. If branch protection requires a pull request,
-          open one, merge it immediately (`gh pr merge --squash --delete-branch`),
-          and do not leave it for human review.
+        - Complexity 1–3: commit the finished change on `{base_ref}` itself.
+          Check out `{base_ref}`, make one ordinary commit, and push `{base_ref}`.
+          Do not open a pull request. Do not finish on a `cursor/*` branch.
+          Do not create a merge commit. A pull request for this rating is wrong.
         - Complexity 4–5: open a pull request and do NOT merge it.
           Title format: "{pr_title_prefix}(issue #{issue.number}): <short summary>"
           Request a review from `{owner}` so they receive GitHub's email with
@@ -453,7 +452,9 @@ def build_prompt(
                 textwrap.dedent(
                     f"""
                     You are working on repository {repo}.
-                    Apply a CORRECTION on GitHub issue #{issue.number} on a dedicated branch.
+                    Apply a CORRECTION on GitHub issue #{issue.number}.
+                    The delivery rules decide whether this lands on {base_ref}
+                    or in a pull request. Do not default to a pull request.
 
                     Constraints:
                     - The triggering comment is the task. Do not re-open the original
@@ -556,7 +557,9 @@ def build_prompt(
                 textwrap.dedent(
                     f"""
                     You are working on repository {repo}.
-                    Solve GitHub issue #{issue.number} on a dedicated branch.
+                    Solve GitHub issue #{issue.number}.
+                    The delivery rules decide whether this lands on {base_ref}
+                    or in a pull request. Do not default to a pull request.
 
                     Constraints:
                     - Touch only code relevant to issue #{issue.number}.

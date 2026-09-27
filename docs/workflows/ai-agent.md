@@ -12,6 +12,6 @@
 | `correction` | Comment starts with `[CORRECTION]` | Applies that comment only. |
 | `post` | Comment starts with `[POST]` on a `law-research` issue | Writes a Portuguese briefing in `docs/research/` for the named source. |
 
-Complexity 1–3 is merged to the base branch. Complexity 4–5 opens a pull request.
+Complexity 1–3 is one ordinary commit on the base branch. Complexity 4–5 opens a pull request and leaves it open.
 
 The Cursor GitHub App must be installed on this repository or the launch fails.

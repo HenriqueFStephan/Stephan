@@ -68,9 +68,13 @@
       role="textbox"
       [attr.aria-label]="'studio.editorAria' | t"
       (paste)="onEditorPaste($event)"
+      (keyup)="rememberCaret()"
+      (mouseup)="rememberCaret()"
+      (input)="rememberCaret()"
       (pointerdown)="$event.stopPropagation()"
     ></div>
     <p class="studio-panel__hint">{{ 'studio.editorHint' | t }}</p>
+    <p class="studio-panel__hint" *ngIf="needsGithubToken">{{ 'studio.localNeedsToken' | t }}</p>
     <p class="studio-panel__error" *ngIf="submitError && !previewOpen">{{ submitError | t }}</p>
   </aside>
 

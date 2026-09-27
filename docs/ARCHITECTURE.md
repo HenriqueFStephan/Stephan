@@ -12,7 +12,7 @@ browser  →  Angular (Netlify)  →  /api/v1/* proxy  →  FastAPI (Render)
 | `netlify.toml` | Builds `frontend`, publishes `dist/stephan`, proxies `/api/v1/*` to Render. |
 | `backend/` | FastAPI. `GET /health` is the Render check. `GET /api/v1/status` is the same payload through the proxy. |
 | `render.yaml` | Blueprint for `stephan-api`. Secrets use `sync: false`. |
-| `/studio` | Hidden page. On localhost it skips the access token. With `GITHUB_STUDIO_TOKEN` it opens a GitHub issue and stores snips on branch `studio-attachments`. It does not add the `solve` label. |
+| `/studio` | Hidden page. On localhost it skips the access token. With `GITHUB_STUDIO_TOKEN` it opens a GitHub issue labeled `solve` and stores snips on branch `studio-attachments`, in the same order as the composer. |
 | `.github/workflows/` | Deploy hook, weekly law report, issue solver. |
 
 CORS allows `FRONTEND_URL`, `http://localhost:4200`, and `https://stephan-psico.netlify.app`. Production traffic should stay same-origin via the Netlify proxy, so the browser does not need CORS for `/api/v1`.

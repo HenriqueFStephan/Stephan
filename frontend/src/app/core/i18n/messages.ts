@@ -68,7 +68,9 @@ const ptBR = {
 
   'studio.gateTitle': 'Modo criativo',
   'studio.gateLead':
-    'Esta réplica do site envia issues GitHub. A etiqueta solve não é aplicada automaticamente. Não está no menu público.',
+    'Esta réplica do site abre uma issue no GitHub com a etiqueta solve. Não está no menu público.',
+  'studio.localNeedsToken':
+    'Falta GITHUB_STUDIO_TOKEN em debt.txt. Sem ele, o envio local não abre issue.',
   'studio.token': 'Token do estúdio',
   'studio.unlock': 'Entrar',
   'studio.unlocking': 'Verificando…',
@@ -166,7 +168,9 @@ export const en: Record<MsgKey, string> = {
 
   'studio.gateTitle': 'Creative mode',
   'studio.gateLead':
-    'This replica of the site files GitHub issues. The solve label is not applied automatically. It is not in the public menu.',
+    'This replica of the site opens a GitHub issue with the solve label. It is not in the public menu.',
+  'studio.localNeedsToken':
+    'GITHUB_STUDIO_TOKEN is missing from debt.txt. Until it is set, a local send does not open an issue.',
   'studio.token': 'Studio token',
   'studio.unlock': 'Enter',
   'studio.unlocking': 'Checking…',

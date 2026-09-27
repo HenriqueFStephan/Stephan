@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     smtp_from: str = ""
     consulting_notify_to: str = ""
 
-    # On-site /studio overlay — files GitHub issues without the solve label.
+    # On-site /studio overlay — files GitHub issues with the solve label.
     # GITHUB_STUDIO_TOKEN is preferred so Actions' GITHUB_TOKEN is not reused locally.
     github_studio_token: str = ""
     github_token: str = ""

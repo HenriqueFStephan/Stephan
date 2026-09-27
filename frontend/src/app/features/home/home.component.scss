@@ -187,7 +187,7 @@ textarea {
 
 input:focus,
 textarea:focus {
-  outline: 2px solid color-mix(in srgb, $color-primary 35%, transparent);
+  outline: 2px solid rgba(15, 63, 98, 0.35);
   border-color: $color-primary;
 }
 

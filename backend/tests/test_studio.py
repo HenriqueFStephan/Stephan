@@ -61,8 +61,8 @@ def test_render_issue_body_keeps_text_and_images_in_order():
     assert "![snip 1](https://example.com/a.png)" in body
     assert body.index("Move the header") < body.index("snip 1")
     assert body.index("snip 1") < body.index("Gold accent")
-    assert "Filed from the Stephan studio" in body
-    assert "Add the `solve` label" in body
+    assert "Filed from the Stephan studio" not in body
+    assert "labeled `solve`" not in body
 
 
 def test_decode_image_rejects_unknown_mime():
@@ -198,11 +198,13 @@ def test_github_client_publish_order():
             return 200, {"object": {"sha": "abc"}}
         if "/contents/" in url:
             return 201, {"content": {"download_url": "https://raw.example/snip.png"}}
+        if url.endswith("/labels/solve") and method == "GET":
+            return 200, {"name": "solve"}
         if url.endswith("/issues") and method == "POST":
             assert json_body["title"] == "Fix footer"
-            assert "hello" in json_body["body"]
-            assert "![hero](https://raw.example/snip.png)" in json_body["body"]
-            assert "labels" not in json_body
+            body = json_body["body"]
+            assert body.index("hello") < body.index("![hero](https://raw.example/snip.png)")
+            assert json_body["labels"] == ["solve"]
             return 201, {"number": 12, "html_url": "https://github.com/org/repo/issues/12"}
         return 500, {"message": f"unexpected {method} {url}"}
 
@@ -221,4 +223,4 @@ def test_github_client_publish_order():
     )
     assert issue["number"] == 12
     assert any(url.endswith("/issues") for _method, url in calls)
-    assert not any("/labels" in url for _method, url in calls)
+    assert any(url.endswith("/labels/solve") for _method, url in calls)
