@@ -1,0 +1,112 @@
+<section class="hero" id="topo">
+  <div class="hero__copy">
+    <h1>{{ 'hero.title' | t }}</h1>
+    <p>{{ 'hero.lead' | t }}</p>
+    <a class="button" href="#investigamos">{{ 'hero.cta' | t }}</a>
+  </div>
+  <div class="hero__mark" aria-hidden="true">
+    <img src="assets/brand/stephan-mark.png" alt="" />
+  </div>
+</section>
+
+<section class="band" id="fazemos">
+  <div class="container">
+    <h2>{{ 'work.title' | t }}</h2>
+    <ol class="steps">
+      <li>
+        <h3>{{ 'work.assess.title' | t }}</h3>
+        <p>{{ 'work.assess.body' | t }}</p>
+      </li>
+      <li>
+        <h3>{{ 'work.read.title' | t }}</h3>
+        <p>{{ 'work.read.body' | t }}</p>
+      </li>
+      <li>
+        <h3>{{ 'work.manage.title' | t }}</h3>
+        <p>{{ 'work.manage.body' | t }}</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="method" id="investigamos">
+  <div class="container">
+    <h2>{{ 'method.title' | t }}</h2>
+    <p class="intro">{{ 'method.lead' | t }}</p>
+    <ol class="thread">
+      <li>
+        <span>01</span>
+        <h3>{{ 'method.company.title' | t }}</h3>
+        <p>{{ 'method.company.body' | t }}</p>
+      </li>
+      <li>
+        <span>02</span>
+        <h3>{{ 'method.observe.title' | t }}</h3>
+        <p>{{ 'method.observe.body' | t }}</p>
+      </li>
+      <li>
+        <span>03</span>
+        <h3>{{ 'method.hse.title' | t }}</h3>
+        <p>{{ 'method.hse.body' | t }}</p>
+      </li>
+      <li>
+        <span>04</span>
+        <h3>{{ 'method.groups.title' | t }}</h3>
+        <p>{{ 'method.groups.body' | t }}</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="socios">
+  <div class="container">
+    <h2>{{ 'people.title' | t }}</h2>
+    <p class="intro">{{ 'people.lead' | t }}</p>
+    <ul class="people">
+      <li>
+        <h3>{{ 'people.psych.title' | t }}</h3>
+        <p>{{ 'people.psych.body' | t }}</p>
+      </li>
+      <li>
+        <h3>{{ 'people.epi.title' | t }}</h3>
+        <p>{{ 'people.epi.body' | t }}</p>
+      </li>
+      <li>
+        <h3>{{ 'people.tech.title' | t }}</h3>
+        <p>{{ 'people.tech.body' | t }}</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="contact" id="contato">
+  <div class="container contact__grid">
+    <div>
+      <h2>{{ 'contact.title' | t }}</h2>
+      <p class="intro">{{ 'contact.lead' | t }}</p>
+    </div>
+    <form (ngSubmit)="submit()" #form="ngForm">
+      <label>
+        <span>{{ 'contact.name' | t }}</span>
+        <input name="name" [(ngModel)]="name" required />
+      </label>
+      <label>
+        <span>{{ 'contact.org' | t }}</span>
+        <input name="organization" [(ngModel)]="organization" />
+      </label>
+      <label>
+        <span>{{ 'contact.email' | t }}</span>
+        <input name="email" type="email" [(ngModel)]="email" required />
+      </label>
+      <label>
+        <span>{{ 'contact.message' | t }}</span>
+        <textarea name="message" rows="4" [(ngModel)]="message" required></textarea>
+      </label>
+      <button class="button" type="submit" [disabled]="sending || form.invalid">
+        {{ sending ? ('contact.sending' | t) : ('contact.send' | t) }}
+      </button>
+      <p class="form-note" *ngIf="sent">{{ 'contact.sent' | t }}</p>
+      <p class="form-note form-note--bad" *ngIf="failed">{{ 'contact.fail' | t }}</p>
+    </form>
+  </div>
+</section>

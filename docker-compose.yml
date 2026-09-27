@@ -1,4 +1,4 @@
-# Sobral Psico — local development stack
+# Stephan — local development stack
 version: "3.9"
 
 services:
@@ -11,7 +11,7 @@ services:
       - ./agents:/agents
     environment:
       - APP_ENV=development
-      - DATABASE_URL=sqlite:///./data/sobralpsico.db
+      - DATABASE_URL=sqlite:///./data/stephan.db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
@@ -28,9 +28,9 @@ services:
   # db:
   #   image: postgres:16-alpine
   #   environment:
-  #     POSTGRES_USER: sobralpsico
+  #     POSTGRES_USER: stephan
   #     POSTGRES_PASSWORD: ${DB_PASSWORD}
-  #     POSTGRES_DB: sobralpsico
+  #     POSTGRES_DB: stephan
   #   volumes:
   #     - pgdata:/var/lib/postgresql/data
 

@@ -1,12 +1,12 @@
 """
-Sobral Psico FastAPI application entry point.
+Stephan FastAPI application entry point.
 
 Run: uvicorn app.main:app --reload --port 8000
 """
 
 from fastapi import FastAPI
 
-from app.api.v1 import studio
+from app.api.v1 import contact, studio
 from app.core.config import get_settings
 from app.core.cors import configure_cors
 from app.models.schemas import HealthResponse
@@ -14,8 +14,8 @@ from app.models.schemas import HealthResponse
 settings = get_settings()
 
 app = FastAPI(
-    title="Sobral Psico API",
-    description="Anonymous employee welfare questionnaire. Content is not built yet.",
+    title="Stephan API",
+    description="Stephan — psychosocial risk assessment and management.",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -25,6 +25,7 @@ configure_cors(app)
 
 API_PREFIX = "/api/v1"
 
+app.include_router(contact.router, prefix=API_PREFIX)
 app.include_router(studio.router, prefix=API_PREFIX)
 
 
@@ -56,7 +57,7 @@ def api_status() -> HealthResponse:
 @app.get("/", tags=["health"])
 def root() -> dict:
     return {
-        "name": "Sobral Psico API",
+        "name": "Stephan API",
         "docs": "/docs",
         "status": f"{API_PREFIX}/status",
     }

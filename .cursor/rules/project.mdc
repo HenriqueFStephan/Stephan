@@ -1,5 +1,5 @@
 ---
-description: Sobral Psico shell — keep product content out until it is requested
+description: Stephan site — psychosocial risk practice
 globs:
   - frontend/**/*
   - backend/**/*
@@ -7,6 +7,6 @@ globs:
 alwaysApply: false
 ---
 
-This repo is the empty shell for an anonymous employee welfare questionnaire under Brazil's updated NR-1 (psychosocial risks). Do not import content, branding, or data from other projects.
+This repo is the Stephan site: assessment and management of psychosocial risks at work. Public copy is Portuguese, with an English toggle. Do not invent the partners' names.
 
 Frontend calls the API only through `ApiService` and `environment.apiUrl`. Production uses the Netlify `/api/v1` proxy. `/studio` stays off the public nav. Studio issues must not receive the `solve` label automatically.

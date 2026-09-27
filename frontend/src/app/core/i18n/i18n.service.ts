@@ -4,7 +4,7 @@ import { dictionaries, MsgKey } from './messages';
 
 export type Lang = 'pt-BR' | 'en';
 
-const STORAGE_KEY = 'sobralpsico-lang';
+const STORAGE_KEY = 'stephan-lang';
 
 function readStoredLang(): Lang {
   if (typeof localStorage === 'undefined') {

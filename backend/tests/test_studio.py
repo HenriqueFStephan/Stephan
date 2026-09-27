@@ -34,7 +34,7 @@ class FakeSettings:
         *,
         github_studio_token: str = "gh-token",
         github_token: str = "",
-        github_repo: str = "HenriqueFStephan/SobralPsico",
+        github_repo: str = "HenriqueFStephan/Stephan",
         studio_access_token: str = "studio-secret",
         studio_attachments_branch: str = "studio-attachments",
         app_env: str = "development",
@@ -61,7 +61,7 @@ def test_render_issue_body_keeps_text_and_images_in_order():
     assert "![snip 1](https://example.com/a.png)" in body
     assert body.index("Move the header") < body.index("snip 1")
     assert body.index("snip 1") < body.index("Gold accent")
-    assert "Filed from the Sobral Psico studio" in body
+    assert "Filed from the Stephan studio" in body
     assert "Add the `solve` label" in body
 
 
@@ -111,7 +111,7 @@ def test_create_issue_labels_solve_and_uploads_snips(monkeypatch):
     fake = MagicMock()
     fake.publish.return_value = {
         "number": 77,
-        "html_url": "https://github.com/HenriqueFStephan/SobralPsico/issues/77",
+        "html_url": "https://github.com/HenriqueFStephan/Stephan/issues/77",
     }
     monkeypatch.setattr(studio_api, "get_settings", lambda: FakeSettings())
     app.dependency_overrides[studio_api.get_github_client] = lambda: fake

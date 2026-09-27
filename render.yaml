@@ -1,13 +1,13 @@
 # Render Blueprint — https://dashboard.render.com
-# New + → Blueprint → select the SobralPsico repo.
+# New + → Blueprint → select the Stephan repo.
 # After the first Netlify URL exists, set FRONTEND_URL to that exact origin and redeploy.
 # Secrets marked sync: false must be typed in the Render dashboard. They are not in git.
 
 services:
   - type: web
-    name: sobralpsico-api
+    name: stephan-api
     runtime: python
-    repo: https://github.com/HenriqueFStephan/SobralPsico
+    repo: https://github.com/HenriqueFStephan/Stephan
     branch: main
     rootDir: backend
     plan: free
@@ -27,9 +27,9 @@ services:
       - key: LLM_PROVIDER
         value: placeholder
       - key: FRONTEND_URL
-        value: https://sobralpsico.netlify.app
+        value: https://stephan-psico.netlify.app
       - key: AUTHOR_NAME
-        value: Sobral Psico
+        value: Stephan
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
@@ -43,7 +43,7 @@ services:
       - key: CONSULTING_NOTIFY_TO
         sync: false
       - key: GITHUB_REPO
-        value: HenriqueFStephan/SobralPsico
+        value: HenriqueFStephan/Stephan
       - key: GITHUB_STUDIO_TOKEN
         sync: false
       - key: STUDIO_ACCESS_TOKEN

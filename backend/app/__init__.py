@@ -1,1 +1,1 @@
-"""Sobral Psico FastAPI application package."""
+"""Stephan FastAPI application package."""

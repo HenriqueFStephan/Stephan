@@ -8,6 +8,7 @@ import { TranslatePipe } from '../../core/i18n';
   imports: [TranslatePipe],
   template: `
     <footer>
+      <img src="assets/brand/stephan-word.png" alt="stephan" />
       <p>{{ 'footer.note' | t }}</p>
     </footer>
   `,

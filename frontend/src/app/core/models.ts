@@ -28,6 +28,18 @@ export interface StudioUnlockResponse {
   message: string;
 }
 
+export interface ContactPayload {
+  name: string;
+  organization?: string;
+  email: string;
+  message: string;
+}
+
+export interface ContactResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface ApiStatus {
   status: string;
   version: string;

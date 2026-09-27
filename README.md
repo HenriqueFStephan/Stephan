@@ -1,8 +1,8 @@
-# Sobral Psico
+# Stephan
 
-Anonymous employee welfare questionnaire. This repository is the empty shell: Angular frontend, FastAPI backend, Netlify, Render, and the same GitHub Actions shape as the sibling project.
+Site for a practice that assesses and manages psychosocial risks at work: method, listening, and evidence.
 
-The home page only checks that the browser can reach `GET /api/v1/status`. Product copy and the questionnaire are not written yet.
+Angular frontend, FastAPI backend, Netlify, and Render. The public page is a single scroll: what the practice does, how it investigates, who is behind it, and a contact form.
 
 The creative overlay lives at `/studio` (not in the public menu). On localhost it opens without a token. Sending an issue is a dry-run until `GITHUB_STUDIO_TOKEN` is set.
 
@@ -28,4 +28,4 @@ Copy `debt.txt.example` to `debt.txt` when you have tokens. The file is gitignor
 
 ## Deploy
 
-See [docs/DEPLOY.md](docs/DEPLOY.md) and [docs/RESOURCES_NEEDED.md](docs/RESOURCES_NEEDED.md). Those steps need your GitHub, Render, and Netlify accounts.
+See [docs/DEPLOY.md](docs/DEPLOY.md) and [docs/RESOURCES_NEEDED.md](docs/RESOURCES_NEEDED.md).

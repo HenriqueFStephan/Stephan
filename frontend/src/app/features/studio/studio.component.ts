@@ -23,7 +23,7 @@ import {
   toApiBlocks,
 } from './studio-blocks';
 
-const TOKEN_KEY = 'sobralpsico-studio-token';
+const TOKEN_KEY = 'stephan-studio-token';
 const MIN_SNIP = 8;
 
 export function isLocalStudioHost(hostname: string): boolean {

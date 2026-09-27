@@ -10,7 +10,7 @@ describe('StudioComponent', () => {
   let api: jasmine.SpyObj<ApiService>;
 
   beforeEach(async () => {
-    sessionStorage.removeItem('sobralpsico-studio-token');
+    sessionStorage.removeItem('stephan-studio-token');
     api = jasmine.createSpyObj<ApiService>('ApiService', [
       'getStudioStatus',
       'unlockStudio',
@@ -30,14 +30,14 @@ describe('StudioComponent', () => {
   });
 
   afterEach(() => {
-    sessionStorage.removeItem('sobralpsico-studio-token');
+    sessionStorage.removeItem('stephan-studio-token');
   });
 
   it('treats loopback hosts as local studio', () => {
     expect(isLocalStudioHost('localhost')).toBeTrue();
     expect(isLocalStudioHost('127.0.0.1')).toBeTrue();
     expect(isLocalStudioHost('::1')).toBeTrue();
-    expect(isLocalStudioHost('sobralpsico.netlify.app')).toBeFalse();
+    expect(isLocalStudioHost('stephan-psico.netlify.app')).toBeFalse();
   });
 
   it('opens the composer on localhost without a token', () => {

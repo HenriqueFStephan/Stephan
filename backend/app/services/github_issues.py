@@ -41,7 +41,7 @@ def github_headers(token: str) -> dict[str, str]:
         "Accept": "application/vnd.github+json",
         "Authorization": f"Bearer {token}",
         "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "SobralPsico-Studio",
+        "User-Agent": "Stephan-Studio",
     }
 
 
@@ -94,7 +94,7 @@ def safe_alt_text(name: str, fallback: str) -> str:
 
 def render_issue_body(blocks: list[StudioBlock], image_urls: dict[str, str]) -> str:
     parts = [
-        "_Filed from the Sobral Psico studio. Add the `solve` label to start the AI agent._",
+        "_Filed from the Stephan studio. Add the `solve` label to start the AI agent._",
         "",
     ]
     image_index = 0

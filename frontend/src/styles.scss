@@ -19,7 +19,7 @@ html {
 body {
   margin: 0;
   font-family: $font-body;
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.6;
   color: $color-text;
   background: $color-bg;
@@ -28,13 +28,19 @@ body {
 
 h1, h2, h3 {
   font-family: $font-heading;
-  font-weight: 700;
-  line-height: 1.25;
+  font-weight: 500;
+  line-height: 1.15;
   color: $color-primary;
 }
 
 a {
-  color: $color-primary-mid;
+  color: inherit;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
 }
 
 .container {

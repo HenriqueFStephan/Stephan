@@ -1,6 +1,6 @@
 ---
 name: project-navigation
-description: Map of the Sobral Psico shell. Use when adding a route, an API, or a workflow.
+description: Map of the Stephan site. Use when adding a route, an API, or a workflow.
 ---
 
 # Project navigation

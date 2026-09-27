@@ -7,14 +7,14 @@ Nothing below was copied from the other repository. Each value is new for this p
 | Secret | Where to get it | Where it goes |
 |--------|-----------------|---------------|
 | `CURSOR_API_KEY` | [Cursor Dashboard → Integrations](https://cursor.com/dashboard?tab=integrations) | GitHub → repo → Settings → Secrets → Actions |
-| `RENDER_DEPLOY_HOOK_URL` | Render → `sobralpsico-api` → Settings → Deploy Hook | Same Actions secrets list |
-| Cursor GitHub App | Same Cursor integrations tab, installed on `SobralPsico` | No env var |
+| `RENDER_DEPLOY_HOOK_URL` | Render → `stephan-api` → Settings → Deploy Hook | Same Actions secrets list |
+| Cursor GitHub App | Same Cursor integrations tab, installed on `Stephan` | No env var |
 
 ## Studio (hidden `/studio`)
 
 | Variable | Where to get it | Where to put it |
 |----------|-----------------|-----------------|
-| `GITHUB_REPO` | `HenriqueFStephan/SobralPsico` once the repo exists | `debt.txt` locally and Render |
+| `GITHUB_REPO` | `HenriqueFStephan/Stephan` once the repo exists | `debt.txt` locally and Render |
 | `GITHUB_STUDIO_TOKEN` | GitHub → Settings → Developer settings → Fine-grained PAT. This repo only. Permissions: **Issues** read/write, **Contents** read/write (snips go to branch `studio-attachments`). | `debt.txt` and Render. Never in the Angular app. |
 | `STUDIO_ACCESS_TOKEN` | A long random string you invent. This is the gate password, not the GitHub PAT. | `debt.txt` and Render. You type it on `/studio` in production. |
 
@@ -39,7 +39,7 @@ Also confirm after the first Netlify deploy:
 
 ## Checklist
 
-- [ ] GitHub repo `HenriqueFStephan/SobralPsico` and a push of `main`
+- [ ] GitHub repo `HenriqueFStephan/Stephan` and a push of `main`
 - [ ] Render blueprint applied; `/health` returns ok
 - [ ] Netlify site; home card shows the API connection
 - [ ] `FRONTEND_URL` matches the Netlify origin

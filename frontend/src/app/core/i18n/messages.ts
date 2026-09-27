@@ -1,25 +1,70 @@
 const ptBR = {
-  'meta.title': 'Sobral Psico',
-  'meta.description': 'Estrutura inicial. O questionário ainda não foi construído.',
-  'nav.home': 'Início',
+  'meta.title': 'Stephan',
+  'meta.description':
+    'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
+  'nav.work': 'O que fazemos',
+  'nav.method': 'Como investigamos',
+  'nav.people': 'Quem está por trás',
+  'nav.contact': 'Contato',
   'nav.lang': 'EN',
-  'home.kicker': 'Estrutura',
-  'home.title': 'Sobral Psico',
-  'home.lead':
-    'Página provisória para conferir se o site fala com a API. O questionário ainda não existe.',
-  'home.checking': 'Consultando a API…',
-  'home.ok': 'Conexão ok',
-  'home.fail': 'A API não respondeu',
-  'home.environment': 'Ambiente',
-  'home.version': 'Versão',
-  'home.studio': 'Estúdio',
-  'home.studioOn': 'tokens presentes',
-  'home.studioOff': 'tokens ausentes (normal no local)',
-  'home.smtp': 'E-mail',
-  'home.smtpOn': 'SMTP configurado',
-  'home.smtpOff': 'SMTP ausente',
-  'home.endpoint': 'Endpoint',
-  'footer.note': 'Conteúdo do produto ainda não foi escrito.',
+
+  'hero.title': 'Compreender o trabalho para transformar os riscos.',
+  'hero.lead':
+    'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
+  'hero.cta': 'Conheça nossa abordagem',
+
+  'work.title': 'O que fazemos',
+  'work.assess.title': 'Avaliação',
+  'work.assess.body':
+    'Identificamos os fatores psicossociais no trabalho real da organização, não num modelo genérico.',
+  'work.read.title': 'Interpretação dos resultados',
+  'work.read.body':
+    'Lemos os achados com quem vive o trabalho, para que o número não se separe da situação.',
+  'work.manage.title': 'Apoio à gestão dos riscos',
+  'work.manage.body':
+    'Acompanhamos a decisão e o seguimento: o que muda no trabalho, e como isso se sustenta.',
+
+  'method.title': 'Como investigamos',
+  'method.lead':
+    'Caracterização, observação, HSE-IT e grupos focais são partes de uma mesma investigação.',
+  'method.company.title': 'Caracterização da empresa',
+  'method.company.body':
+    'Entendemos a estrutura, os processos e o que a organização já sabe sobre o próprio trabalho.',
+  'method.observe.title': 'Observação',
+  'method.observe.body':
+    'Olhamos a atividade como ela acontece, para não depender só do que se diz sobre ela.',
+  'method.hse.title': 'HSE-IT',
+  'method.hse.body':
+    'Usamos o indicador como uma leitura coletiva das condições de trabalho, não como um veredito individual.',
+  'method.groups.title': 'Grupos focais',
+  'method.groups.body':
+    'A escuta devolve contexto aos resultados e mostra o que a organização reconhece como risco.',
+
+  'people.title': 'Quem está por trás',
+  'people.lead':
+    'Três sócios. A prática reúne psicologia, epidemiologia e tecnologia.',
+  'people.psych.title': 'Psicologia',
+  'people.psych.body':
+    'A escuta do trabalho e a leitura das relações que organizam a atividade.',
+  'people.epi.title': 'Epidemiologia',
+  'people.epi.body':
+    'O cuidado com a evidência: o que os dados permitem afirmar, e o que ainda não permitem.',
+  'people.tech.title': 'Tecnologia',
+  'people.tech.body':
+    'O modo de registrar, cruzar e devolver os achados sem perder o vínculo com o campo.',
+
+  'contact.title': 'Contato',
+  'contact.lead': 'Vamos conversar sobre a realidade da sua organização.',
+  'contact.name': 'Nome',
+  'contact.org': 'Organização',
+  'contact.email': 'E-mail',
+  'contact.message': 'Mensagem',
+  'contact.send': 'Enviar',
+  'contact.sending': 'Enviando…',
+  'contact.sent': 'Mensagem recebida. Retornamos em breve.',
+  'contact.fail': 'Não foi possível enviar agora. Tente de novo em instantes.',
+
+  'footer.note': 'Avaliação e gestão de riscos psicossociais.',
 
   'studio.gateTitle': 'Modo criativo',
   'studio.gateLead':
@@ -56,26 +101,68 @@ const ptBR = {
 export type MsgKey = keyof typeof ptBR;
 
 export const en: Record<MsgKey, string> = {
-  'meta.title': 'Sobral Psico',
-  'meta.description': 'Starter shell. The questionnaire is not built yet.',
-  'nav.home': 'Home',
+  'meta.title': 'Stephan',
+  'meta.description':
+    'Psychosocial risk assessment and management, with method, listening, and evidence.',
+  'nav.work': 'What we do',
+  'nav.method': 'How we investigate',
+  'nav.people': 'Who is behind it',
+  'nav.contact': 'Contact',
   'nav.lang': 'PT',
-  'home.kicker': 'Shell',
-  'home.title': 'Sobral Psico',
-  'home.lead': 'Placeholder page to confirm the site can reach the API. The questionnaire is not here yet.',
-  'home.checking': 'Calling the API…',
-  'home.ok': 'Connection ok',
-  'home.fail': 'The API did not respond',
-  'home.environment': 'Environment',
-  'home.version': 'Version',
-  'home.studio': 'Studio',
-  'home.studioOn': 'tokens present',
-  'home.studioOff': 'tokens missing (expected locally)',
-  'home.smtp': 'Email',
-  'home.smtpOn': 'SMTP configured',
-  'home.smtpOff': 'SMTP missing',
-  'home.endpoint': 'Endpoint',
-  'footer.note': 'Product content has not been written yet.',
+
+  'hero.title': 'Understand the work in order to change the risks.',
+  'hero.lead':
+    'Psychosocial risk assessment and management, with method, listening, and evidence.',
+  'hero.cta': 'See our approach',
+
+  'work.title': 'What we do',
+  'work.assess.title': 'Assessment',
+  'work.assess.body':
+    'We identify psychosocial factors in the organization’s actual work, not in a generic model.',
+  'work.read.title': 'Reading the results',
+  'work.read.body':
+    'We interpret the findings with the people who do the work, so the number stays tied to the situation.',
+  'work.manage.title': 'Support for managing the risks',
+  'work.manage.body':
+    'We stay with the decision and the follow-up: what changes in the work, and how that holds.',
+
+  'method.title': 'How we investigate',
+  'method.lead':
+    'Company profile, observation, the HSE-IT, and focus groups are parts of one investigation.',
+  'method.company.title': 'Company profile',
+  'method.company.body':
+    'We learn the structure, the processes, and what the organization already knows about its own work.',
+  'method.observe.title': 'Observation',
+  'method.observe.body':
+    'We look at the activity as it happens, so the account of the work is not the only source.',
+  'method.hse.title': 'HSE-IT',
+  'method.hse.body':
+    'We use the indicator as a collective reading of working conditions, not as a verdict on a person.',
+  'method.groups.title': 'Focus groups',
+  'method.groups.body':
+    'Listening gives the results their context and shows what the organization recognizes as risk.',
+
+  'people.title': 'Who is behind it',
+  'people.lead': 'Three partners. The practice brings together psychology, epidemiology, and technology.',
+  'people.psych.title': 'Psychology',
+  'people.psych.body': 'Listening to the work, and reading the relations that organize the activity.',
+  'people.epi.title': 'Epidemiology',
+  'people.epi.body': 'Care with evidence: what the data can support, and what they cannot yet support.',
+  'people.tech.title': 'Technology',
+  'people.tech.body': 'How findings are recorded, compared, and returned without losing the link to the field.',
+
+  'contact.title': 'Contact',
+  'contact.lead': 'Let’s talk about the reality of your organization.',
+  'contact.name': 'Name',
+  'contact.org': 'Organization',
+  'contact.email': 'Email',
+  'contact.message': 'Message',
+  'contact.send': 'Send',
+  'contact.sending': 'Sending…',
+  'contact.sent': 'Message received. We will reply soon.',
+  'contact.fail': 'The message could not be sent just now. Try again in a moment.',
+
+  'footer.note': 'Psychosocial risk assessment and management.',
 
   'studio.gateTitle': 'Creative mode',
   'studio.gateLead':

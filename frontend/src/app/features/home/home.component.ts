@@ -1,75 +1,55 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { ApiService } from '../../core/api.service';
-import { I18nService, TranslatePipe } from '../../core/i18n';
-import { ApiStatus } from '../../core/models';
-import { environment } from '../../../environments/environment';
+import { TranslatePipe } from '../../core/i18n';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
-  template: `
-    <section class="home">
-      <p class="kicker">{{ 'home.kicker' | t }}</p>
-      <h1>{{ 'home.title' | t }}</h1>
-      <p class="lead">{{ 'home.lead' | t }}</p>
-
-      <article class="card" [class.card--ok]="status" [class.card--bad]="failed">
-        <p class="card__state" *ngIf="loading">{{ 'home.checking' | t }}</p>
-        <p class="card__state" *ngIf="status">{{ 'home.ok' | t }}</p>
-        <p class="card__state" *ngIf="failed">{{ 'home.fail' | t }}</p>
-
-        <dl *ngIf="status">
-          <div>
-            <dt>{{ 'home.environment' | t }}</dt>
-            <dd>{{ status.environment }}</dd>
-          </div>
-          <div>
-            <dt>{{ 'home.version' | t }}</dt>
-            <dd>{{ status.version }}</dd>
-          </div>
-          <div>
-            <dt>{{ 'home.studio' | t }}</dt>
-            <dd>{{ status.studio_configured ? ('home.studioOn' | t) : ('home.studioOff' | t) }}</dd>
-          </div>
-          <div>
-            <dt>{{ 'home.smtp' | t }}</dt>
-            <dd>{{ status.smtp_configured ? ('home.smtpOn' | t) : ('home.smtpOff' | t) }}</dd>
-          </div>
-          <div>
-            <dt>{{ 'home.endpoint' | t }}</dt>
-            <dd><code>{{ endpoint }}</code></dd>
-          </div>
-        </dl>
-      </article>
-    </section>
-  `,
+  imports: [CommonModule, FormsModule, TranslatePipe],
+  templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit {
-  status: ApiStatus | null = null;
-  loading = true;
+export class HomeComponent {
+  name = '';
+  organization = '';
+  email = '';
+  message = '';
+  sending = false;
+  sent = false;
   failed = false;
-  readonly endpoint = `${environment.apiUrl}/status`;
 
-  constructor(
-    private api: ApiService,
-    private i18n: I18nService,
-  ) {}
+  constructor(private api: ApiService) {}
 
-  ngOnInit(): void {
-    this.i18n.lang();
-    this.api.getStatus().subscribe({
-      next: (status) => {
-        this.status = status;
-        this.loading = false;
-      },
-      error: () => {
-        this.failed = true;
-        this.loading = false;
-      },
-    });
+  submit(): void {
+    if (this.sending) {
+      return;
+    }
+    this.sending = true;
+    this.sent = false;
+    this.failed = false;
+    this.api
+      .submitContact({
+        name: this.name.trim(),
+        organization: this.organization.trim(),
+        email: this.email.trim(),
+        message: this.message.trim(),
+      })
+      .subscribe({
+        next: () => {
+          this.sending = false;
+          this.sent = true;
+          this.name = '';
+          this.organization = '';
+          this.email = '';
+          this.message = '';
+        },
+        error: () => {
+          this.sending = false;
+          this.failed = true;
+        },
+      });
   }
 }

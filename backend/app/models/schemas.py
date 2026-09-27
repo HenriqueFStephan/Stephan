@@ -45,6 +45,31 @@ class StudioUnlockResponse(BaseModel):
     message: str = ""
 
 
+class ContactCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+    organization: str = Field(default="", max_length=160)
+    email: str = Field(..., min_length=3, max_length=200)
+    message: str = Field(..., min_length=1, max_length=4000)
+
+    @field_validator("name", "organization", "email", "message")
+    @classmethod
+    def strip_text(cls, value: str) -> str:
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("email")
+    @classmethod
+    def email_shape(cls, value: str) -> str:
+        domain = value.split("@")[-1] if "@" in value else ""
+        if value.count("@") != 1 or "." not in domain:
+            raise ValueError("invalid email")
+        return value
+
+
+class ContactAck(BaseModel):
+    success: bool
+    message: str = ""
+
+
 class HealthResponse(BaseModel):
     status: str
     version: str = "0.1.0"

@@ -8,7 +8,7 @@ from app.core.config import get_settings
 
 
 # Intended production origin. Update this once Netlify assigns the real site URL.
-LIVE_FRONTEND_ORIGINS = ("https://sobralpsico.netlify.app",)
+LIVE_FRONTEND_ORIGINS = ("https://stephan-psico.netlify.app",)
 
 
 def configure_cors(app) -> None:

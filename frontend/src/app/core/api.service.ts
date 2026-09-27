@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   ApiStatus,
+  ContactPayload,
+  ContactResponse,
   StudioIssuePayload,
   StudioIssueResponse,
   StudioStatusResponse,
@@ -12,7 +14,7 @@ import {
 } from './models';
 
 /**
- * HTTP client for the Sobral Psico FastAPI backend.
+ * HTTP client for the Stephan FastAPI backend.
  * All versioned endpoints live under /api/v1.
  */
 @Injectable({ providedIn: 'root' })
@@ -20,6 +22,10 @@ export class ApiService {
   private readonly base = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
+
+  submitContact(payload: ContactPayload): Observable<ContactResponse> {
+    return this.http.post<ContactResponse>(`${this.base}/contact`, payload);
+  }
 
   getStatus(): Observable<ApiStatus> {
     return this.http.get<ApiStatus>(`${this.base}/status`);

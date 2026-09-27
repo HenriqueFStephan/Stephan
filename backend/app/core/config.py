@@ -16,7 +16,7 @@ DATA_DIR = BACKEND_ROOT / "data"
 
 
 class Settings(BaseSettings):
-    """Runtime configuration for the Sobral Psico API."""
+    """Runtime configuration for the Stephan API."""
 
     model_config = SettingsConfigDict(
         env_file=(BACKEND_ROOT / ".env", REPO_ROOT / "debt.txt"),
@@ -29,10 +29,10 @@ class Settings(BaseSettings):
     api_base_url: str = "http://localhost:8000"
     frontend_url: str = "http://localhost:4200"
 
-    database_url: str = f"sqlite:///{DATA_DIR / 'sobralpsico.db'}"
+    database_url: str = f"sqlite:///{DATA_DIR / 'stephan.db'}"
 
     author_email: str = "author@example.com"
-    author_name: str = "Sobral Psico"
+    author_name: str = "Stephan"
 
     llm_provider: str = "placeholder"
     openai_api_key: str = ""
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     # GITHUB_STUDIO_TOKEN is preferred so Actions' GITHUB_TOKEN is not reused locally.
     github_studio_token: str = ""
     github_token: str = ""
-    github_repo: str = "HenriqueFStephan/SobralPsico"
+    github_repo: str = "HenriqueFStephan/Stephan"
     studio_access_token: str = ""
     studio_attachments_branch: str = "studio-attachments"
 

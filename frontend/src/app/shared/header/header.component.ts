@@ -1,17 +1,21 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { I18nService, TranslatePipe } from '../../core/i18n';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, TranslatePipe],
+  imports: [TranslatePipe],
   template: `
     <header>
-      <a routerLink="/" class="brand">Sobral Psico</a>
+      <a href="#topo" class="brand" aria-label="Stephan">
+        <img src="assets/brand/stephan-lockup.png" alt="Stephan" />
+      </a>
       <nav>
-        <a routerLink="/">{{ 'nav.home' | t }}</a>
+        <a href="#fazemos">{{ 'nav.work' | t }}</a>
+        <a href="#investigamos">{{ 'nav.method' | t }}</a>
+        <a href="#socios">{{ 'nav.people' | t }}</a>
+        <a href="#contato">{{ 'nav.contact' | t }}</a>
         <button type="button" (click)="toggleLang()">{{ 'nav.lang' | t }}</button>
       </nav>
     </header>
