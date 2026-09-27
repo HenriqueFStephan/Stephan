@@ -55,7 +55,7 @@
   justify-self: end;
   width: min(58vw, 640px);
   margin-right: -8vw;
-  animation: drift 16s ease-in-out infinite alternate;
+  animation: drift 13.33s ease-in-out infinite alternate;
 }
 
 .hero__mark img {
@@ -242,10 +242,10 @@ textarea:focus {
 
 @keyframes drift {
   from {
-    transform: translate3d(6%, 0, 0);
+    transform: translate3d(7.2%, 0, 0);
   }
   to {
-    transform: translate3d(-10%, 3%, 0);
+    transform: translate3d(-12%, 3.6%, 0);
   }
 }
 
