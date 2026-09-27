@@ -38,4 +38,16 @@ describe('HomeComponent', () => {
     expect(root.querySelector('.thread__segment--text-first')).not.toBeNull();
     expect(root.querySelector('.thread__segment--image-first')).not.toBeNull();
   });
+
+  it('shows partner photos in the people section', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const section = root.querySelector('#socios');
+    expect(section).withContext('people section').not.toBeNull();
+
+    const photos = section!.querySelectorAll<HTMLImageElement>('.people__photo');
+    expect(photos.length).toBe(3);
+    expect(photos[0].src).toContain('assets/people/partner-psych.jpg');
+    expect(photos[1].src).toContain('assets/people/partner-epi.jpg');
+    expect(photos[2].src).toContain('assets/people/partner-tech.jpg');
+  });
 });

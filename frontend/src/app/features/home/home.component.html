@@ -83,17 +83,44 @@
     <h2>{{ 'people.title' | t }}</h2>
     <p class="intro">{{ 'people.lead' | t }}</p>
     <ul class="people">
-      <li>
-        <h3>{{ 'people.psych.title' | t }}</h3>
-        <p>{{ 'people.psych.body' | t }}</p>
+      <li class="people__card">
+        <img
+          class="people__photo"
+          src="assets/people/partner-psych.jpg"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+        />
+        <div class="people__copy">
+          <h3>{{ 'people.psych.title' | t }}</h3>
+          <p>{{ 'people.psych.body' | t }}</p>
+        </div>
       </li>
-      <li>
-        <h3>{{ 'people.epi.title' | t }}</h3>
-        <p>{{ 'people.epi.body' | t }}</p>
+      <li class="people__card">
+        <img
+          class="people__photo"
+          src="assets/people/partner-epi.jpg"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+        />
+        <div class="people__copy">
+          <h3>{{ 'people.epi.title' | t }}</h3>
+          <p>{{ 'people.epi.body' | t }}</p>
+        </div>
       </li>
-      <li>
-        <h3>{{ 'people.tech.title' | t }}</h3>
-        <p>{{ 'people.tech.body' | t }}</p>
+      <li class="people__card">
+        <img
+          class="people__photo"
+          src="assets/people/partner-tech.jpg"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+        />
+        <div class="people__copy">
+          <h3>{{ 'people.tech.title' | t }}</h3>
+          <p>{{ 'people.tech.body' | t }}</p>
+        </div>
       </li>
     </ul>
   </div>

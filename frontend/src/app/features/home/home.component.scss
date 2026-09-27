@@ -112,6 +112,46 @@ h2 {
   color: $color-text-muted;
 }
 
+.people__card {
+  position: relative;
+  overflow: hidden;
+  min-height: 11.5rem;
+  padding: 1.35rem 1.15rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-surface;
+}
+
+.people__photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 52%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  filter: grayscale(1);
+  opacity: 0.42;
+  pointer-events: none;
+  mask-image: linear-gradient(to left, #000 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to left, #000 55%, transparent 100%);
+}
+
+.people__copy {
+  position: relative;
+  z-index: 1;
+  max-width: 78%;
+  padding-right: 0.35rem;
+}
+
+.people__copy h3 {
+  text-shadow: 0 0 12px $color-surface, 0 0 4px $color-surface;
+}
+
+.people__copy p {
+  text-shadow: 0 0 10px $color-surface, 0 0 3px $color-surface;
+}
+
 .thread {
   list-style: none;
   margin: 0;
