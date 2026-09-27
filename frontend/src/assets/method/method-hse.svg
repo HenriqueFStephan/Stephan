@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <rect width="640" height="480" fill="#efeae0"/>
+  <rect x="32" y="32" width="576" height="416" rx="16" fill="#fffcf7" stroke="#e3dcd0" stroke-width="2"/>
+  <rect x="96" y="96" width="448" height="48" rx="8" fill="#d7e4ec"/>
+  <rect x="96" y="168" width="320" height="24" rx="6" fill="#0f3f62" opacity="0.2"/>
+  <rect x="96" y="208" width="400" height="24" rx="6" fill="#0f3f62" opacity="0.15"/>
+  <rect x="96" y="248" width="360" height="24" rx="6" fill="#0f3f62" opacity="0.12"/>
+  <rect x="96" y="300" width="180" height="80" rx="8" fill="#1a5678" opacity="0.25"/>
+  <rect x="300" y="300" width="180" height="80" rx="8" fill="#0f3f62" opacity="0.18"/>
+  <rect x="504" y="300" width="40" height="80" rx="8" fill="#1a5678" opacity="0.12"/>
+  <text x="320" y="420" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" fill="#5c6b73">HSE-IT</text>
+</svg>

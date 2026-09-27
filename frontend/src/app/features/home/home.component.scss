@@ -121,18 +121,39 @@ h2 {
   border-top: 1px solid $color-border;
 }
 
-.thread li {
+.thread__segment {
   display: grid;
-  grid-template-columns: 4rem 1fr;
-  gap: 0.5rem 1.25rem;
-  padding: 1.35rem 0;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2rem 2.5rem;
+  align-items: center;
+  padding: 2.25rem 0;
   border-bottom: 1px solid $color-border;
 }
 
-.thread span {
+.thread__copy {
+  min-width: 0;
+}
+
+.thread__index {
+  display: block;
+  margin: 0 0 0.65rem;
   font-family: $font-heading;
   color: $color-primary;
   letter-spacing: 0.08em;
+}
+
+.thread__figure {
+  margin: 0;
+  min-width: 0;
+}
+
+.thread__figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  background: $color-surface;
 }
 
 .contact__grid {
@@ -209,6 +230,20 @@ textarea:focus {
   .people,
   .contact__grid {
     grid-template-columns: 1fr;
+  }
+
+  .thread__segment {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding: 1.75rem 0;
+  }
+
+  .thread__segment--text-first .thread__figure {
+    order: 2;
+  }
+
+  .thread__segment--text-first .thread__copy {
+    order: 1;
   }
 }
 
