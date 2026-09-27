@@ -10,7 +10,7 @@ describe('HomeComponent', () => {
 
   beforeEach(async () => {
     const api = jasmine.createSpyObj<ApiService>('ApiService', ['submitContact']);
-    api.submitContact.and.returnValue(of({ ok: true }));
+    api.submitContact.and.returnValue(of({ success: true, message: 'ok' }));
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
