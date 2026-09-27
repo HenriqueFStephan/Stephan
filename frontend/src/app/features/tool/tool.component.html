@@ -1,0 +1,97 @@
+<div class="tool">
+  <header class="tool__bar">
+    <a href="/" class="tool__brand" aria-label="Stephan">
+      <img src="assets/brand/stephan-lockup.png" alt="Stephan" />
+    </a>
+    <div class="tool__bar-side">
+      <span class="tool__eyebrow">{{ 'tool.eyebrow' | t }}</span>
+      <button type="button" class="tool__lang" (click)="toggleLang()">{{ 'nav.lang' | t }}</button>
+    </div>
+  </header>
+
+  <div class="tool__main">
+    <section *ngIf="phase === 'intro'" class="card">
+      <h1>{{ 'tool.title' | t }}</h1>
+      <p class="lead">{{ 'tool.lead' | t }}</p>
+      <ul class="factors">
+        <li *ngFor="let id of dimensions">{{ dimensionName(id) }}</li>
+      </ul>
+      <p class="note">{{ 'tool.anon' | t }}</p>
+      <label class="field">
+        {{ 'tool.sector' | t }}
+        <input type="text" name="sector" [(ngModel)]="sector" [attr.placeholder]="'tool.sectorHint' | t" autocomplete="off" />
+      </label>
+      <button type="button" class="button" (click)="start()">{{ 'tool.start' | t }}</button>
+    </section>
+
+    <section *ngIf="phase === 'ask'" class="card">
+      <p class="progress">{{ 'tool.progress' | t:{ current: index + 1, total: items.length } }}</p>
+      <div class="progress__track" aria-hidden="true">
+        <span [style.width.%]="((index + 1) / items.length) * 100"></span>
+      </div>
+      <h2 class="question">{{ itemText(current) }}</h2>
+      <p *ngIf="current.n === 24" class="shift">{{ 'tool.shift' | t }}</p>
+      <div class="choices" role="radiogroup" [attr.aria-label]="itemText(current)">
+        <button
+          type="button"
+          class="choice"
+          *ngFor="let label of scaleLabels(current); let i = index"
+          role="radio"
+          [attr.aria-checked]="answers[index] === i + 1"
+          [class.is-selected]="answers[index] === i + 1"
+          (click)="choose(i + 1)"
+        >
+          <span class="choice__n">{{ i + 1 }}</span>
+          <span>{{ label }}</span>
+        </button>
+      </div>
+      <div class="ask__nav">
+        <button type="button" class="text" (click)="back()" [disabled]="index === 0">
+          {{ 'tool.back' | t }}
+        </button>
+        <button
+          *ngIf="index === items.length - 1"
+          type="button"
+          class="button"
+          (click)="finish()"
+          [disabled]="answers[index] == null"
+        >
+          {{ 'tool.see' | t }}
+        </button>
+      </div>
+    </section>
+
+    <section *ngIf="phase === 'results'" class="card">
+      <h1>{{ 'tool.resultsTitle' | t }}</h1>
+      <p *ngIf="sector.trim()" class="sector">{{ sector.trim() }}</p>
+      <p class="lead">{{ 'tool.resultsLead' | t }}</p>
+      <ol class="meters">
+        <li *ngFor="let row of scores">
+          <div class="meter__top">
+            <h3>{{ dimensionName(row.id) }}</h3>
+            <span class="meter__score">{{ meanText(row.mean) }}</span>
+          </div>
+          <p class="meter__about">{{ dimensionAbout(row.id) }}</p>
+          <div class="meter__track">
+            <span class="meter__fill" [ngClass]="row.band" [style.width.%]="fillWidth(row.mean)"></span>
+            <span
+              class="tick"
+              *ngFor="let mark of ticks(row.id)"
+              [style.left.%]="fillWidth(mark)"
+            ></span>
+          </div>
+          <p class="meter__band">{{ bandText(row.band) }}</p>
+        </li>
+      </ol>
+      <div class="results__actions">
+        <button type="button" class="button" (click)="copySummary()">
+          {{ (copied ? 'tool.copied' : 'tool.copy') | t }}
+        </button>
+        <button type="button" class="text" (click)="back()">{{ 'tool.revise' | t }}</button>
+        <button type="button" class="text" (click)="restart()">{{ 'tool.restart' | t }}</button>
+      </div>
+      <pre *ngIf="summaryText" class="summary">{{ summaryText }}</pre>
+      <p class="reference">{{ 'tool.reference' | t }}</p>
+    </section>
+  </div>
+</div>

@@ -11,5 +11,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/studio/studio.component').then((m) => m.StudioComponent),
   },
+  {
+    path: 'tool',
+    loadComponent: () =>
+      import('./features/tool/tool.component').then((m) => m.ToolComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

@@ -98,6 +98,29 @@ const ptBR = {
   'studio.sendFailed': 'Não foi possível abrir a issue no GitHub.',
   'studio.localDryRun':
     'Modo local: nenhum token GitHub está configurado, então a issue não foi aberta.',
+
+  'tool.eyebrow': 'Teste',
+  'tool.title': 'Indicador das condições de trabalho',
+  'tool.lead':
+    'Trinta e cinco perguntas sobre os últimos seis meses. O método é o HSE-IT, o indicador que já usamos na investigação. A NR-1 não fixa um questionário: ela pede para identificar e avaliar os fatores psicossociais da organização do trabalho. As perguntas cobrem demandas, controle, apoio, relações, clareza de papel e mudança.',
+  'tool.anon':
+    'As respostas ficam neste navegador. Nada é enviado. Atualizar a página apaga o que foi marcado.',
+  'tool.sector': 'Setor ou equipe',
+  'tool.sectorHint': 'Opcional. Só para nomear esta leitura.',
+  'tool.start': 'Começar',
+  'tool.progress': '{{current}} de {{total}}',
+  'tool.back': 'Voltar',
+  'tool.shift': 'Daqui em diante, diga o quanto concorda com a frase.',
+  'tool.see': 'Ver a leitura',
+  'tool.resultsTitle': 'Leitura desta resposta',
+  'tool.resultsLead':
+    'A nota vai de 1 a 5. Quanto maior, mais favorável a condição — também quando a frase é negativa, porque a resposta entra invertida na conta. As marcas na barra são os percentis 20, 50 e 80 da referência do HSE. No uso com uma organização, a conta é a média do grupo, não de uma pessoa.',
+  'tool.copy': 'Copiar resumo',
+  'tool.copied': 'Resumo copiado',
+  'tool.revise': 'Ajustar respostas',
+  'tool.restart': 'Responder de novo',
+  'tool.reference':
+    'Faixas do HSE Management Standards Analysis Tool, com dados de 136 organizações. Isto é um teste local: não é diagnóstico, laudo nem inventário de riscos.',
 } as const;
 
 export type MsgKey = keyof typeof ptBR;
@@ -198,6 +221,29 @@ export const en: Record<MsgKey, string> = {
   'studio.sendFailed': 'Could not open the GitHub issue.',
   'studio.localDryRun':
     'Local mode: no GitHub token is configured, so the issue was not opened.',
+
+  'tool.eyebrow': 'Test',
+  'tool.title': 'Indicator of working conditions',
+  'tool.lead':
+    'Thirty-five questions about the last six months. The method is the HSE-IT, the indicator we already use in an investigation. NR-1 does not prescribe one questionnaire: it asks organizations to identify and assess the psychosocial factors of how work is organized. The questions cover demands, control, support, relationships, role clarity, and change.',
+  'tool.anon':
+    'Answers stay in this browser. Nothing is sent. Refreshing the page clears what was marked.',
+  'tool.sector': 'Area or team',
+  'tool.sectorHint': 'Optional. Only to name this reading.',
+  'tool.start': 'Begin',
+  'tool.progress': '{{current}} of {{total}}',
+  'tool.back': 'Back',
+  'tool.shift': 'From here, say how far you agree with the statement.',
+  'tool.see': 'See the reading',
+  'tool.resultsTitle': 'Reading of this answer',
+  'tool.resultsLead':
+    'The score runs from 1 to 5. Higher is a more favorable condition — including when the statement is negative, because that answer is reversed in the calculation. The marks on each bar are the 20th, 50th, and 80th percentiles of the HSE reference. In use with an organization, the figure is the group mean, not one person.',
+  'tool.copy': 'Copy summary',
+  'tool.copied': 'Summary copied',
+  'tool.revise': 'Adjust answers',
+  'tool.restart': 'Answer again',
+  'tool.reference':
+    'Bands from the HSE Management Standards Analysis Tool, using data from 136 organisations. This is a local test: not a diagnosis, a report, or a risk inventory.',
 };
 
 export const dictionaries: Record<'pt-BR' | 'en', Record<MsgKey, string>> = {
