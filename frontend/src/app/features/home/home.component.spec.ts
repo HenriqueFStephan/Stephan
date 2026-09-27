@@ -22,6 +22,11 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
   });
 
+  it('shows the Portuguese hero title', () => {
+    const h1 = (fixture.nativeElement as HTMLElement).querySelector('h1');
+    expect(h1?.textContent?.trim()).toBe('Compreender o trabalho para gerenciar os riscos.');
+  });
+
   it('renders four method segments with half-width copy and placeholder art', () => {
     const root = fixture.nativeElement as HTMLElement;
     const segments = root.querySelectorAll('#investigamos .thread__segment');

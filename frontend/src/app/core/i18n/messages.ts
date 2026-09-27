@@ -8,7 +8,7 @@ const ptBR = {
   'nav.contact': 'Contato',
   'nav.lang': 'EN',
 
-  'hero.title': 'Compreender o trabalho para transformar os riscos.',
+  'hero.title': 'Compreender o trabalho para gerenciar os riscos.',
   'hero.lead':
     'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
   'hero.cta': 'Conheça nossa abordagem',
