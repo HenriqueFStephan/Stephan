@@ -12,7 +12,7 @@ import { HeaderComponent } from './shared/header/header.component';
   standalone: true,
   imports: [CommonModule, RouterOutlet, HeaderComponent, FooterComponent],
   template: `
-    <ng-container *ngIf="isStudio; else site">
+    <ng-container *ngIf="bare; else site">
       <router-outlet />
     </ng-container>
     <ng-template #site>
@@ -30,7 +30,7 @@ import { HeaderComponent } from './shared/header/header.component';
   `],
 })
 export class AppComponent {
-  isStudio = false;
+  bare = false;
 
   constructor(router: Router, _i18n: I18nService) {
     const sync = (): void => {
@@ -39,7 +39,11 @@ export class AppComponent {
         typeof location !== 'undefined'
           ? location.pathname.split('?')[0].replace(/\/+$/, '')
           : '';
-      this.isStudio = routed === '/studio' || here === '/studio';
+      this.bare =
+        routed === '/studio' ||
+        here === '/studio' ||
+        routed === '/tool' ||
+        here === '/tool';
     };
     router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
