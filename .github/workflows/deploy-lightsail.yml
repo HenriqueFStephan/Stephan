@@ -4,7 +4,8 @@ name: "🚀 DEPLOY SITE"
 # Builds the Angular site and copies it, with the API, to the São Paulo
 # Lightsail instance behind https://stephan.net.br.
 # Secrets: LIGHTSAIL_HOST, LIGHTSAIL_SSH_KEY (the stephan-deploy private key).
-# Does not replace /opt/stephan/debt.txt.
+# Does not replace /opt/stephan/debt.txt, except to set BLOCKWALL_KEY
+# so visitors see the maintenance page.
 
 on:
   push:
@@ -13,6 +14,7 @@ on:
       - "frontend/**"
       - "backend/**"
       - "scripts/deploy_lightsail_remote.sh"
+      - "scripts/place_blockwall_remote.sh"
       - ".github/workflows/deploy-lightsail.yml"
   workflow_dispatch:
 
@@ -57,3 +59,20 @@ jobs:
             "ubuntu@${LIGHTSAIL_HOST}:/tmp/"
           ssh -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
             "ubuntu@${LIGHTSAIL_HOST}" "sudo bash /tmp/deploy_lightsail_remote.sh"
+
+      - name: Turn the maintenance wall on for visitors
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          BLOCKWALL_KEY: ${{ secrets.BLOCKWALL_KEY }}
+        run: |
+          if [ -z "$BLOCKWALL_KEY" ]; then
+            echo "BLOCKWALL_KEY secret is empty, so visitors would not see the maintenance page."
+            exit 1
+          fi
+          scp -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
+            scripts/place_blockwall_remote.sh \
+            "ubuntu@${LIGHTSAIL_HOST}:/tmp/place_blockwall_remote.sh"
+          printf '%s' "$BLOCKWALL_KEY" | ssh -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
+            "ubuntu@${LIGHTSAIL_HOST}" "umask 077; cat > /tmp/blockwall.key"
+          ssh -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
+            "ubuntu@${LIGHTSAIL_HOST}" "sudo bash /tmp/place_blockwall_remote.sh"
