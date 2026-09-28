@@ -1,5 +1,72 @@
 {
-  "updated_at": "",
+  "updated_at": "2026-09-28T07:15:31.082636+00:00",
   "notes": "Sources already posted in weekly law-report issues. The weekly report skips these DOIs and URLs.",
-  "papers": []
+  "papers": [
+    {
+      "title": "Work organization and psychosocial risks in three industrial production systems: a COPSOQ III baseline assessment in Shenzhen, China",
+      "url": "https://doi.org/10.1186/s12889-026-29421-7",
+      "doi": "10.1186/s12889-026-29421-7",
+      "journal": "BMC Public Health",
+      "authors": "Yuting Tang et al.",
+      "year": 2026,
+      "published": "2026-09-12",
+      "category": "methods",
+      "first_seen": "2026-09-28"
+    },
+    {
+      "title": "Working conditions and mental health of employees suffering from common mental disorders in Germany with special consideration to the migration generation",
+      "url": "https://doi.org/10.1186/s40359-026-05486-2",
+      "doi": "10.1186/s40359-026-05486-2",
+      "journal": "BMC Psychology",
+      "authors": "Regina Herold et al.",
+      "year": 2026,
+      "published": "2026-09-01",
+      "category": "methods",
+      "first_seen": "2026-09-28"
+    },
+    {
+      "title": "Psychological Capital and Perceived Stress in Nurses: The Mediating Role of Need for Recovery and Recovery Experiences",
+      "url": "https://doi.org/10.1002/nop2.70739",
+      "doi": "10.1002/nop2.70739",
+      "journal": "Nursing Open",
+      "authors": "Marie Charlotte Mollet et al.",
+      "year": 2026,
+      "published": "2026-08-30",
+      "category": "methods",
+      "first_seen": "2026-09-28"
+    },
+    {
+      "title": "Psychosocial Safety Climate and Occupational Health Outcomes Among Lone and Non-Lone Workers in the U.S.",
+      "url": "https://doi.org/10.1097/JOM.0000000000003882",
+      "doi": "10.1097/JOM.0000000000003882",
+      "journal": "Journal of Occupational and Environmental Medicine",
+      "authors": "Stefani Flórez-Acevedo et al.",
+      "year": 2026,
+      "published": "2026-09-09",
+      "category": "psychosocial",
+      "first_seen": "2026-09-28"
+    },
+    {
+      "title": "Consulta Pública nº 1/2026 — Minuta de Resolução que altera o Regulamento do Processo de Fiscalização e do Processo Administrativo Sancionador no âmbito da ANPD",
+      "url": "https://www.gov.br/anpd/pt-br/acesso-a-informacao/participacao-social/audiencias-e-consultas-publicas/consultas-publicas",
+      "doi": "",
+      "journal": "ANPD — Consultas Públicas",
+      "authors": "Agência Nacional de Proteção de Dados (ANPD)",
+      "year": 2026,
+      "published": "2026-09-09",
+      "category": "anonymity-lgpd",
+      "first_seen": "2026-09-28"
+    },
+    {
+      "title": "Developing and Validating a Tool to Assess the Musculoskeletal and Psychological Health in Industrial Workers",
+      "url": "https://www.informaticsjournals.co.in/index.php/JEOH/article/view/56034",
+      "doi": "10.18311/jeoh/2026/56034",
+      "journal": "Journal of Ecophysiology and Occupational Health",
+      "authors": "Gayathri Poojary et al.",
+      "year": 2026,
+      "published": "2026-09-25",
+      "category": "methods",
+      "first_seen": "2026-09-28"
+    }
+  ]
 }
