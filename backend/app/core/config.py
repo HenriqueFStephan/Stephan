@@ -55,6 +55,11 @@ class Settings(BaseSettings):
     studio_access_token: str = ""
     studio_attachments_branch: str = "studio-attachments"
 
+    # When set, the public site stays behind the maintenance wall until this
+    # browser receives a clearance derived from the key. The key itself never
+    # leaves the API.
+    blockwall_key: str = ""
+
     def resolved_github_token(self) -> str:
         """PAT used to open issues and upload snips from the studio."""
         return (self.github_studio_token or self.github_token or "").strip()

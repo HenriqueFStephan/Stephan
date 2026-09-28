@@ -11,6 +11,10 @@ import {
   StudioIssueResponse,
   StudioStatusResponse,
   StudioUnlockResponse,
+  BlockwallStatus,
+  BlockwallUnlockResponse,
+  CompanyLoginResponse,
+  CompanyOverview,
 } from './models';
 
 /**
@@ -44,6 +48,28 @@ export class ApiService {
   submitStudioIssue(token: string, payload: StudioIssuePayload): Observable<StudioIssueResponse> {
     return this.http.post<StudioIssueResponse>(`${this.base}/studio/issues`, payload, {
       headers: this.studioHeaders(token),
+    });
+  }
+
+  getBlockwall(): Observable<BlockwallStatus> {
+    return this.http.get<BlockwallStatus>(`${this.base}/blockwall/status`);
+  }
+
+  unlockBlockwall(password: string): Observable<BlockwallUnlockResponse> {
+    return this.http.post<BlockwallUnlockResponse>(`${this.base}/blockwall/unlock`, { password });
+  }
+
+  resumeBlockwall(passage: string): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(`${this.base}/blockwall/resume`, { passage });
+  }
+
+  loginCompany(username: string, password: string): Observable<CompanyLoginResponse> {
+    return this.http.post<CompanyLoginResponse>(`${this.base}/company/login`, { username, password });
+  }
+
+  getCompanyOverview(passage: string): Observable<CompanyOverview> {
+    return this.http.get<CompanyOverview>(`${this.base}/company/overview`, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
     });
   }
 

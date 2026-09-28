@@ -6,7 +6,7 @@ Run: uvicorn app.main:app --reload --port 8000
 
 from fastapi import FastAPI
 
-from app.api.v1 import contact, studio
+from app.api.v1 import blockwall, company, contact, studio
 from app.core.config import get_settings
 from app.core.cors import configure_cors
 from app.models.schemas import HealthResponse
@@ -27,6 +27,8 @@ API_PREFIX = "/api/v1"
 
 app.include_router(contact.router, prefix=API_PREFIX)
 app.include_router(studio.router, prefix=API_PREFIX)
+app.include_router(blockwall.router, prefix=API_PREFIX)
+app.include_router(company.router, prefix=API_PREFIX)
 
 
 def _health() -> HealthResponse:

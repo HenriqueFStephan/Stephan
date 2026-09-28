@@ -16,5 +16,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/tool/tool.component').then((m) => m.ToolComponent),
   },
+  {
+    path: 'empresa',
+    loadComponent: () =>
+      import('./features/company/company.component').then((m) => m.CompanyComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

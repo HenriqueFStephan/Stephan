@@ -1,0 +1,27 @@
+<section class="wall" [attr.aria-busy]="phase === 'pending'">
+  <button type="button" class="wall__lang" (click)="toggleLang()">
+    {{ 'nav.lang' | t }}
+  </button>
+
+  <div class="wall__card" *ngIf="phase === 'locked'" role="dialog" aria-modal="true">
+    <img src="assets/brand/stephan-lockup.png" alt="Stephan" />
+    <h1>{{ 'wall.title' | t }}</h1>
+    <p>{{ 'wall.lead' | t }}</p>
+    <form (ngSubmit)="unlock()">
+      <label>
+        <span>{{ 'wall.password' | t }}</span>
+        <input
+          type="password"
+          name="blockwall-password"
+          autocomplete="current-password"
+          autofocus
+          [(ngModel)]="password"
+        />
+      </label>
+      <button type="submit" [disabled]="submitting || !password.trim()">
+        {{ submitting ? ('wall.checking' | t) : ('wall.enter' | t) }}
+      </button>
+      <p class="wall__error" *ngIf="errorKey" role="alert">{{ errorKey | t }}</p>
+    </form>
+  </div>
+</section>

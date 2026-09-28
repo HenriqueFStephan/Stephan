@@ -26,3 +26,5 @@ GITHUB_REPO=HenriqueFStephan/Stephan
 GITHUB_STUDIO_TOKEN=
 STUDIO_ACCESS_TOKEN=
 STUDIO_ATTACHMENTS_BRANCH=studio-attachments
+# When set, the public site shows a maintenance page until this password is entered.
+BLOCKWALL_KEY=

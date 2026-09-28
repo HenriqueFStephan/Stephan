@@ -1,0 +1,172 @@
+<div class="company">
+  <header class="bar">
+    <a href="/" class="brand" aria-label="Stephan">
+      <img src="assets/brand/stephan-lockup.png" alt="Stephan" />
+    </a>
+    <div class="bar__side">
+      <span class="eyebrow">{{ 'company.eyebrow' | t }}</span>
+      <button type="button" class="text" *ngIf="phase === 'ready'" (click)="logout()">
+        {{ 'company.logout' | t }}
+      </button>
+      <button type="button" class="text" (click)="toggleLang()">{{ 'nav.lang' | t }}</button>
+    </div>
+  </header>
+
+  <div class="main" *ngIf="phase === 'login'">
+    <section class="card card--narrow">
+      <h1>{{ 'company.title' | t }}</h1>
+      <p class="lead">{{ 'company.lead' | t }}</p>
+      <form (ngSubmit)="login()">
+        <label>
+          <span>{{ 'company.user' | t }}</span>
+          <input type="text" name="company-user" autocomplete="username" [(ngModel)]="username" />
+        </label>
+        <label>
+          <span>{{ 'company.password' | t }}</span>
+          <input
+            type="password"
+            name="company-password"
+            autocomplete="current-password"
+            [(ngModel)]="password"
+          />
+        </label>
+        <button type="submit" class="button" [disabled]="submitting || !username.trim() || !password.trim()">
+          {{ submitting ? ('company.checking' | t) : ('company.enter' | t) }}
+        </button>
+        <p class="error" *ngIf="errorKey" role="alert">{{ errorKey | t }}</p>
+      </form>
+    </section>
+  </div>
+
+  <div class="main main--wide" *ngIf="phase === 'ready' && overview">
+    <p class="eyebrow">{{ companyLabel() }}</p>
+    <h1>{{ 'company.dashboardTitle' | t }}</h1>
+    <p class="count">{{ 'company.respondents' | t:{ count: overview.respondent_count } }}</p>
+    <p class="note" *ngIf="overview.source === 'simulated'">{{ 'company.demoNote' | t }}</p>
+
+    <section class="card" aria-labelledby="alpha-title">
+      <div class="alpha__top">
+        <div>
+          <h2 id="alpha-title">{{ 'company.alphaTitle' | t }}</h2>
+          <p class="lead">{{ 'company.alphaLead' | t }}</p>
+          <p class="latest" *ngIf="overallAlpha() as overall">
+            {{ 'company.alphaLatest' | t:{ n: overall.n, date: formatIso(overview.latest_response_on) } }}
+          </p>
+        </div>
+        <p class="alpha__figure" *ngIf="overallAlpha() as overall">
+          <span>{{ alphaText(overall.alpha) }}</span>
+          <small>{{ scaleName(overall.id) }}</small>
+        </p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">{{ 'company.colScale' | t }}</th>
+              <th scope="col">{{ 'company.colItems' | t }}</th>
+              <th scope="col">{{ 'company.colAlpha' | t }}</th>
+              <th scope="col">{{ 'company.colMean' | t }}</th>
+              <th scope="col">{{ 'company.colReading' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of overview.alpha">
+              <th scope="row">{{ scaleName(row.id) }}</th>
+              <td>{{ row.items }}</td>
+              <td>{{ alphaText(row.alpha) }}</td>
+              <td>{{ meanText(row.mean) }}</td>
+              <td>{{ ('company.reading.' + row.reading) | t }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="dimensions-title">
+      <h2 id="dimensions-title">{{ 'company.dimensionsTitle' | t }}</h2>
+      <p class="lead">{{ 'company.dimensionsLead' | t }}</p>
+      <ol class="meters">
+        <li *ngFor="let row of overview.dimensions">
+          <div class="meter__top">
+            <h3>{{ scaleName(row.id) }}</h3>
+            <span>{{ meanText(row.mean) }}</span>
+          </div>
+          <p class="meter__about">{{ dimensionAbout(row.id) }}</p>
+          <div class="meter__track">
+            <span class="meter__fill" [ngClass]="bandOf(row.id, row.mean)" [style.width.%]="fill(row.mean)"></span>
+            <span class="tick" *ngFor="let mark of ticks(row.id)" [style.left.%]="fill(mark)"></span>
+          </div>
+          <p class="meter__band">{{ bandSentence(row.id, row.mean) }}</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="bands-title">
+      <h2 id="bands-title">{{ 'company.bandsTitle' | t }}</h2>
+      <p class="lead">{{ 'company.bandsLead' | t }}</p>
+      <ul class="legend">
+        <li *ngFor="let key of bandKeys"><i [class]="key"></i>{{ ('company.band.' + key) | t }}</li>
+      </ul>
+      <ol class="stacks">
+        <li *ngFor="let row of overview.bands">
+          <span class="stack__name">{{ scaleName(row.id) }}</span>
+          <div class="stack">
+            <span
+              class="stack__part"
+              *ngFor="let part of bandParts(row)"
+              [ngClass]="part.key"
+              [style.width.%]="part.share"
+            ></span>
+          </div>
+          <p class="stack__counts">
+            <span class="urgent">{{ row.urgent }}</span>
+            <span class="improve">{{ row.improve }}</span>
+            <span class="good">{{ row.good }}</span>
+            <span class="maintain">{{ row.maintain }}</span>
+          </p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="sectors-title">
+      <h2 id="sectors-title">{{ 'company.sectorsTitle' | t }}</h2>
+      <p class="lead">{{ 'company.sectorsLead' | t }}</p>
+      <div class="sectors">
+        <article *ngFor="let sector of overview.sectors">
+          <h3>
+            {{ sectorName(sector.id) }}
+            <span>{{ 'company.respondents' | t:{ count: sector.count } }}</span>
+          </h3>
+          <ol>
+            <li *ngFor="let row of sector.means">
+              <span>{{ scaleName(row.id) }}</span>
+              <span class="mini">
+                <span [style.width.%]="fill(row.mean)" [ngClass]="bandOf(row.id, row.mean)"></span>
+              </span>
+              <span class="mini__score">{{ meanText(row.mean) }}</span>
+            </li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="weeks-title">
+      <h2 id="weeks-title">{{ 'company.weeksTitle' | t }}</h2>
+      <p class="lead">{{ 'company.weeksLead' | t }}</p>
+      <svg
+        class="weeks"
+        [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+        role="img"
+        [attr.aria-label]="weeksLabel()"
+      >
+        <g *ngFor="let bar of weekBars()">
+          <rect [attr.x]="bar.x" [attr.y]="bar.y" [attr.width]="bar.width" [attr.height]="bar.height" rx="3"></rect>
+          <text [attr.x]="bar.x + bar.width / 2" [attr.y]="bar.y - 6" text-anchor="middle">{{ bar.count }}</text>
+          <text class="weeks__label" [attr.x]="bar.x + bar.width / 2" y="156" text-anchor="middle">{{ bar.label }}</text>
+        </g>
+      </svg>
+    </section>
+
+    <p class="reference">{{ 'company.reference' | t }}</p>
+  </div>
+</div>

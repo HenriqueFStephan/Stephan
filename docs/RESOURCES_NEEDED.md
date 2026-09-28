@@ -27,6 +27,7 @@ Typed in the Render dashboard because `render.yaml` marks them `sync: false`:
 - `SMTP_USERNAME`, `SMTP_FROM`, `SMTP_PASSWORD`, `CONSULTING_NOTIFY_TO` — only when you want email. A Gmail app password works with `smtp.gmail.com` port `587`.
 - `GITHUB_STUDIO_TOKEN`
 - `STUDIO_ACCESS_TOKEN`
+- `BLOCKWALL_KEY` — same value as in `debt.txt`. While it is set, the public site shows the maintenance page. Leave it empty to take the wall down for everyone.
 
 Also confirm after the first Netlify deploy:
 

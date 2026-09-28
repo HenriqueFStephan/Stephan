@@ -40,6 +40,66 @@ export interface ContactResponse {
   message: string;
 }
 
+export interface BlockwallStatus {
+  enabled: boolean;
+}
+
+export interface BlockwallUnlockResponse {
+  success: boolean;
+  passage: string;
+}
+
+export interface CompanyLoginResponse {
+  success: boolean;
+  passage: string;
+}
+
+export interface CompanyAlphaRow {
+  id: string;
+  alpha: number | null;
+  items: number;
+  n: number;
+  reading: string;
+  mean: number | null;
+}
+
+export interface CompanyDimensionRow {
+  id: string;
+  mean: number;
+}
+
+export interface CompanySectorRow {
+  id: string;
+  count: number;
+  means: { id: string; mean: number }[];
+}
+
+export interface CompanyWeekRow {
+  week: string;
+  count: number;
+}
+
+export interface CompanyBandRow {
+  id: string;
+  urgent: number;
+  improve: number;
+  good: number;
+  maintain: number;
+}
+
+export interface CompanyOverview {
+  source: string;
+  company_id: string;
+  respondent_count: number;
+  first_response_on: string;
+  latest_response_on: string;
+  alpha: CompanyAlphaRow[];
+  dimensions: CompanyDimensionRow[];
+  sectors: CompanySectorRow[];
+  weeks: CompanyWeekRow[];
+  bands: CompanyBandRow[];
+}
+
 export interface ApiStatus {
   status: string;
   version: string;

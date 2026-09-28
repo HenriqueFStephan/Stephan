@@ -121,6 +121,71 @@ const ptBR = {
   'tool.restart': 'Responder de novo',
   'tool.reference':
     'Faixas do HSE Management Standards Analysis Tool, com dados de 136 organizações. Isto é um teste local: não é diagnóstico, laudo nem inventário de riscos.',
+
+  'wall.title': 'Site em manutenção',
+  'wall.lead': 'Estamos a atualizar o site. Volte em breve.',
+  'wall.password': 'Senha',
+  'wall.enter': 'Entrar',
+  'wall.checking': 'Verificando…',
+  'wall.badPassword': 'Senha incorreta.',
+  'wall.unreachable': 'Não foi possível contactar o servidor. Tente de novo em instantes.',
+
+  'footer.company': 'Acesso da empresa',
+
+  'company.eyebrow': 'Empresas',
+  'company.title': 'Leitura da organização',
+  'company.lead':
+    'Resultados do grupo, a partir dos formulários já respondidos. Cada pessoa conta uma vez. Isto não é um laudo individual.',
+  'company.user': 'Usuário',
+  'company.password': 'Senha',
+  'company.enter': 'Entrar',
+  'company.checking': 'Verificando…',
+  'company.badLogin': 'Usuário ou senha incorretos.',
+  'company.unreachable': 'Não foi possível contactar o servidor. Tente de novo em instantes.',
+  'company.logout': 'Sair',
+  'company.dashboardTitle': 'Resultados do grupo',
+  'company.demoNote':
+    'Demonstração. As 100 respostas são simuladas, com o mesmo questionário do HSE-IT. Não descrevem uma organização real.',
+  'company.demoName': 'Organização de demonstração',
+  'company.alphaTitle': 'Alfa de Cronbach',
+  'company.alphaLead':
+    'Consistência interna das respostas desta leitura. Não é uma nota de risco: diz o quanto os itens de uma mesma escala caminham juntos.',
+  'company.alphaLatest':
+    'Calculado sobre {{n}} respostas completas. A mais recente entrou em {{date}}.',
+  'company.alphaOverall': 'Conjunto das 35 perguntas',
+  'company.colScale': 'Escala',
+  'company.colItems': 'Itens',
+  'company.colAlpha': 'Alfa',
+  'company.colReading': 'Leitura',
+  'company.colMean': 'Média do grupo',
+  'company.reading.excellent': 'Acima de 0,90. Consistência muito alta.',
+  'company.reading.good': 'De 0,80 a 0,90. Consistência alta.',
+  'company.reading.acceptable': 'De 0,70 a 0,80. Consistência aceitável.',
+  'company.reading.questionable': 'De 0,60 a 0,70. Consistência frágil.',
+  'company.reading.weak': 'Abaixo de 0,60. Os itens desta escala pouco caminham juntos.',
+  'company.reading.unknown': 'Não calculado.',
+  'company.dimensionsTitle': 'Condições por fator',
+  'company.dimensionsLead':
+    'Média do grupo, de 1 a 5. Quanto maior, mais favorável. Os traços na barra são os percentis 20, 50 e 80 da referência do HSE.',
+  'company.sectorsTitle': 'Por área',
+  'company.sectorsLead':
+    'A mesma média, separada pela área indicada no formulário. Uma área pequena não deve ser lida como um grupo estável.',
+  'company.weeksTitle': 'Respostas ao longo das semanas',
+  'company.weeksLead': 'Quantas pessoas enviaram o formulário em cada semana desta leitura.',
+  'company.bandsTitle': 'Onde o grupo se distribui',
+  'company.bandsLead':
+    'Quantas pessoas caem em cada faixa da referência, fator a fator. A faixa descreve a posição na referência, não um diagnóstico.',
+  'company.band.urgent': 'Abaixo do p20',
+  'company.band.improve': 'p20–50',
+  'company.band.good': 'p50–80',
+  'company.band.maintain': 'p80 ou mais',
+  'company.respondents': '{{count}} pessoas',
+  'company.reference':
+    'Faixas do HSE Management Standards Analysis Tool, com dados de 136 organizações. A média do grupo não substitui a escuta do trabalho.',
+  'company.sector.operation': 'Operação',
+  'company.sector.admin': 'Administrativo',
+  'company.sector.commercial': 'Comercial',
+  'company.sector.care': 'Cuidado',
 } as const;
 
 export type MsgKey = keyof typeof ptBR;
@@ -244,6 +309,70 @@ export const en: Record<MsgKey, string> = {
   'tool.restart': 'Answer again',
   'tool.reference':
     'Bands from the HSE Management Standards Analysis Tool, using data from 136 organisations. This is a local test: not a diagnosis, a report, or a risk inventory.',
+
+  'wall.title': 'Site under maintenance',
+  'wall.lead': 'We are updating the site. Please come back soon.',
+  'wall.password': 'Password',
+  'wall.enter': 'Enter',
+  'wall.checking': 'Checking…',
+  'wall.badPassword': 'Incorrect password.',
+  'wall.unreachable': 'The server could not be reached. Try again in a moment.',
+
+  'footer.company': 'Company access',
+
+  'company.eyebrow': 'Companies',
+  'company.title': 'Organization reading',
+  'company.lead':
+    'Group results from the forms already answered. Each person counts once. This is not an individual report.',
+  'company.user': 'Username',
+  'company.password': 'Password',
+  'company.enter': 'Enter',
+  'company.checking': 'Checking…',
+  'company.badLogin': 'Incorrect username or password.',
+  'company.unreachable': 'The server could not be reached. Try again in a moment.',
+  'company.logout': 'Log out',
+  'company.dashboardTitle': 'Group results',
+  'company.demoNote':
+    'Demonstration. The 100 responses are simulated, using the same HSE-IT questionnaire. They do not describe a real organization.',
+  'company.demoName': 'Demonstration organization',
+  'company.alphaTitle': 'Cronbach’s alpha',
+  'company.alphaLead':
+    'Internal consistency of the answers in this reading. It is not a risk score: it says how far items on the same scale move together.',
+  'company.alphaLatest': 'Calculated on {{n}} complete responses. The latest was submitted on {{date}}.',
+  'company.alphaOverall': 'All 35 questions',
+  'company.colScale': 'Scale',
+  'company.colItems': 'Items',
+  'company.colAlpha': 'Alpha',
+  'company.colReading': 'Reading',
+  'company.colMean': 'Group mean',
+  'company.reading.excellent': 'Above 0.90. Very high consistency.',
+  'company.reading.good': 'From 0.80 to 0.90. High consistency.',
+  'company.reading.acceptable': 'From 0.70 to 0.80. Acceptable consistency.',
+  'company.reading.questionable': 'From 0.60 to 0.70. Fragile consistency.',
+  'company.reading.weak': 'Below 0.60. Items on this scale barely move together.',
+  'company.reading.unknown': 'Not calculated.',
+  'company.dimensionsTitle': 'Conditions by factor',
+  'company.dimensionsLead':
+    'Group mean, from 1 to 5. Higher is more favorable. The marks on each bar are the 20th, 50th, and 80th percentiles of the HSE reference.',
+  'company.sectorsTitle': 'By area',
+  'company.sectorsLead':
+    'The same mean, split by the area named on the form. A small area should not be read as a stable group.',
+  'company.weeksTitle': 'Responses across the weeks',
+  'company.weeksLead': 'How many people submitted the form in each week of this reading.',
+  'company.bandsTitle': 'Where the group sits',
+  'company.bandsLead':
+    'How many people fall in each reference band, factor by factor. The band describes a position against the reference, not a diagnosis.',
+  'company.band.urgent': 'Below p20',
+  'company.band.improve': 'p20–50',
+  'company.band.good': 'p50–80',
+  'company.band.maintain': 'p80 or above',
+  'company.respondents': '{{count}} people',
+  'company.reference':
+    'Bands from the HSE Management Standards Analysis Tool, using data from 136 organisations. A group mean does not replace listening to the work.',
+  'company.sector.operation': 'Operations',
+  'company.sector.admin': 'Administration',
+  'company.sector.commercial': 'Commercial',
+  'company.sector.care': 'Care',
 };
 
 export const dictionaries: Record<'pt-BR' | 'en', Record<MsgKey, string>> = {

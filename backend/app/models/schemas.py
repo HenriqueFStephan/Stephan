@@ -70,6 +70,112 @@ class ContactAck(BaseModel):
     message: str = ""
 
 
+class BlockwallStatus(BaseModel):
+    enabled: bool
+
+
+class BlockwallUnlock(BaseModel):
+    password: str = Field(..., min_length=1, max_length=200)
+
+    @field_validator("password")
+    @classmethod
+    def strip_password(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("password required")
+        return stripped
+
+
+class BlockwallResume(BaseModel):
+    passage: str = Field(..., min_length=1, max_length=128)
+
+    @field_validator("passage")
+    @classmethod
+    def strip_passage(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("passage required")
+        return stripped
+
+
+class BlockwallAck(BaseModel):
+    success: bool
+
+
+class BlockwallUnlockResponse(BaseModel):
+    success: bool
+    passage: str
+
+
+class CompanyLogin(BaseModel):
+    username: str = Field(..., min_length=1, max_length=80)
+    password: str = Field(..., min_length=1, max_length=200)
+
+    @field_validator("username", "password")
+    @classmethod
+    def strip_login(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("required")
+        return stripped
+
+
+class CompanyLoginResponse(BaseModel):
+    success: bool
+    passage: str
+
+
+class CompanyAlphaRow(BaseModel):
+    id: str
+    alpha: float | None
+    items: int
+    n: int
+    reading: str
+    mean: float | None = None
+
+
+class CompanyDimensionRow(BaseModel):
+    id: str
+    mean: float
+
+
+class CompanySectorMean(BaseModel):
+    id: str
+    mean: float
+
+
+class CompanySectorRow(BaseModel):
+    id: str
+    count: int
+    means: list[CompanySectorMean]
+
+
+class CompanyWeekRow(BaseModel):
+    week: str
+    count: int
+
+
+class CompanyBandRow(BaseModel):
+    id: str
+    urgent: int
+    improve: int
+    good: int
+    maintain: int
+
+
+class CompanyOverview(BaseModel):
+    source: str
+    company_id: str
+    respondent_count: int
+    first_response_on: str
+    latest_response_on: str
+    alpha: list[CompanyAlphaRow]
+    dimensions: list[CompanyDimensionRow]
+    sectors: list[CompanySectorRow]
+    weeks: list[CompanyWeekRow]
+    bands: list[CompanyBandRow]
+
+
 class HealthResponse(BaseModel):
     status: str
     version: str = "0.1.0"
