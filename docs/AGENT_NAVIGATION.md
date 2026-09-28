@@ -11,7 +11,7 @@
 | `backend/app/core/config.py` | Settings from `debt.txt` / `backend/.env`. |
 | `netlify.toml` | Frontend build and `/api/v1` proxy. |
 | `render.yaml` | API service. |
-| `.github/workflows/` | Deploy hook, weekly law report, issue solver. |
+| `.github/workflows/` | Lightsail deploy, Render deploy hook, weekly law report, issue solver. |
 | `docs/research/` | Destination for `[POST]` briefings. |
 
 Public copy lives in `frontend/src/app/core/i18n/messages.ts`. Do not invent the partners' names.

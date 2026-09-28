@@ -4,6 +4,7 @@ GitHub Actions YAML in this folder. Operator notes live in [`docs/workflows/`](.
 
 | Workflow file | Diagram |
 |---------------|---------|
+| `deploy-lightsail.yml` | [Deploy site](../../docs/workflows/deploy-lightsail.md) |
 | `deploy-backend.yml` | [Deploy backend](../../docs/workflows/deploy-backend.md) |
 | `weekly-law-research.yml` | [Weekly law report](../../docs/workflows/weekly-law-report.md) |
 | `cursor-issue-solver.yml` | [AI agent](../../docs/workflows/ai-agent.md) |

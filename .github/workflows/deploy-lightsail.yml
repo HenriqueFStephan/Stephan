@@ -1,0 +1,59 @@
+name: "🚀 DEPLOY SITE"
+
+# Diagram: docs/workflows/deploy-lightsail.md
+# Builds the Angular site and copies it, with the API, to the São Paulo
+# Lightsail instance behind https://stephan.net.br.
+# Secrets: LIGHTSAIL_HOST, LIGHTSAIL_SSH_KEY (the stephan-deploy private key).
+# Does not replace /opt/stephan/debt.txt.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "scripts/deploy_lightsail_remote.sh"
+      - ".github/workflows/deploy-lightsail.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NG_APP_API_URL: /api/v1
+        run: npm ci && npm run build:ci
+
+      - name: Configure SSH
+        env:
+          LIGHTSAIL_SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$LIGHTSAIL_SSH_KEY" > ~/.ssh/lightsail.pem
+          chmod 600 ~/.ssh/lightsail.pem
+          ssh-keyscan -H "$LIGHTSAIL_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload site and API
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+        run: |
+          tar -czf site.tgz -C frontend/dist/stephan .
+          tar -czf api.tgz --exclude __pycache__ --exclude .venv --exclude data backend
+          scp -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
+            site.tgz api.tgz scripts/deploy_lightsail_remote.sh \
+            "ubuntu@${LIGHTSAIL_HOST}:/tmp/"
+          ssh -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
+            "ubuntu@${LIGHTSAIL_HOST}" "sudo bash /tmp/deploy_lightsail_remote.sh"
