@@ -116,42 +116,31 @@ h3 {
   margin: -0.35rem 0 0.8rem;
 }
 
-.participation {
-  margin: 0.15rem 0 1.5rem;
+.invite__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1.5rem;
+  margin-bottom: 0.85rem;
 
   .note {
     margin: 0;
   }
 }
 
-.participation__round {
-  margin: 0.85rem 0 0;
+.invite__rate {
+  margin: 0;
   color: $color-text-muted;
   font-size: 0.95rem;
-}
 
-.participation__figures {
-  display: flex;
-  gap: 2.25rem;
-  margin: 0;
-
-  p {
-    margin: 0;
+  span + span {
+    margin-left: 1.15rem;
   }
 
-  span {
-    display: block;
-    font-family: $font-heading;
-    font-size: clamp(2.6rem, 5vw, 3.6rem);
-    line-height: 0.95;
-    letter-spacing: -0.04em;
-    color: $color-primary;
-  }
-
-  small {
-    display: block;
-    margin-top: 0.35rem;
-    color: $color-text-muted;
+  strong {
+    color: $color-text;
+    font-weight: 600;
   }
 }
 

@@ -41,25 +41,19 @@
   <div class="main main--wide" *ngIf="phase === 'ready' && overview">
     <p class="eyebrow">{{ companyLabel() }}</p>
     <h1>{{ 'company.dashboardTitle' | t }}</h1>
-    <section class="participation" *ngIf="roster" [attr.aria-label]="'company.participationLabel' | t">
-      <div class="participation__figures" *ngIf="roster.invited">
-        <p>
-          <span>{{ roster.responded_percent }}%</span>
-          <small>{{ 'company.respondedShare' | t }}</small>
-        </p>
-        <p>
-          <span>{{ roster.waiting_percent }}%</span>
-          <small>{{ 'company.waitingShare' | t }}</small>
-        </p>
-      </div>
-      <p class="note" *ngIf="!roster.invited">{{ 'company.participationEmpty' | t }}</p>
-      <p class="participation__round">{{ 'company.inviteRound' | t:{ label: roster.round_label } }}</p>
-    </section>
     <p class="count">{{ 'company.respondents' | t:{ count: overview.respondent_count } }}</p>
     <p class="note" *ngIf="overview.source === 'simulated'">{{ 'company.demoNote' | t }}</p>
 
     <section class="card" aria-labelledby="invite-title">
       <h2 id="invite-title">{{ 'company.inviteTitle' | t }}</h2>
+      <div class="invite__status" *ngIf="roster">
+        <p class="note">{{ 'company.inviteRound' | t:{ label: roster.round_label } }}</p>
+        <p class="invite__rate" *ngIf="roster.invited" [attr.aria-label]="'company.participationLabel' | t">
+          <span><strong>{{ roster.responded_percent }}%</strong> {{ 'company.respondedShare' | t }}</span>
+          <span><strong>{{ roster.waiting_percent }}%</strong> {{ 'company.waitingShare' | t }}</span>
+        </p>
+        <p class="note" *ngIf="!roster.invited">{{ 'company.participationEmpty' | t }}</p>
+      </div>
       <p class="lead">{{ 'company.inviteLead' | t }}</p>
       <form (ngSubmit)="uploadInvites(inviteInput)">
         <label>
