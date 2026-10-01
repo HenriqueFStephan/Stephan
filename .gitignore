@@ -12,6 +12,7 @@ dist/
 .env
 debt.txt
 *.local
+/invitations.csv
 
 # Data & logs
 backend/data/*

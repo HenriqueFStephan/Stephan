@@ -33,6 +33,10 @@ Also confirm after the first Netlify deploy:
 
 - `FRONTEND_URL` equals the Netlify origin
 
+## Campaign database
+
+`DATABASE_URL` is PostgreSQL on the same machine as the API, host `127.0.0.1`. It is not a Render key and not a Lightsail managed database. Locally, use the Docker URL in `docs/TOOL.md` and put it in `debt.txt`. On the server, `scripts/postgres_on_lightsail.sh` writes it into `/opt/stephan/debt.txt`. If creating a database would open a payment screen, stop.
+
 ## Optional later
 
 - `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` if a future agent calls an LLM directly. The weekly report uses `CURSOR_API_KEY` in Actions, not these keys.

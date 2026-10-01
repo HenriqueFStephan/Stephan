@@ -87,6 +87,23 @@ export interface CompanyBandRow {
   maintain: number;
 }
 
+export interface InvitationUploadResult {
+  round_label: string;
+  accepted: number;
+  ignored_empty: number;
+  duplicates_in_file: string[];
+  already_invited: string[];
+  invalid: string[];
+  not_sent: string[];
+}
+
+export interface InvitationRoster {
+  round_label: string;
+  invited: number;
+  responded_percent: number | null;
+  waiting_percent: number | null;
+}
+
 export interface CompanyOverview {
   source: string;
   company_id: string;

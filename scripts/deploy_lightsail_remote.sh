@@ -15,4 +15,4 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
   sleep 1
 done
 curl -sf http://127.0.0.1:8000/health
-rm -f /tmp/site.tgz /tmp/api.tgz /tmp/deploy_lightsail_remote.sh
+rm -f /tmp/site.tgz /tmp/api.tgz /tmp/deploy_lightsail_remote.sh /tmp/postgres_on_lightsail.sh

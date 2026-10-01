@@ -15,6 +15,7 @@ on:
       - "backend/**"
       - "scripts/deploy_lightsail_remote.sh"
       - "scripts/place_blockwall_remote.sh"
+      - "scripts/postgres_on_lightsail.sh"
       - ".github/workflows/deploy-lightsail.yml"
   workflow_dispatch:
 
@@ -55,10 +56,10 @@ jobs:
           tar -czf site.tgz -C frontend/dist/stephan .
           tar -czf api.tgz --exclude __pycache__ --exclude .venv --exclude data backend
           scp -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
-            site.tgz api.tgz scripts/deploy_lightsail_remote.sh \
+            site.tgz api.tgz scripts/deploy_lightsail_remote.sh scripts/postgres_on_lightsail.sh \
             "ubuntu@${LIGHTSAIL_HOST}:/tmp/"
           ssh -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
-            "ubuntu@${LIGHTSAIL_HOST}" "sudo bash /tmp/deploy_lightsail_remote.sh"
+            "ubuntu@${LIGHTSAIL_HOST}" "sudo bash /tmp/postgres_on_lightsail.sh && sudo bash /tmp/deploy_lightsail_remote.sh"
 
       - name: Turn the maintenance wall on for visitors
         env:

@@ -31,7 +31,14 @@ describe('CompanyComponent', () => {
 
   beforeEach(async () => {
     sessionStorage.removeItem(PASSAGE_KEY);
-    api = jasmine.createSpyObj<ApiService>('ApiService', ['loginCompany', 'getCompanyOverview']);
+    api = jasmine.createSpyObj<ApiService>('ApiService', [
+      'loginCompany',
+      'getCompanyOverview',
+      'getCompanyInvitations',
+    ]);
+    api.getCompanyInvitations.and.returnValue(
+      of({ round_label: 'rodada-1', invited: 0, responded_percent: null, waiting_percent: null }),
+    );
 
     await TestBed.configureTestingModule({
       imports: [CompanyComponent],
@@ -79,10 +86,13 @@ describe('CompanyComponent', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(sessionStorage.getItem(PASSAGE_KEY)).toBe('clearance');
     expect(component.password).toBe('');
-    expect(root.querySelector('h2')?.textContent).toContain('Alfa de Cronbach');
+    expect(root.querySelector('#alpha-title')?.textContent).toContain('Alfa de Cronbach');
+    expect(root.querySelector('#invite-title')?.textContent).toContain('Quem recebe o link');
     expect(root.textContent).toContain('0,917');
     expect(root.textContent).toContain('26/09/2026');
     expect(root.textContent).toContain('100 respostas completas');
     expect(root.textContent).toContain('Demonstração');
+    expect(root.textContent).toContain('Nesta rodada ainda não há convites.');
+    expect(root.textContent).not.toContain('@');
   });
 });

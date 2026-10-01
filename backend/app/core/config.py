@@ -29,7 +29,9 @@ class Settings(BaseSettings):
     api_base_url: str = "http://localhost:8000"
     frontend_url: str = "http://localhost:4200"
 
-    database_url: str = f"sqlite:///{DATA_DIR / 'stephan.db'}"
+    # Local PostgreSQL for the HSE campaign. See docs/TOOL.md.
+    # Empty until DATABASE_URL is set in debt.txt. Not a remote database.
+    database_url: str = ""
 
     author_email: str = "author@example.com"
     author_name: str = "Stephan"

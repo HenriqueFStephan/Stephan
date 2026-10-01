@@ -15,6 +15,8 @@ import {
   BlockwallUnlockResponse,
   CompanyLoginResponse,
   CompanyOverview,
+  InvitationRoster,
+  InvitationUploadResult,
 } from './models';
 
 /**
@@ -69,6 +71,20 @@ export class ApiService {
 
   getCompanyOverview(passage: string): Observable<CompanyOverview> {
     return this.http.get<CompanyOverview>(`${this.base}/company/overview`, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
+  }
+
+  getCompanyInvitations(passage: string): Observable<InvitationRoster> {
+    return this.http.get<InvitationRoster>(`${this.base}/company/invitations`, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
+  }
+
+  uploadCompanyInvitations(passage: string, file: File): Observable<InvitationUploadResult> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    return this.http.post<InvitationUploadResult>(`${this.base}/company/invitations`, body, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
     });
   }

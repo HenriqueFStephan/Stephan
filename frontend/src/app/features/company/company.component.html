@@ -41,8 +41,75 @@
   <div class="main main--wide" *ngIf="phase === 'ready' && overview">
     <p class="eyebrow">{{ companyLabel() }}</p>
     <h1>{{ 'company.dashboardTitle' | t }}</h1>
+    <section class="participation" *ngIf="roster" [attr.aria-label]="'company.participationLabel' | t">
+      <div class="participation__figures" *ngIf="roster.invited">
+        <p>
+          <span>{{ roster.responded_percent }}%</span>
+          <small>{{ 'company.respondedShare' | t }}</small>
+        </p>
+        <p>
+          <span>{{ roster.waiting_percent }}%</span>
+          <small>{{ 'company.waitingShare' | t }}</small>
+        </p>
+      </div>
+      <p class="note" *ngIf="!roster.invited">{{ 'company.participationEmpty' | t }}</p>
+      <p class="participation__round">{{ 'company.inviteRound' | t:{ label: roster.round_label } }}</p>
+    </section>
     <p class="count">{{ 'company.respondents' | t:{ count: overview.respondent_count } }}</p>
     <p class="note" *ngIf="overview.source === 'simulated'">{{ 'company.demoNote' | t }}</p>
+
+    <section class="card" aria-labelledby="invite-title">
+      <h2 id="invite-title">{{ 'company.inviteTitle' | t }}</h2>
+      <p class="lead">{{ 'company.inviteLead' | t }}</p>
+      <form (ngSubmit)="uploadInvites(inviteInput)">
+        <label>
+          <span>{{ 'company.inviteFile' | t }}</span>
+          <input
+            #inviteInput
+            type="file"
+            name="invite-file"
+            accept=".json,.csv,.xlsx,text/csv,application/json"
+            (change)="onInviteFile($event)"
+          />
+        </label>
+        <button type="submit" class="button" [disabled]="inviteSubmitting || !inviteFile">
+          {{ inviteSubmitting ? ('company.inviteSending' | t) : ('company.inviteSend' | t) }}
+        </button>
+        <p class="error" *ngIf="inviteErrorKey" role="alert">
+          {{ inviteErrorKey | t:{ columns: inviteUnknownColumns } }}
+        </p>
+      </form>
+      <div class="invite-result" *ngIf="inviteResult">
+        <p>{{ 'company.inviteAccepted' | t:{ count: inviteResult.accepted } }}</p>
+        <p *ngIf="inviteResult.ignored_empty">
+          {{ 'company.inviteEmpty' | t:{ count: inviteResult.ignored_empty } }}
+        </p>
+        <ng-container *ngIf="inviteResult.duplicates_in_file.length">
+          <h3>{{ 'company.inviteDuplicates' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let email of inviteResult.duplicates_in_file">{{ email }}</li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="inviteResult.already_invited.length">
+          <h3>{{ 'company.inviteAlready' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let email of inviteResult.already_invited">{{ email }}</li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="inviteResult.not_sent.length">
+          <h3>{{ 'company.inviteNotSent' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let email of inviteResult.not_sent">{{ email }}</li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="inviteResult.invalid.length">
+          <h3>{{ 'company.inviteInvalid' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let email of inviteResult.invalid">{{ email }}</li>
+          </ul>
+        </ng-container>
+      </div>
+    </section>
 
     <section class="card" aria-labelledby="alpha-title">
       <div class="alpha__top">

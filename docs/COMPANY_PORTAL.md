@@ -64,12 +64,12 @@ The reading labels use conventional cut points, not a risk scale: 0.90 and above
 
 Keep `CompanyOverview` as the response the page already renders. When a real campaign replaces the fixture, `demo_overview()` becomes a query and the template stays.
 
-1. **Accounts.** Replace `admin` / `admintest` with one stored user per company. Hash the password. Issue the session on the server. Remove the fixture from `company.py` before any real form is saved. The password must not be compiled into the Angular app.
-2. **Ingest.** `/tool` currently keeps answers in the browser and posts nothing. A real campaign needs a submission endpoint: a company code or a campaign link, 35 raw answers, an optional area, and the day. Store the raw marks. Apply reverse scoring when the overview is built, so the scoring rule lives in one place.
-3. **Rows.** One row per complete form: `company_id`, `submitted_on`, `sector`, 35 raw answers. No name, no email, no free text on this page.
+1. **Accounts.** Replace `admin` / `admintest` with one stored user per company before a real invitation list is uploaded on the server, and before any real form is saved. Hash the password. Issue the session on the server. Remove the fixture from `company.py`. The password must not be compiled into the Angular app.
+2. **Ingest.** The campaign store, the invitation list, and the anonymity rules are in `docs/TOOL.md`. This page now uploads the email list for the pilot company and shows the round as two percentages, finished and not yet. It does not list who finished. The simulated overview stays until real answers replace it. The campaign form is not built until the Portuguese wording is confirmed.
+3. **Rows.** Anonymous answers are `hse_responses` in that document: company, round, day, a JSON object for demographics that is not frozen yet, and 35 raw marks. No email, token, or invitation id on the answer.
 4. **Overview.** Filter those rows to the logged-in company and to the open campaign (or an explicit date window). Return the same JSON. Set `source` to `recorded`. The demonstration note then hides.
 5. **Alpha.** Call the same `cronbach_alpha` on the scored items of that set every time the overview is read. Keep showing `n` and the newest `submitted_on`. Decide in the campaign whether “latest” means the open wave or a trailing window, and say that choice in the sentence that already carries `n` and the date.
 6. **Small groups.** Do not return an area, or any other split, with fewer than 5 people. Do not open the company view under a minimum you agree with the client (10 is a sound starting point). The demo does not apply this rule: the smallest area has 16 people.
 7. **Privacy.** This page stays aggregate. Do not add a person list, a raw export, or a single-form view here. The public copy on `/tool` already says one answer is not a group result; the company page should keep that distinction.
 
-Until step 2 exists, the only numbers on `/empresa` are the seeded wave above.
+Until real answers replace the simulated wave, the numbers on `/empresa` are still the seeded wave above. The invitation list is a separate store. See `docs/TOOL.md`.

@@ -10,6 +10,8 @@ import {
   CompanyBandRow,
   CompanyOverview,
   CompanySectorRow,
+  InvitationRoster,
+  InvitationUploadResult,
 } from '../../core/models';
 import {
   BAND_COPY,
@@ -57,6 +59,12 @@ export class CompanyComponent implements OnInit {
   submitting = false;
   errorKey = '';
   overview: CompanyOverview | null = null;
+  inviteFile: File | null = null;
+  inviteSubmitting = false;
+  inviteErrorKey = '';
+  inviteUnknownColumns = '';
+  inviteResult: InvitationUploadResult | null = null;
+  roster: InvitationRoster | null = null;
 
   constructor(
     private api: ApiService,
@@ -101,7 +109,59 @@ export class CompanyComponent implements OnInit {
     this.overview = null;
     this.password = '';
     this.errorKey = '';
+    this.inviteFile = null;
+    this.inviteResult = null;
+    this.inviteErrorKey = '';
+    this.inviteUnknownColumns = '';
+    this.roster = null;
     this.phase = 'login';
+  }
+
+  onInviteFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.inviteFile = input.files && input.files.length ? input.files[0] : null;
+    this.inviteResult = null;
+    this.inviteErrorKey = '';
+    this.inviteUnknownColumns = '';
+  }
+
+  uploadInvites(input: HTMLInputElement): void {
+    const passage = this.readPassage();
+    const file = this.inviteFile;
+    if (!passage || !file || this.inviteSubmitting) {
+      return;
+    }
+    this.inviteSubmitting = true;
+    this.inviteErrorKey = '';
+    this.inviteUnknownColumns = '';
+    this.api.uploadCompanyInvitations(passage, file).subscribe({
+      next: (result) => {
+        this.inviteSubmitting = false;
+        this.inviteResult = result;
+        this.inviteFile = null;
+        input.value = '';
+        this.refreshRoster(passage);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.inviteSubmitting = false;
+        this.inviteResult = null;
+        const detail = err.error && err.error.detail;
+        const code = detail && typeof detail === 'object' ? detail.code : '';
+        if (code === 'unknown_columns') {
+          this.inviteErrorKey = 'company.inviteUnknown';
+          const columns = Array.isArray(detail.columns) ? detail.columns : [];
+          this.inviteUnknownColumns = columns.join(', ');
+        } else if (code === 'mail_not_configured') {
+          this.inviteErrorKey = 'company.inviteMail';
+        } else if (code === 'mail_failed') {
+          this.inviteErrorKey = 'company.inviteMailFailed';
+        } else if (code === 'database_unavailable' || err.status === 0 || err.status === 503) {
+          this.inviteErrorKey = 'company.inviteUnreachable';
+        } else {
+          this.inviteErrorKey = 'company.inviteBadFile';
+        }
+      },
+    });
   }
 
   companyLabel(): string {
@@ -231,6 +291,7 @@ export class CompanyComponent implements OnInit {
       next: (overview) => {
         this.overview = overview;
         this.phase = 'ready';
+        this.refreshRoster(passage);
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
@@ -239,6 +300,23 @@ export class CompanyComponent implements OnInit {
         this.overview = null;
         this.phase = 'login';
         this.errorKey = err.status === 401 ? '' : 'company.unreachable';
+      },
+    });
+  }
+
+  private refreshRoster(passage: string): void {
+    this.api.getCompanyInvitations(passage).subscribe({
+      next: (roster) => {
+        this.roster = roster;
+        if (this.inviteErrorKey === 'company.inviteUnreachable') {
+          this.inviteErrorKey = '';
+        }
+      },
+      error: () => {
+        this.roster = null;
+        if (!this.inviteErrorKey) {
+          this.inviteErrorKey = 'company.inviteUnreachable';
+        }
       },
     });
   }

@@ -3,6 +3,11 @@
 
 APP_ENV=development
 APP_SECRET_KEY=
+
+# PostgreSQL on this machine. The API is the only client. Never a remote host.
+# Local docker: postgresql://stephan:stephan@127.0.0.1:5432/stephan
+# On Lightsail the password is generated on the server and written only here.
+DATABASE_URL=
 API_BASE_URL=http://localhost:8000
 FRONTEND_URL=http://localhost:4200
 

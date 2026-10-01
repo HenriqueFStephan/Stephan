@@ -116,6 +116,45 @@ h3 {
   margin: -0.35rem 0 0.8rem;
 }
 
+.participation {
+  margin: 0.15rem 0 1.5rem;
+
+  .note {
+    margin: 0;
+  }
+}
+
+.participation__round {
+  margin: 0.85rem 0 0;
+  color: $color-text-muted;
+  font-size: 0.95rem;
+}
+
+.participation__figures {
+  display: flex;
+  gap: 2.25rem;
+  margin: 0;
+
+  p {
+    margin: 0;
+  }
+
+  span {
+    display: block;
+    font-family: $font-heading;
+    font-size: clamp(2.6rem, 5vw, 3.6rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: $color-primary;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.35rem;
+    color: $color-text-muted;
+  }
+}
+
 .note {
   margin: 0 0 1.25rem;
   max-width: 42rem;
@@ -169,6 +208,17 @@ label {
   margin: 0.85rem 0 0;
   color: #8a1f16;
   font-weight: 600;
+}
+
+.invite-result {
+  margin-top: 1rem;
+}
+
+.roster {
+  max-height: 16rem;
+  overflow: auto;
+  margin: 0.35rem 0 1rem;
+  padding-left: 1.15rem;
 }
 
 .alpha__top {

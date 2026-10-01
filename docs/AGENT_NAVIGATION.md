@@ -10,7 +10,9 @@
 | `backend/app/api/v1/studio.py` | Studio gate and issue creation. |
 | `backend/app/api/v1/blockwall.py` | Maintenance wall. On while `BLOCKWALL_KEY` is set. |
 | `frontend/src/app/features/company/` | Company portal at `/empresa`. Footer link, not the header. |
-| `backend/app/api/v1/company.py` | Company login and aggregate overview. |
+| `backend/app/api/v1/company.py` | Company login, simulated overview, and the pilot invitation list. |
+| `backend/app/db/schema.sql` | PostgreSQL schema for the HSE campaign. |
+| `docs/TOOL.md` | `/tool` campaign: anonymity, upload formats, local and Lightsail PostgreSQL. |
 | `docs/COMPANY_PORTAL.md` | Demo account, simulated forms, and the plan for real data. |
 | `backend/app/core/config.py` | Settings from `debt.txt` / `backend/.env`. |
 | `netlify.toml` | Frontend build and `/api/v1` proxy. |

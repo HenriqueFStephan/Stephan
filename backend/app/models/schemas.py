@@ -176,6 +176,23 @@ class CompanyOverview(BaseModel):
     bands: list[CompanyBandRow]
 
 
+class InvitationUploadResult(BaseModel):
+    round_label: str
+    accepted: int
+    ignored_empty: int
+    duplicates_in_file: list[str]
+    already_invited: list[str]
+    invalid: list[str]
+    not_sent: list[str] = []
+
+
+class InvitationRoster(BaseModel):
+    round_label: str
+    invited: int
+    responded_percent: int | None
+    waiting_percent: int | None
+
+
 class HealthResponse(BaseModel):
     status: str
     version: str = "0.1.0"

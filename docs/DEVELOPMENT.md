@@ -36,8 +36,30 @@ App: http://localhost:4200
 
 Copy `debt.txt.example` to `debt.txt` at the repo root. The API also reads `backend/.env`. Both are gitignored.
 
+## Campaign database
+
+The HSE invitation list uses PostgreSQL on this machine, not a hosted database. Full rules: [TOOL.md](TOOL.md).
+
+```powershell
+docker compose up -d db
+```
+
+If Docker is not installed:
+
+```powershell
+python scripts/postgres_local.py
+```
+
+Either way the server listens on `127.0.0.1:5432` only. Put this in `debt.txt` and restart the API:
+
+```
+DATABASE_URL=postgresql://stephan:stephan@127.0.0.1:5432/stephan
+```
+
+The password above is the local Docker default. The Lightsail password is different and stays in `/opt/stephan/debt.txt`.
+
 ## Where to add the questionnaire later
 
-- New route next to `frontend/src/app/app.routes.ts`
+- New route next to `frontend/src/app/app.routes.ts`. The campaign form waits on confirmed Portuguese wording and must open only with an invitation token. See [TOOL.md](TOOL.md). Do not add `/tool` to the header or the footer.
 - New router under `backend/app/api/v1/`, included from `backend/app/main.py`
 - Call it from `frontend/src/app/core/api.service.ts`
