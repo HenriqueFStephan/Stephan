@@ -56,6 +56,18 @@ export interface CompanyLoginResponse {
   company_name: string;
 }
 
+export interface ToolDraft {
+  place: 'profile' | 'ask';
+  index: number;
+  demographics: Record<string, string>;
+  answers: (number | null)[];
+}
+
+export interface ToolAccessResult {
+  state: string;
+  draft: ToolDraft | null;
+}
+
 export interface ToolSubmitResult {
   saved: boolean;
 }

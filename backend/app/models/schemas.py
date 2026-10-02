@@ -1,5 +1,7 @@
 """Pydantic schemas for the API."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -131,14 +133,30 @@ class ToolAccessRequest(BaseModel):
     token: str = Field(..., min_length=8, max_length=200)
 
 
+class ToolDraft(BaseModel):
+    place: Literal["profile", "ask"]
+    index: int = Field(..., ge=0, le=34)
+    demographics: dict = Field(default_factory=dict)
+    answers: list[int | None] = Field(..., min_length=35, max_length=35)
+
+
 class ToolAccessResponse(BaseModel):
     state: str
+    draft: ToolDraft | None = None
 
 
 class ToolSubmitRequest(BaseModel):
     token: str = Field(..., min_length=8, max_length=200)
     answers: list[int] = Field(..., min_length=35, max_length=35)
     demographics: dict = Field(default_factory=dict)
+
+
+class ToolDraftRequest(BaseModel):
+    token: str = Field(..., min_length=8, max_length=200)
+    place: Literal["profile", "ask"]
+    index: int = Field(0, ge=0, le=34)
+    demographics: dict = Field(default_factory=dict)
+    answers: list[int | None] = Field(..., min_length=35, max_length=35)
 
 
 class ToolSubmitResponse(BaseModel):

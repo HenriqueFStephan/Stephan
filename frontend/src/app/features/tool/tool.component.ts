@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 
 import { ApiService } from '../../core/api.service';
 import { I18nService, TranslatePipe } from '../../core/i18n';
+import { ToolDraft } from '../../core/models';
 import {
   BAND_COPY,
   DIMENSIONS,
@@ -54,6 +55,10 @@ export class ToolComponent implements OnInit, OnDestroy {
   campaign = false;
   saving = false;
   saveFailed = false;
+  drafting = false;
+  draftSaved = false;
+  draftFailed = false;
+  resumed = false;
 
   private token = '';
   private advanceTimer: number | null = null;
@@ -72,8 +77,12 @@ export class ToolComponent implements OnInit, OnDestroy {
     this.token = token;
     this.phase = 'checking';
     this.api.openTool(token).subscribe({
-      next: () => {
-        this.phase = 'intro';
+      next: (body) => {
+        if (body.draft) {
+          this.applyDraft(body.draft);
+        } else {
+          this.phase = 'intro';
+        }
       },
       error: (err: HttpErrorResponse) => {
         const code = err.error && err.error.detail && err.error.detail.code;
@@ -113,12 +122,14 @@ export class ToolComponent implements OnInit, OnDestroy {
 
   chooseProfile(questionId: string, optionId: string): void {
     this.profile = { ...this.profile, [questionId]: optionId };
+    this.noteDraftChanged();
   }
 
   continueProfile(): void {
     if (!this.profileReady) {
       return;
     }
+    this.noteDraftChanged();
     this.phase = 'ask';
     this.reveal();
   }
@@ -126,6 +137,7 @@ export class ToolComponent implements OnInit, OnDestroy {
   choose(value: number): void {
     this.answers[this.index] = value;
     this.copied = false;
+    this.noteDraftChanged();
     if (this.index >= this.items.length - 1) {
       this.clearAdvance();
       return;
@@ -140,8 +152,45 @@ export class ToolComponent implements OnInit, OnDestroy {
     }, ADVANCE_MS);
   }
 
+  saveDraft(): void {
+    if (!this.campaign || this.drafting || this.saving) {
+      return;
+    }
+    if (this.phase !== 'profile' && this.phase !== 'ask') {
+      return;
+    }
+    this.clearAdvance();
+    this.drafting = true;
+    this.draftSaved = false;
+    this.draftFailed = false;
+    const place = this.phase;
+    this.api
+      .saveToolDraft(this.token, {
+        place,
+        index: place === 'ask' ? this.index : 0,
+        demographics: profilePayload(this.profile),
+        answers: this.answers,
+      })
+      .subscribe({
+        next: () => {
+          this.drafting = false;
+          this.draftSaved = true;
+          this.resumed = false;
+        },
+        error: (err: HttpErrorResponse) => {
+          this.drafting = false;
+          if (this.linkWasUsed(err)) {
+            this.phase = 'used';
+            return;
+          }
+          this.draftFailed = true;
+        },
+      });
+  }
+
   back(): void {
     this.clearAdvance();
+    this.noteDraftChanged();
     if (this.phase === 'results') {
       this.phase = 'ask';
       this.index = this.items.length - 1;
@@ -181,8 +230,12 @@ export class ToolComponent implements OnInit, OnDestroy {
           this.saving = false;
           this.showResults();
         },
-        error: () => {
+        error: (err: HttpErrorResponse) => {
           this.saving = false;
+          if (this.linkWasUsed(err)) {
+            this.phase = 'used';
+            return;
+          }
           this.saveFailed = true;
         },
       });
@@ -276,6 +329,44 @@ export class ToolComponent implements OnInit, OnDestroy {
       this.index += 1;
       this.reveal();
     }
+  }
+
+  private applyDraft(draft: ToolDraft): void {
+    const profile: Record<string, string> = {};
+    const saved = draft.demographics || {};
+    for (const question of PROFILE_QUESTIONS) {
+      const value = saved[question.id];
+      if (typeof value === 'string' && question.options.some((option) => option.id === value)) {
+        profile[question.id] = value;
+      }
+    }
+    this.profile = profile;
+    const marks = Array.isArray(draft.answers) ? draft.answers : [];
+    this.answers = Array.from({ length: this.items.length }, (_, position) => {
+      const value = marks[position];
+      return typeof value === 'number' && value >= 1 && value <= 5 ? value : null;
+    });
+    if (draft.place === 'ask' && this.profileReady) {
+      const index = Number(draft.index);
+      this.index = Number.isInteger(index) ? Math.min(this.items.length - 1, Math.max(0, index)) : 0;
+      this.phase = 'ask';
+    } else {
+      this.index = 0;
+      this.phase = 'profile';
+    }
+    this.resumed = true;
+    this.reveal();
+  }
+
+  private noteDraftChanged(): void {
+    this.draftSaved = false;
+    this.draftFailed = false;
+    this.resumed = false;
+  }
+
+  private linkWasUsed(err: HttpErrorResponse): boolean {
+    const code = err.error && err.error.detail && err.error.detail.code;
+    return err.status === 409 || code === 'link_used';
   }
 
   private showResults(): void {

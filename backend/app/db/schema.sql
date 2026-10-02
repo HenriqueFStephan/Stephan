@@ -7,6 +7,9 @@
 -- company_id and round_id are the shared wave, not a person.
 -- Anexo B is columns on hse_responses, the same row as the 35 items.
 -- It is not stored on the invitation. demographics holds the same closed codes.
+-- hse_drafts is an unfinished form for one link. Its key is the token hash,
+-- so it can be matched to the invitation while it exists. Submit deletes it.
+-- The draft has no email, raw token, or invitation id. The answer does not reference it.
 -- Blocked keys are identifiers we already refused, not the allowed list.
 
 CREATE TABLE IF NOT EXISTS companies (
@@ -192,6 +195,135 @@ CREATE TABLE IF NOT EXISTS hse_responses (
 
 CREATE INDEX IF NOT EXISTS hse_responses_round
     ON hse_responses (round_id, submitted_on);
+
+-- Unfinished form for one link. Deleted when that link is submitted.
+-- link_token_hash matches invitations.link_token_hash for as long as this row exists.
+CREATE TABLE IF NOT EXISTS hse_drafts (
+    link_token_hash text PRIMARY KEY,
+    place text NOT NULL CHECK (place IN ('profile', 'ask')),
+    item_index smallint NOT NULL CHECK (item_index BETWEEN 0 AND 34),
+    demographics jsonb NOT NULL DEFAULT '{}'::jsonb,
+    age_band text,
+    gender text,
+    education text,
+    economic_sector text,
+    org_size text,
+    employment_bond text,
+    tenure_org text,
+    tenure_profession text,
+    work_shift text,
+    leadership text,
+    region text,
+    i01 smallint,
+    i02 smallint,
+    i03 smallint,
+    i04 smallint,
+    i05 smallint,
+    i06 smallint,
+    i07 smallint,
+    i08 smallint,
+    i09 smallint,
+    i10 smallint,
+    i11 smallint,
+    i12 smallint,
+    i13 smallint,
+    i14 smallint,
+    i15 smallint,
+    i16 smallint,
+    i17 smallint,
+    i18 smallint,
+    i19 smallint,
+    i20 smallint,
+    i21 smallint,
+    i22 smallint,
+    i23 smallint,
+    i24 smallint,
+    i25 smallint,
+    i26 smallint,
+    i27 smallint,
+    i28 smallint,
+    i29 smallint,
+    i30 smallint,
+    i31 smallint,
+    i32 smallint,
+    i33 smallint,
+    i34 smallint,
+    i35 smallint,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT hse_drafts_demographics_object CHECK (jsonb_typeof(demographics) = 'object'),
+    CONSTRAINT hse_drafts_no_direct_identifiers CHECK (
+        NOT jsonb_exists_any(
+            demographics,
+            ARRAY[
+                'name',
+                'nome',
+                'full_name',
+                'email',
+                'e-mail',
+                'mail',
+                'job',
+                'job_title',
+                'jobtitle',
+                'cargo',
+                'funcao',
+                'função',
+                'token',
+                'link_token',
+                'ip',
+                'invitation_id',
+                'invitation'
+            ]
+        )
+    ),
+    CONSTRAINT hse_drafts_age_band CHECK (age_band IS NULL OR age_band IN ('18_24', '25_34', '35_44', '45_54', '55_64', '65_plus')),
+    CONSTRAINT hse_drafts_gender CHECK (gender IS NULL OR gender IN ('female', 'male', 'undisclosed')),
+    CONSTRAINT hse_drafts_education CHECK (education IS NULL OR education IN ('fundamental', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate')),
+    CONSTRAINT hse_drafts_economic_sector CHECK (economic_sector IS NULL OR economic_sector IN ('manufacturing', 'retail', 'services', 'health', 'education', 'it', 'construction', 'transport', 'agribusiness', 'public_admin', 'other')),
+    CONSTRAINT hse_drafts_org_size CHECK (org_size IS NULL OR org_size IN ('micro', 'small', 'medium', 'large', 'unknown')),
+    CONSTRAINT hse_drafts_employment_bond CHECK (employment_bond IS NULL OR employment_bond IN ('clt', 'public_statute', 'autonomous_pj', 'intern_apprentice', 'other')),
+    CONSTRAINT hse_drafts_tenure_org CHECK (tenure_org IS NULL OR tenure_org IN ('lt_1', 'y1_3', 'y4_10', 'gt_10')),
+    CONSTRAINT hse_drafts_tenure_profession CHECK (tenure_profession IS NULL OR tenure_profession IN ('lt_1', 'y1_5', 'y6_15', 'gt_15')),
+    CONSTRAINT hse_drafts_work_shift CHECK (work_shift IS NULL OR work_shift IN ('day_fixed', 'night_fixed', 'rotating', 'flexible')),
+    CONSTRAINT hse_drafts_leadership CHECK (leadership IS NULL OR leadership IN ('yes', 'no')),
+    CONSTRAINT hse_drafts_region CHECK (region IS NULL OR region IN ('north', 'northeast', 'center_west', 'southeast', 'south')),
+    CONSTRAINT hse_drafts_marks CHECK (
+        (i01 IS NULL OR i01 BETWEEN 1 AND 5)
+        AND (i02 IS NULL OR i02 BETWEEN 1 AND 5)
+        AND (i03 IS NULL OR i03 BETWEEN 1 AND 5)
+        AND (i04 IS NULL OR i04 BETWEEN 1 AND 5)
+        AND (i05 IS NULL OR i05 BETWEEN 1 AND 5)
+        AND (i06 IS NULL OR i06 BETWEEN 1 AND 5)
+        AND (i07 IS NULL OR i07 BETWEEN 1 AND 5)
+        AND (i08 IS NULL OR i08 BETWEEN 1 AND 5)
+        AND (i09 IS NULL OR i09 BETWEEN 1 AND 5)
+        AND (i10 IS NULL OR i10 BETWEEN 1 AND 5)
+        AND (i11 IS NULL OR i11 BETWEEN 1 AND 5)
+        AND (i12 IS NULL OR i12 BETWEEN 1 AND 5)
+        AND (i13 IS NULL OR i13 BETWEEN 1 AND 5)
+        AND (i14 IS NULL OR i14 BETWEEN 1 AND 5)
+        AND (i15 IS NULL OR i15 BETWEEN 1 AND 5)
+        AND (i16 IS NULL OR i16 BETWEEN 1 AND 5)
+        AND (i17 IS NULL OR i17 BETWEEN 1 AND 5)
+        AND (i18 IS NULL OR i18 BETWEEN 1 AND 5)
+        AND (i19 IS NULL OR i19 BETWEEN 1 AND 5)
+        AND (i20 IS NULL OR i20 BETWEEN 1 AND 5)
+        AND (i21 IS NULL OR i21 BETWEEN 1 AND 5)
+        AND (i22 IS NULL OR i22 BETWEEN 1 AND 5)
+        AND (i23 IS NULL OR i23 BETWEEN 1 AND 5)
+        AND (i24 IS NULL OR i24 BETWEEN 1 AND 5)
+        AND (i25 IS NULL OR i25 BETWEEN 1 AND 5)
+        AND (i26 IS NULL OR i26 BETWEEN 1 AND 5)
+        AND (i27 IS NULL OR i27 BETWEEN 1 AND 5)
+        AND (i28 IS NULL OR i28 BETWEEN 1 AND 5)
+        AND (i29 IS NULL OR i29 BETWEEN 1 AND 5)
+        AND (i30 IS NULL OR i30 BETWEEN 1 AND 5)
+        AND (i31 IS NULL OR i31 BETWEEN 1 AND 5)
+        AND (i32 IS NULL OR i32 BETWEEN 1 AND 5)
+        AND (i33 IS NULL OR i33 BETWEEN 1 AND 5)
+        AND (i34 IS NULL OR i34 BETWEEN 1 AND 5)
+        AND (i35 IS NULL OR i35 BETWEEN 1 AND 5)
+    )
+);
 
 CREATE TABLE IF NOT EXISTS company_users (
     id uuid PRIMARY KEY,

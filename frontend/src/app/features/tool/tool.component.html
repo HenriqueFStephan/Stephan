@@ -66,10 +66,18 @@
       </fieldset>
       <div class="ask__nav">
         <button type="button" class="text" (click)="back()">{{ 'tool.back' | t }}</button>
-        <button type="button" class="button" (click)="continueProfile()" [disabled]="!profileReady">
-          {{ 'tool.profile.continue' | t }}
-        </button>
+        <span class="ask__aside">
+          <button type="button" class="text" *ngIf="campaign" (click)="saveDraft()" [disabled]="drafting || saving">
+            {{ (drafting ? 'tool.drafting' : 'tool.saveDraft') | t }}
+          </button>
+          <button type="button" class="button" (click)="continueProfile()" [disabled]="!profileReady">
+            {{ 'tool.profile.continue' | t }}
+          </button>
+        </span>
       </div>
+      <p class="note" *ngIf="draftSaved">{{ 'tool.draftNote' | t }}</p>
+      <p class="note" *ngIf="resumed && !draftSaved">{{ 'tool.resumed' | t }}</p>
+      <p class="error" *ngIf="draftFailed" role="alert">{{ 'tool.draftFailed' | t }}</p>
     </section>
 
     <section *ngIf="phase === 'ask'" class="card">
@@ -97,16 +105,24 @@
         <button type="button" class="text" (click)="back()">
           {{ 'tool.back' | t }}
         </button>
-        <button
-          *ngIf="index === items.length - 1"
-          type="button"
-          class="button"
-          (click)="finish()"
-          [disabled]="answers[index] == null || !profileReady"
-        >
-          {{ (saving ? 'tool.sending' : (campaign ? 'tool.send' : 'tool.see')) | t }}
-        </button>
+        <span class="ask__aside">
+          <button type="button" class="text" *ngIf="campaign" (click)="saveDraft()" [disabled]="drafting || saving">
+            {{ (drafting ? 'tool.drafting' : 'tool.saveDraft') | t }}
+          </button>
+          <button
+            *ngIf="index === items.length - 1"
+            type="button"
+            class="button"
+            (click)="finish()"
+            [disabled]="answers[index] == null || !profileReady || saving"
+          >
+            {{ (saving ? 'tool.sending' : (campaign ? 'tool.send' : 'tool.see')) | t }}
+          </button>
+        </span>
       </div>
+      <p class="note" *ngIf="draftSaved">{{ 'tool.draftNote' | t }}</p>
+      <p class="note" *ngIf="resumed && !draftSaved">{{ 'tool.resumed' | t }}</p>
+      <p class="error" *ngIf="draftFailed" role="alert">{{ 'tool.draftFailed' | t }}</p>
       <p class="error" *ngIf="saveFailed" role="alert">{{ 'tool.saveFailed' | t }}</p>
     </section>
 

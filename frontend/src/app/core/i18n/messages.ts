@@ -106,7 +106,7 @@ const ptBR = {
   'tool.anon':
     'As respostas ficam neste navegador. Nada é enviado. Atualizar a página apaga o que foi marcado.',
   'tool.campaignAnon':
-    'A resposta fica guardada sem o seu e-mail e sem o link. O link é só seu e funciona uma vez.',
+    'A resposta fica guardada sem o seu e-mail e sem o link. O link é só seu. Ele continua aberto até você enviar, e depois não abre de novo.',
   'tool.campaignSaved': 'Resposta registrada. A leitura abaixo fica neste navegador.',
   'tool.send': 'Enviar',
   'tool.sending': 'Enviando…',
@@ -122,6 +122,11 @@ const ptBR = {
     'As perguntas abaixo têm como propósito descrever de forma agregada as características da amostra populacional do estudo. Suas respostas são inteiramente anônimas e livres de identificação nominal. Responda marcando a opção condizente com a sua situação profissional vigente.',
   'tool.profile.required': 'Preenchimento obrigatório',
   'tool.profile.continue': 'Continuar',
+  'tool.saveDraft': 'Salvar e continuar depois',
+  'tool.drafting': 'Salvando…',
+  'tool.draftNote': 'Progresso salvo. Abra o mesmo link neste ou noutro aparelho para continuar.',
+  'tool.draftFailed': 'Não foi possível salvar o progresso. Tente de novo.',
+  'tool.resumed': 'Continuando de onde você parou.',
   'tool.progress': '{{current}} de {{total}}',
   'tool.back': 'Voltar',
   'tool.shift': 'Daqui em diante, diga o quanto concorda com a frase.',
@@ -331,7 +336,7 @@ export const en: Record<MsgKey, string> = {
   'tool.anon':
     'Answers stay in this browser. Nothing is sent. Refreshing the page clears what was marked.',
   'tool.campaignAnon':
-    'The answer is stored without your email and without the link. The link is yours alone and works once.',
+    'The answer is stored without your email and without the link. The link is yours alone. It stays open until you send, and then it does not open again.',
   'tool.campaignSaved': 'Answer recorded. The reading below stays in this browser.',
   'tool.send': 'Send',
   'tool.sending': 'Sending…',
@@ -347,6 +352,11 @@ export const en: Record<MsgKey, string> = {
     'The questions below describe, in aggregate, the characteristics of the study sample. Your answers are entirely anonymous and carry no name. Mark the option that matches your current work situation.',
   'tool.profile.required': 'Required',
   'tool.profile.continue': 'Continue',
+  'tool.saveDraft': 'Save and continue later',
+  'tool.drafting': 'Saving…',
+  'tool.draftNote': 'Progress saved. Open the same link on this or another device to continue.',
+  'tool.draftFailed': 'The progress could not be saved. Try again.',
+  'tool.resumed': 'Continuing from where you left off.',
   'tool.progress': '{{current}} of {{total}}',
   'tool.back': 'Back',
   'tool.shift': 'From here, say how far you agree with the statement.',

@@ -271,7 +271,21 @@ input:focus {
 
 .ask__nav {
   justify-content: space-between;
+  flex-wrap: wrap;
   margin-top: 1.2rem;
+}
+
+.ask__aside {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.2rem;
+  margin-left: auto;
+}
+
+.ask__nav + .note,
+.ask__nav + .error {
+  margin-top: 0.9rem;
 }
 
 .results__actions {

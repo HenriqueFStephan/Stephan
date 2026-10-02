@@ -212,6 +212,7 @@ def submit_invitation(
         demographics=demographics,
         answers=answers,
     )
+    conn.execute("DELETE FROM hse_drafts WHERE link_token_hash = %s", (digest,))
     updated = conn.execute(
         """
         UPDATE invitations
@@ -257,8 +258,8 @@ def record_response(
     return response_id
 
 
-def clean_demographics(raw: dict[str, Any]) -> dict[str, Any]:
-    """Keep Anexo B codes only. Required answers are age band and economic sector."""
+def clean_demographics(raw: dict[str, Any], *, require_complete: bool = True) -> dict[str, Any]:
+    """Keep Anexo B codes only. A finished form requires age band and economic sector."""
     if not isinstance(raw, dict):
         raise DemographicRejected("demographics must be an object")
     cleaned: dict[str, Any] = {}
@@ -277,30 +278,115 @@ def clean_demographics(raw: dict[str, Any]) -> dict[str, Any]:
         if norm_value not in allowed:
             raise DemographicRejected("invalid demographic value")
         cleaned[norm] = norm_value
-    missing = REQUIRED_DEMOGRAPHIC_KEYS - cleaned.keys()
-    if missing:
-        raise DemographicRejected("required demographic")
+    if require_complete:
+        missing = REQUIRED_DEMOGRAPHIC_KEYS - cleaned.keys()
+        if missing:
+            raise DemographicRejected("required demographic")
     return cleaned
 
 
-def _percent(part: int, whole: int) -> int | None:
-    if whole <= 0:
-        return None
-    return round(100 * part / whole)
+def clean_draft_answers(raw: list[Any]) -> list[int | None]:
+    """Thirty-five marks. An unanswered item is None."""
+    if not isinstance(raw, list) or len(raw) != 35:
+        raise ValueError("draft answers must be 35 marks")
+    cleaned: list[int | None] = []
+    for value in raw:
+        if value is None:
+            cleaned.append(None)
+            continue
+        if type(value) is not int or not 1 <= value <= 5:
+            raise ValueError("draft answers must be 35 marks")
+        cleaned.append(value)
+    return cleaned
 
 
-def invitation_is_pending(conn, token: str) -> bool:
-    """True when this token can still open the form. Does not return the address."""
+def save_draft(
+    conn,
+    token: str,
+    *,
+    place: str,
+    item_index: int,
+    demographics: dict[str, Any],
+    answers: list[Any],
+) -> None:
+    """Store an unfinished form for this link. The invitation stays pending.
+
+    The row is keyed by the token hash, which also sits on the invitation.
+    Submit deletes it. The hash is not written on the finished answer.
+    """
+    if place not in {"profile", "ask"}:
+        raise ValueError("draft place")
+    if type(item_index) is not int or isinstance(item_index, bool) or not 0 <= item_index <= 34:
+        raise ValueError("draft index")
+    if place == "profile":
+        item_index = 0
     digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    invitation = conn.execute(
+        """
+        SELECT id, status
+        FROM invitations
+        WHERE link_token_hash = %s
+        FOR UPDATE
+        """,
+        (digest,),
+    ).fetchone()
+    if invitation is None:
+        raise UnknownInvitation()
+    if invitation["status"] != "pending":
+        raise InvitationAlreadySubmitted()
+    cleaned = clean_demographics(demographics, require_complete=False)
+    marks = clean_draft_answers(answers)
+    columns = ["link_token_hash", "place", "item_index", "demographics", *DEMOGRAPHIC_COLUMNS, *ITEM_COLUMNS]
+    values: list[Any] = [digest, place, item_index, Json(cleaned), *[cleaned.get(column) for column in DEMOGRAPHIC_COLUMNS], *marks]
+    assignments = ", ".join(f"{column} = EXCLUDED.{column}" for column in columns if column != "link_token_hash")
+    placeholders = ", ".join(["%s"] * len(values))
+    conn.execute(
+        f"""
+        INSERT INTO hse_drafts ({", ".join(columns)}, updated_at)
+        VALUES ({placeholders}, now())
+        ON CONFLICT (link_token_hash) DO UPDATE SET
+            {assignments},
+            updated_at = now()
+        """,
+        values,
+    )
+
+
+def open_pending_invitation(conn, token: str) -> dict[str, Any] | None:
+    """Return the unfinished form when this link is still pending.
+
+    None means the link is valid and nothing has been saved yet.
+    Does not return the address, the token, or the invitation id.
+    """
+    digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    mark_columns = ", ".join(f"d.{column}" for column in ITEM_COLUMNS)
     row = conn.execute(
-        "SELECT status FROM invitations WHERE link_token_hash = %s",
+        f"""
+        SELECT i.status, d.place, d.item_index, d.demographics, {mark_columns}
+        FROM invitations AS i
+        LEFT JOIN hse_drafts AS d ON d.link_token_hash = i.link_token_hash
+        WHERE i.link_token_hash = %s
+        """,
         (digest,),
     ).fetchone()
     if row is None:
         raise UnknownInvitation()
     if row["status"] != "pending":
         raise InvitationAlreadySubmitted()
-    return True
+    if row["place"] is None:
+        return None
+    return {
+        "place": row["place"],
+        "index": row["item_index"],
+        "demographics": row["demographics"] or {},
+        "answers": [row[column] for column in ITEM_COLUMNS],
+    }
+
+
+def _percent(part: int, whole: int) -> int | None:
+    if whole <= 0:
+        return None
+    return round(100 * part / whole)
 
 
 def _open_round(conn, company_id) -> tuple[Any, Any, str]:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 from pathlib import Path
 from datetime import date
@@ -49,6 +50,28 @@ def test_blocked_demographic_keys_match_the_schema():
     assert keys == set(BLOCKED_DEMOGRAPHIC_KEYS)
 
 
+def test_draft_table_keeps_the_hash_and_not_the_person():
+    sql = SCHEMA_PATH.read_text(encoding="utf-8")
+    body = sql.split("CREATE TABLE IF NOT EXISTS hse_drafts", 1)[1]
+    body = body.split("CREATE TABLE IF NOT EXISTS company_users", 1)[0]
+    assert "REFERENCES invitations" not in body
+    columns = re.findall(r"^\s{4}([a-z][a-z0-9_]*)\s+", body, re.M)
+    assert "email" not in columns
+    assert "link_token" not in columns
+    assert "invitation_id" not in columns
+    assert "link_token_hash" in columns
+    assert "i35" in columns
+    responses = sql.split("CREATE TABLE IF NOT EXISTS hse_responses", 1)[1]
+    responses = responses.split("CREATE INDEX IF NOT EXISTS hse_responses_round", 1)[0]
+    assert "hse_drafts" not in responses
+    assert "link_token_hash" not in responses
+
+
+def test_a_draft_may_omit_required_demographics():
+    assert clean_demographics({"age_band": "18_24"}, require_complete=False) == {"age_band": "18_24"}
+    assert clean_demographics({}, require_complete=False) == {}
+
+
 def test_demographics_are_the_annex_and_reject_identifiers():
     assert clean_demographics({"Age_Band": "35_44", "economic_sector": "Health", "Leadership": "yes"}) == {
         "age_band": "35_44",
@@ -78,7 +101,7 @@ def test_annex_codes_match_the_schema_and_the_form():
             rf"CHECK \({column} IS NULL OR {column} IN \((.*?)\)\)",
             sql,
         )
-        assert len(bodies) == 2
+        assert len(bodies) == 3
         for body in bodies:
             assert re.findall(r"'([^']*)'", body) == list(values)
     text = (ROOT / "frontend/src/app/features/tool/profile.ts").read_text(encoding="utf-8")
@@ -333,6 +356,159 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             conn.commit()
     finally:
         with connect() as conn:
+            new_answers = _ids(conn, "hse_responses") - before_answers
+            new_invites = _ids(conn, "invitations") - before_invites
+            new_uploads = _ids(conn, "invitation_uploads") - before_uploads
+            if new_answers:
+                conn.execute("DELETE FROM hse_responses WHERE id = ANY(%s)", (list(new_answers),))
+            if new_invites:
+                conn.execute("DELETE FROM invitations WHERE id = ANY(%s)", (list(new_invites),))
+            if new_uploads:
+                conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
+            conn.commit()
+
+
+def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch):
+    email = f"pytest-{uuid4().hex}@example.com"
+    sent: list[tuple[str, str]] = []
+
+    def fake_deliver(pairs: list[tuple[str, str]]):
+        sent.extend(pairs)
+        return list(pairs), []
+
+    monkeypatch.setattr("app.services.campaign_store.deliver_invitations", fake_deliver)
+    client = TestClient(app)
+    logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    headers = {"X-Company-Token": logged.json()["passage"]}
+    digest = ""
+    with connect() as conn:
+        before_answers = _ids(conn, "hse_responses")
+        before_invites = _ids(conn, "invitations")
+        before_uploads = _ids(conn, "invitation_uploads")
+    try:
+        uploaded = client.post(
+            "/api/v1/company/invitations",
+            headers=headers,
+            files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
+        )
+        assert uploaded.status_code == 200
+        token = sent[0][1]
+        digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        opened = client.post("/api/v1/tool/access", json={"token": token})
+        assert opened.status_code == 200
+        assert opened.json()["draft"] is None
+        assert email not in opened.text
+        assert token not in opened.text
+
+        partial = [None] * 35
+        saved = client.post(
+            "/api/v1/tool/drafts",
+            json={
+                "token": token,
+                "place": "profile",
+                "index": 4,
+                "demographics": {"age_band": "35_44"},
+                "answers": partial,
+            },
+        )
+        assert saved.status_code == 200
+        with connect() as conn:
+            status = conn.execute(
+                "SELECT status FROM invitations WHERE email = %s",
+                (email,),
+            ).fetchone()
+            draft = conn.execute(
+                """
+                SELECT link_token_hash, place, item_index, age_band
+                FROM hse_drafts
+                WHERE link_token_hash = %s
+                """,
+                (digest,),
+            ).fetchone()
+            answer_count = len(_ids(conn, "hse_responses") - before_answers)
+        assert status["status"] == "pending"
+        assert draft["place"] == "profile"
+        assert draft["item_index"] == 0
+        assert draft["age_band"] == "35_44"
+        assert draft["link_token_hash"] == digest
+        assert answer_count == 0
+
+        partial[0] = 4
+        again = client.post(
+            "/api/v1/tool/drafts",
+            json={
+                "token": token,
+                "place": "ask",
+                "index": 2,
+                "demographics": {"age_band": "35_44"},
+                "answers": partial,
+            },
+        )
+        assert again.status_code == 200
+        resumed = client.post("/api/v1/tool/access", json={"token": token})
+        assert resumed.status_code == 200
+        body = resumed.json()["draft"]
+        assert body["place"] == "ask"
+        assert body["index"] == 2
+        assert body["demographics"] == {"age_band": "35_44"}
+        assert body["answers"][0] == 4
+        assert body["answers"][1] is None
+        assert email not in resumed.text
+        assert token not in resumed.text
+
+        refused = client.post(
+            "/api/v1/tool/responses",
+            json={"token": token, "answers": [3] * 35, "demographics": {"age_band": "35_44"}},
+        )
+        assert refused.status_code == 400
+        with connect() as conn:
+            still = conn.execute(
+                "SELECT status FROM invitations WHERE link_token_hash = %s",
+                (digest,),
+            ).fetchone()
+            kept = conn.execute(
+                "SELECT 1 FROM hse_drafts WHERE link_token_hash = %s",
+                (digest,),
+            ).fetchone()
+        assert still["status"] == "pending"
+        assert kept is not None
+
+        finished = client.post(
+            "/api/v1/tool/responses",
+            json={
+                "token": token,
+                "answers": [3] * 35,
+                "demographics": {"age_band": "35_44", "economic_sector": "health"},
+            },
+        )
+        assert finished.status_code == 200
+        assert token not in finished.text
+        with connect() as conn:
+            gone = conn.execute(
+                "SELECT 1 FROM hse_drafts WHERE link_token_hash = %s",
+                (digest,),
+            ).fetchone()
+            stored = conn.execute(
+                """
+                SELECT demographics
+                FROM hse_responses
+                WHERE id = ANY(%s)
+                """,
+                (list(_ids(conn, "hse_responses") - before_answers),),
+            ).fetchone()
+        assert gone is None
+        assert stored["demographics"]["economic_sector"] == "health"
+        closed = client.post("/api/v1/tool/access", json={"token": token})
+        assert closed.status_code == 409
+        late = client.post(
+            "/api/v1/tool/drafts",
+            json={"token": token, "place": "ask", "index": 0, "demographics": {}, "answers": partial},
+        )
+        assert late.status_code == 409
+    finally:
+        with connect() as conn:
+            if digest:
+                conn.execute("DELETE FROM hse_drafts WHERE link_token_hash = %s", (digest,))
             new_answers = _ids(conn, "hse_responses") - before_answers
             new_invites = _ids(conn, "invitations") - before_invites
             new_uploads = _ids(conn, "invitation_uploads") - before_uploads

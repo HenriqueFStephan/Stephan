@@ -49,10 +49,11 @@ companies
    └── company_rounds
           ├── invitation_uploads     (the file the admin sent)
           │      └── invitations     email, link token, pending|submitted
+          ├── hse_drafts             unfinished form, keyed by the token hash
           └── hse_responses          anonymous answers and demographics
 ```
 
-There is no foreign key from `hse_responses` to `invitations`.
+There is no foreign key from `hse_responses` to `invitations`, and none from `hse_drafts` either. The draft uses the same `link_token_hash` as the invitation, so the two can be matched while the draft exists. Submitting deletes the draft. The finished answer does not keep that hash.
 
 The email exists so we can send the link and see who has not finished. It lives only on `invitations`. The answer row does not store:
 
@@ -65,10 +66,11 @@ The email exists so we can send the link and see who has not finished. It lives 
 
 Marking an invitation `submitted` is what blocks a second response. The future form must do that in the same transaction as the insert, without copying the invitation id onto the answer:
 
-1. Look up the invitation by `link_token_hash` where `status = 'pending'`.
+1. Look up the invitation by `link_token_hash` where `status = 'pending'`, and lock that row.
 2. Insert `hse_responses` with a new random id.
-3. Set the invitation to `submitted` and set `submitted_at`.
-4. If the invitation was not pending, roll the insert back.
+3. Delete `hse_drafts` for that hash.
+4. Set the invitation to `submitted` and set `submitted_at`.
+5. If the invitation was not pending, roll the whole thing back.
 
 `submitted_on` on the answer is a date. `submitted_at` on the invitation is a timestamp. They are not the same column copied across. With a quiet day and one submission, the day can still line up with the person who finished. That is a limit of “who has finished”, not a join key to add. Do not store a shared id to make that match easier.
 
@@ -142,7 +144,9 @@ Each person gets one link:
 
 The host is `PUBLIC_APP_URL` (default `https://stephan.net.br`), not `FRONTEND_URL`. A local API still sends the public site.
 
-`POST /api/v1/tool/access` with the token opens the form when the invitation is `pending`. `POST /api/v1/tool/responses` stores the 35 raw marks on that invitation’s company and round, then marks the invitation `submitted`, in one transaction. The token is not written on the answer. A second post with the same token is refused. No token: `/tool` stays the local reading and posts nothing. `/tool` is not in the header or the footer. Do not link the local reading.
+`POST /api/v1/tool/access` with the token opens the form when the invitation is `pending`. If that link has a draft, the response includes it and the form opens where the person left off. `POST /api/v1/tool/drafts` stores the unfinished form and leaves the invitation `pending`. The same link on another device loads that draft. `POST /api/v1/tool/responses` stores the 35 raw marks on that invitation’s company and round, deletes the draft, then marks the invitation `submitted`, in one transaction. The token is not written on the answer. A second post with the same token is refused. No token: `/tool` stays the local reading and posts nothing. `/tool` is not in the header or the footer. Do not link the local reading.
+
+The company page does not list drafts. A saved draft still counts as not finished.
 
 Saving the list sends the link to each new address. The message uses the site colors and the Stephan lockup: a short note, a button, and the same link in plain text. It does not name the person. SMTP settings (`SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`) live in `debt.txt`. If they are missing, a new address is not stored. An address already invited in this round does not get a second message.
 

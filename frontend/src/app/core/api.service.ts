@@ -17,6 +17,8 @@ import {
   CompanyOverview,
   InvitationRoster,
   InvitationUploadResult,
+  ToolAccessResult,
+  ToolDraft,
   ToolSubmitResult,
 } from './models';
 
@@ -82,8 +84,12 @@ export class ApiService {
     });
   }
 
-  openTool(token: string): Observable<{ state: string }> {
-    return this.http.post<{ state: string }>(`${this.base}/tool/access`, { token });
+  openTool(token: string): Observable<ToolAccessResult> {
+    return this.http.post<ToolAccessResult>(`${this.base}/tool/access`, { token });
+  }
+
+  saveToolDraft(token: string, draft: ToolDraft): Observable<ToolSubmitResult> {
+    return this.http.post<ToolSubmitResult>(`${this.base}/tool/drafts`, { token, ...draft });
   }
 
   submitTool(
