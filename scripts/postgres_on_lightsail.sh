@@ -85,9 +85,15 @@ text = path.read_text(encoding="utf-8") if path.exists() else ""
 lines = [line for line in text.splitlines() if not line.startswith("DATABASE_URL=")]
 lines.append(f"DATABASE_URL=postgresql://stephan:{password}@127.0.0.1:5432/stephan")
 path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-path.chmod(0o600)
 PY
   unset pass
+fi
+
+# The API runs as www-data. Root-only mode 600 makes settings load fail
+# and nginx answer /api/v1 with 502.
+if [[ -f "$debt" ]]; then
+  chown www-data:www-data "$debt"
+  chmod 600 "$debt"
 fi
 
 if systemctl list-unit-files stephan-api.service >/dev/null 2>&1; then

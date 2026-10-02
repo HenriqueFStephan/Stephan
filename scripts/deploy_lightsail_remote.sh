@@ -8,6 +8,10 @@ tar -xzf /tmp/api.tgz -C /opt/stephan
 /opt/stephan/venv/bin/pip install -r /opt/stephan/backend/requirements.txt
 mkdir -p /opt/stephan/backend/data
 chown -R www-data:www-data /var/www/stephan /opt/stephan/backend/data
+if [[ -f /opt/stephan/debt.txt ]]; then
+  chown www-data:www-data /opt/stephan/debt.txt
+  chmod 600 /opt/stephan/debt.txt
+fi
 systemctl restart stephan-api
 systemctl reload nginx
 for _ in 1 2 3 4 5 6 7 8 9 10; do
