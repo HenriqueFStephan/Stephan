@@ -66,7 +66,7 @@ def test_tool_stays_out_of_the_public_menu_and_footer():
     assert 'routerLink="/empresa"' in footer
 
 
-def test_upload_rejects_a_name_column_without_a_database():
+def test_upload_rejects_a_name_column_without_storing_it(postgres):
     client = TestClient(app)
     logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
     passage = logged.json()["passage"]
@@ -89,14 +89,15 @@ def test_upload_requires_the_company_session():
     assert response.status_code == 401
 
 
-def test_upload_reports_database_unavailable_for_sqlite(monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", "sqlite:///./data/stephan.db")
-    get_settings.cache_clear()
+def test_upload_reports_database_unavailable_for_sqlite(postgres, monkeypatch):
     client = TestClient(app)
     logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    passage = logged.json()["passage"]
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///./data/stephan.db")
+    get_settings.cache_clear()
     response = client.post(
         "/api/v1/company/invitations",
-        headers={"X-Company-Token": logged.json()["passage"]},
+        headers={"X-Company-Token": passage},
         files={"file": ("people.csv", "email\nada@example.com\n", "text/csv")},
     )
     assert response.status_code == 503
@@ -122,24 +123,6 @@ def test_upload_without_smtp_does_not_keep_the_address(postgres, monkeypatch):
     with connect() as conn:
         found = conn.execute("SELECT 1 FROM invitations WHERE email = %s", (email,)).fetchone()
         assert found is None
-    get_settings.cache_clear()
-
-
-@pytest.fixture
-def postgres(monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", LOCAL_URL)
-    get_settings.cache_clear()
-    import app.db.session as session
-
-    session._schema_ready = False
-    try:
-        with connect() as conn:
-            ensure_schema(conn)
-            conn.execute("SELECT 1")
-    except DatabaseUnavailable:
-        get_settings.cache_clear()
-        pytest.skip("local PostgreSQL is not running")
-    yield
     get_settings.cache_clear()
 
 
@@ -225,12 +208,46 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             assert "email" not in columns
             assert "link_token" not in columns
             assert "invitation_id" not in columns
+            company = conn.execute("SELECT id FROM companies WHERE slug = 'internal'").fetchone()
+            opened = conn.execute(
+                """
+                SELECT id FROM company_rounds
+                WHERE company_id = %s AND closed_on IS NULL
+                """,
+                (company["id"],),
+            ).fetchone()
             response_id = record_response(
                 conn,
+                company_id=company["id"],
+                round_id=opened["id"],
                 submitted_on=date(2026, 10, 1),
                 demographics={"age": 40},
                 answers=[3] * 35,
             )
+            saved = client.post(
+                "/api/v1/tool/responses",
+                json={"token": sent[0][1], "answers": [3] * 35, "demographics": {}},
+            )
+            assert saved.status_code == 200
+            assert sent[0][1] not in saved.text
+            again = client.post(
+                "/api/v1/tool/responses",
+                json={"token": sent[0][1], "answers": [3] * 35, "demographics": {}},
+            )
+            assert again.status_code == 409
+            artigo = client.post(
+                "/api/v1/company/login",
+                json={"username": "artigo", "password": "voltarassamambanhas"},
+            )
+            assert artigo.status_code == 200
+            assert artigo.json()["company_slug"] == "hse-it"
+            other = client.get(
+                "/api/v1/company/invitations",
+                headers={"X-Company-Token": artigo.json()["passage"]},
+            )
+            assert other.status_code == 200
+            assert other.json()["invited"] == 0
+            assert email not in other.text
             stored = conn.execute(
                 "SELECT demographics FROM hse_responses WHERE id = %s",
                 (response_id,),

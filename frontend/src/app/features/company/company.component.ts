@@ -25,6 +25,7 @@ import {
 } from '../tool/hse-it';
 
 const PASSAGE_KEY = 'stephan-company-passage';
+const COMPANY_NAME_KEY = 'stephan-company-name';
 
 interface WeekBar {
   x: number;
@@ -59,6 +60,7 @@ export class CompanyComponent implements OnInit {
   submitting = false;
   errorKey = '';
   overview: CompanyOverview | null = null;
+  companyName = '';
   inviteFile: File | null = null;
   inviteSubmitting = false;
   inviteErrorKey = '';
@@ -74,6 +76,7 @@ export class CompanyComponent implements OnInit {
   ngOnInit(): void {
     const stored = this.readPassage();
     if (stored) {
+      this.companyName = sessionStorage.getItem(COMPANY_NAME_KEY) || '';
       this.load(stored);
     }
   }
@@ -94,18 +97,22 @@ export class CompanyComponent implements OnInit {
       next: (response) => {
         this.password = '';
         this.submitting = false;
+        this.companyName = response.company_name;
         sessionStorage.setItem(PASSAGE_KEY, response.passage);
+        sessionStorage.setItem(COMPANY_NAME_KEY, response.company_name);
         this.load(response.passage);
       },
       error: (err: HttpErrorResponse) => {
         this.submitting = false;
-        this.errorKey = err.status === 0 ? 'company.unreachable' : 'company.badLogin';
+        this.errorKey = err.status === 0 || err.status === 503 ? 'company.unreachable' : 'company.badLogin';
       },
     });
   }
 
   logout(): void {
     sessionStorage.removeItem(PASSAGE_KEY);
+    sessionStorage.removeItem(COMPANY_NAME_KEY);
+    this.companyName = '';
     this.overview = null;
     this.password = '';
     this.errorKey = '';
@@ -165,6 +172,9 @@ export class CompanyComponent implements OnInit {
   }
 
   companyLabel(): string {
+    if (this.companyName) {
+      return this.companyName;
+    }
     if (this.overview?.company_id === 'demo') {
       return this.i18n.t('company.demoName');
     }
@@ -296,6 +306,8 @@ export class CompanyComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
           sessionStorage.removeItem(PASSAGE_KEY);
+          sessionStorage.removeItem(COMPANY_NAME_KEY);
+          this.companyName = '';
         }
         this.overview = null;
         this.phase = 'login';

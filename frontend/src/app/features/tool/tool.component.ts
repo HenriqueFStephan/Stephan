@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { ApiService } from '../../core/api.service';
 import { I18nService, TranslatePipe } from '../../core/i18n';
 import {
   BAND_COPY,
@@ -18,7 +20,7 @@ import {
   scoreHse,
 } from './hse-it';
 
-type Phase = 'intro' | 'ask' | 'results';
+type Phase = 'checking' | 'invalid' | 'used' | 'intro' | 'ask' | 'results';
 
 const ADVANCE_MS = 180;
 
@@ -29,7 +31,7 @@ const ADVANCE_MS = 180;
   templateUrl: './tool.component.html',
   styleUrls: ['./tool.component.scss'],
 })
-export class ToolComponent implements OnDestroy {
+export class ToolComponent implements OnInit, OnDestroy {
   readonly dimensions = DIMENSION_ORDER;
   readonly items = HSE_ITEMS;
 
@@ -40,10 +42,36 @@ export class ToolComponent implements OnDestroy {
   scores: DimensionScore[] = [];
   copied = false;
   summaryText = '';
+  campaign = false;
+  saving = false;
+  saveFailed = false;
 
+  private token = '';
   private advanceTimer: number | null = null;
 
-  constructor(readonly i18n: I18nService) {}
+  constructor(
+    readonly i18n: I18nService,
+    private api: ApiService,
+  ) {}
+
+  ngOnInit(): void {
+    const token = this.readToken();
+    if (!token) {
+      return;
+    }
+    this.campaign = true;
+    this.token = token;
+    this.phase = 'checking';
+    this.api.openTool(token).subscribe({
+      next: () => {
+        this.phase = 'intro';
+      },
+      error: (err: HttpErrorResponse) => {
+        const code = err.error && err.error.detail && err.error.detail.code;
+        this.phase = err.status === 409 || code === 'link_used' ? 'used' : 'invalid';
+      },
+    });
+  }
 
   ngOnDestroy(): void {
     this.clearAdvance();
@@ -95,15 +123,29 @@ export class ToolComponent implements OnDestroy {
   }
 
   finish(): void {
-    if (this.answers.some((value) => value == null)) {
+    if (this.answers.some((value) => value == null) || this.saving) {
       return;
     }
     this.clearAdvance();
-    this.scores = scoreHse(this.answers as number[]);
-    this.phase = 'results';
-    this.copied = false;
-    this.summaryText = '';
-    this.reveal();
+    if (!this.campaign) {
+      this.showResults();
+      return;
+    }
+    this.saving = true;
+    this.saveFailed = false;
+    const area = this.sector.trim();
+    this.api
+      .submitTool(this.token, this.answers as number[], area ? { area } : {})
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.showResults();
+        },
+        error: () => {
+          this.saving = false;
+          this.saveFailed = true;
+        },
+      });
   }
 
   restart(): void {
@@ -193,6 +235,21 @@ export class ToolComponent implements OnDestroy {
       this.index += 1;
       this.reveal();
     }
+  }
+
+  private showResults(): void {
+    this.scores = scoreHse(this.answers as number[]);
+    this.phase = 'results';
+    this.copied = false;
+    this.summaryText = '';
+    this.reveal();
+  }
+
+  private readToken(): string {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+    return new URLSearchParams(window.location.search).get('t')?.trim() || '';
   }
 
   private reveal(): void {

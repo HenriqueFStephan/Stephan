@@ -1,3 +1,4 @@
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 
 import { I18nService } from '../../core/i18n';
@@ -8,7 +9,7 @@ describe('ToolComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ToolComponent],
+      imports: [ToolComponent, HttpClientTestingModule],
     }).compileComponents();
 
     TestBed.inject(I18nService).setLang('pt-BR');

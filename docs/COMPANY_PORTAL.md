@@ -4,20 +4,20 @@
 
 The page speaks Portuguese by default, with the same EN toggle as the rest of the site.
 
-## Test access
+## Accounts
 
-One company works today. It is a fixture in `backend/app/api/v1/company.py`, not a real client.
+Two accounts are seeded in PostgreSQL. Each one is a company. Invitations and answers for one are not visible to the other, and a future company is another row, not a share of these two.
 
-| | |
-|---|---|
-| Username | `admin` |
-| Password | `admintest` |
-| Company id | `demo` |
-| Name on the page | Organização de demonstração |
+| Username | Password | Company slug | Name on the page |
+|---|---|---|---|
+| `admin` | `admintest` | `internal` | Uso interno |
+| `artigo` | `voltarassamambanhas` | `hse-it` | HSE-IT |
 
-`POST /api/v1/company/login` checks the pair on the server. A match returns a `passage`. That value is not the password. The browser keeps it in `sessionStorage` under `stephan-company-passage` and sends it as `X-Company-Token` on `GET /api/v1/company/overview`. Closing the tab drops the session. Log out drops it too.
+`admin` is for tests on this project. `artigo` is for the paper. Do not upload a client’s list into either of them.
 
-Do not reuse this account once a real form is stored. The plan below replaces it.
+`POST /api/v1/company/login` checks the pair on the server. A match returns a `passage` plus the company slug and name. The passage is not the password. The browser keeps it in `sessionStorage` under `stephan-company-passage` and sends it as `X-Company-Token`. Closing the tab drops the session. Log out drops it too.
+
+The charts on the page are still the simulated wave. The company name above them is the account that signed in.
 
 ## What the test data is
 
@@ -64,8 +64,8 @@ The reading labels use conventional cut points, not a risk scale: 0.90 and above
 
 Keep `CompanyOverview` as the response the page already renders. When a real campaign replaces the fixture, `demo_overview()` becomes a query and the template stays.
 
-1. **Accounts.** Replace `admin` / `admintest` with one stored user per company before a real invitation list is uploaded on the server, and before any real form is saved. Hash the password. Issue the session on the server. Remove the fixture from `company.py`. The password must not be compiled into the Angular app.
-2. **Ingest.** The campaign store, the invitation list, and the anonymity rules are in `docs/TOOL.md`. This page now uploads the email list for the pilot company and shows the round as two percentages, finished and not yet. It does not list who finished. The simulated overview stays until real answers replace it. The campaign form is not built until the Portuguese wording is confirmed.
+1. **Accounts.** `admin` and `artigo` are stored users, each tied to one company. A future company is a new `companies` row, an open round, and a `company_users` row. Do not point that company at `internal` or `hse-it`. Passwords are hashed. The passage is issued on the server. The password is not compiled into the Angular app.
+2. **Ingest.** The campaign store, the invitation list, and the anonymity rules are in `docs/TOOL.md`. This page uploads the email list for the signed-in company and shows the round as two percentages, finished and not yet. It does not list who finished. The simulated overview stays until real answers replace it. A link with `?t=` opens the campaign form and stores one anonymous answer for that company.
 3. **Rows.** Anonymous answers are `hse_responses` in that document: company, round, day, a JSON object for demographics that is not frozen yet, and 35 raw marks. No email, token, or invitation id on the answer.
 4. **Overview.** Filter those rows to the logged-in company and to the open campaign (or an explicit date window). Return the same JSON. Set `source` to `recorded`. The demonstration note then hides.
 5. **Alpha.** Call the same `cronbach_alpha` on the scored items of that set every time the overview is read. Keep showing `n` and the newest `submitted_on`. Decide in the campaign whether “latest” means the open wave or a trailing window, and say that choice in the sentence that already carries `n` and the date.

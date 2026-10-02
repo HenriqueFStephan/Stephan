@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     app_secret_key: str = "dev-secret-change-me"
     api_base_url: str = "http://localhost:8000"
     frontend_url: str = "http://localhost:4200"
+    # Invitation links. Not FRONTEND_URL: a local API must still send the public site.
+    public_app_url: str = "https://stephan.net.br"
 
     # Local PostgreSQL for the HSE campaign. See docs/TOOL.md.
     # Empty until DATABASE_URL is set in debt.txt. Not a remote database.

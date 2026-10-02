@@ -62,6 +62,9 @@ def ensure_schema(conn: psycopg.Connection) -> None:
     with conn.cursor() as cur:
         for statement in _statements(sql):
             cur.execute(statement)
+    from app.services.company_accounts import seed_company_accounts
+
+    seed_company_accounts(conn)
     conn.commit()
     _schema_ready = True
 

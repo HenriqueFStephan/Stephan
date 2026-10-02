@@ -105,6 +105,15 @@ const ptBR = {
     'Trinta e cinco perguntas sobre os últimos seis meses. O método é o HSE-IT, o indicador que já usamos na investigação. A NR-1 não fixa um questionário: ela pede para identificar e avaliar os fatores psicossociais da organização do trabalho. As perguntas cobrem demandas, controle, apoio, relações, clareza de papel e mudança.',
   'tool.anon':
     'As respostas ficam neste navegador. Nada é enviado. Atualizar a página apaga o que foi marcado.',
+  'tool.campaignAnon':
+    'A resposta fica guardada sem o seu e-mail e sem o link. O link é só seu e funciona uma vez.',
+  'tool.campaignSaved': 'Resposta registrada. A leitura abaixo fica neste navegador.',
+  'tool.send': 'Enviar',
+  'tool.sending': 'Enviando…',
+  'tool.saveFailed': 'Não foi possível registrar a resposta. Tente de novo.',
+  'tool.invalid': 'Este link não abre o questionário.',
+  'tool.used': 'Este link já foi usado.',
+  'tool.opening': 'Abrindo o questionário…',
   'tool.sector': 'Setor ou equipe',
   'tool.sectorHint': 'Opcional. Só para nomear esta leitura.',
   'tool.start': 'Começar',
@@ -316,6 +325,15 @@ export const en: Record<MsgKey, string> = {
     'Thirty-five questions about the last six months. The method is the HSE-IT, the indicator we already use in an investigation. NR-1 does not prescribe one questionnaire: it asks organizations to identify and assess the psychosocial factors of how work is organized. The questions cover demands, control, support, relationships, role clarity, and change.',
   'tool.anon':
     'Answers stay in this browser. Nothing is sent. Refreshing the page clears what was marked.',
+  'tool.campaignAnon':
+    'The answer is stored without your email and without the link. The link is yours alone and works once.',
+  'tool.campaignSaved': 'Answer recorded. The reading below stays in this browser.',
+  'tool.send': 'Send',
+  'tool.sending': 'Sending…',
+  'tool.saveFailed': 'The answer could not be recorded. Try again.',
+  'tool.invalid': 'This link does not open the questionnaire.',
+  'tool.used': 'This link has already been used.',
+  'tool.opening': 'Opening the questionnaire…',
   'tool.sector': 'Area or team',
   'tool.sectorHint': 'Optional. Only to name this reading.',
   'tool.start': 'Begin',

@@ -5,7 +5,7 @@ from app.services.invitation_mail import build_invitation_message, smtp_ready
 
 
 def test_message_is_only_the_link(monkeypatch):
-    monkeypatch.setenv("FRONTEND_URL", "http://localhost:4200")
+    monkeypatch.setenv("PUBLIC_APP_URL", "http://localhost:4200")
     monkeypatch.setenv("SMTP_FROM", "lista@example.com")
     monkeypatch.setenv("SMTP_USERNAME", "lista@example.com")
     get_settings.cache_clear()

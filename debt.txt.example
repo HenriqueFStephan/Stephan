@@ -10,6 +10,8 @@ APP_SECRET_KEY=
 DATABASE_URL=
 API_BASE_URL=http://localhost:8000
 FRONTEND_URL=http://localhost:4200
+# Invitation links use this, including when the API is running on your machine.
+PUBLIC_APP_URL=https://stephan.net.br
 
 AUTHOR_EMAIL=
 AUTHOR_NAME=Stephan

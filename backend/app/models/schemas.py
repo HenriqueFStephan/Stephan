@@ -123,6 +123,26 @@ class CompanyLogin(BaseModel):
 class CompanyLoginResponse(BaseModel):
     success: bool
     passage: str
+    company_slug: str
+    company_name: str
+
+
+class ToolAccessRequest(BaseModel):
+    token: str = Field(..., min_length=8, max_length=200)
+
+
+class ToolAccessResponse(BaseModel):
+    state: str
+
+
+class ToolSubmitRequest(BaseModel):
+    token: str = Field(..., min_length=8, max_length=200)
+    answers: list[int] = Field(..., min_length=35, max_length=35)
+    demographics: dict = Field(default_factory=dict)
+
+
+class ToolSubmitResponse(BaseModel):
+    saved: bool
 
 
 class CompanyAlphaRow(BaseModel):

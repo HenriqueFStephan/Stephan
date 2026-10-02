@@ -1,13 +1,10 @@
-"""Company portal. The only account today is the documented demo fixture.
+"""Company portal. Each login is one company. Lists and later answers stay inside it.
 
-Invitation lists for the pilot company are stored in PostgreSQL. The simulated
-overview is unchanged.
+The simulated overview is unchanged. Invitation lists are stored in PostgreSQL.
 """
 
 from __future__ import annotations
 
-import hashlib
-import hmac
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
@@ -21,6 +18,12 @@ from app.models.schemas import (
     InvitationUploadResult,
 )
 from app.services.campaign_store import NoOpenRound, add_invitations, list_invitations
+from app.services.company_accounts import (
+    CompanySession,
+    authenticate,
+    issue_passage,
+    session_from_passage,
+)
 from app.services.company_demo import demo_overview
 from app.services.invitation_file import InvitationFileError, parse_invitation_file
 from app.services.invitation_mail import MailDeliveryError, MailNotConfigured
@@ -29,52 +32,53 @@ router = APIRouter(prefix="/company", tags=["company"])
 
 TOKEN_HEADER = "X-Company-Token"
 
-# Published test account. See docs/COMPANY_PORTAL.md. Not for real employee data.
-DEMO_USERNAME = "admin"
-DEMO_PASSWORD = "admintest"
-PASSAGE_LABEL = b"stephan-company-v1"
-
-
-def secrets_match(provided: str, expected: str) -> bool:
-    left = hashlib.sha256(provided.encode("utf-8")).digest()
-    right = hashlib.sha256(expected.encode("utf-8")).digest()
-    return hmac.compare_digest(left, right)
-
-
-def passage_for(username: str) -> str:
-    """Session clearance. Not the password, and not reversible to it."""
-    return hmac.new(DEMO_PASSWORD.encode("utf-8"), PASSAGE_LABEL + username.encode("utf-8"), hashlib.sha256).hexdigest()
-
 
 def require_company_token(
     x_company_token: Annotated[str | None, Header(alias=TOKEN_HEADER)] = None,
-) -> str:
+) -> CompanySession:
     provided = (x_company_token or "").strip()
-    if not provided or not secrets_match(provided, passage_for(DEMO_USERNAME)):
+    if not provided:
         raise HTTPException(status_code=401, detail="Invalid company session")
-    return provided
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            session = session_from_passage(conn, provided)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    if session is None:
+        raise HTTPException(status_code=401, detail="Invalid company session")
+    return session
 
 
 @router.post("/login", response_model=CompanyLoginResponse)
 def company_login(body: CompanyLogin) -> CompanyLoginResponse:
-    username_ok = secrets_match(body.username, DEMO_USERNAME)
-    password_ok = secrets_match(body.password, DEMO_PASSWORD)
-    if not (username_ok and password_ok):
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            session = authenticate(conn, body.username, body.password)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    if session is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return CompanyLoginResponse(success=True, passage=passage_for(DEMO_USERNAME))
+    return CompanyLoginResponse(
+        success=True,
+        passage=issue_passage(session),
+        company_slug=session.slug,
+        company_name=session.name,
+    )
 
 
 @router.get("/overview", response_model=CompanyOverview)
-def company_overview(_token: str = Depends(require_company_token)) -> CompanyOverview:
+def company_overview(_session: CompanySession = Depends(require_company_token)) -> CompanyOverview:
     return CompanyOverview.model_validate(demo_overview())
 
 
 @router.get("/invitations", response_model=InvitationRoster)
-def company_invitations(_token: str = Depends(require_company_token)) -> InvitationRoster:
+def company_invitations(session: CompanySession = Depends(require_company_token)) -> InvitationRoster:
     try:
         with connect() as conn:
             ensure_schema(conn)
-            roster = list_invitations(conn)
+            roster = list_invitations(conn, session.company_id)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
     except NoOpenRound as exc:
@@ -85,7 +89,7 @@ def company_invitations(_token: str = Depends(require_company_token)) -> Invitat
 @router.post("/invitations", response_model=InvitationUploadResult)
 def upload_company_invitations(
     file: UploadFile = File(...),
-    _token: str = Depends(require_company_token),
+    session: CompanySession = Depends(require_company_token),
 ) -> InvitationUploadResult:
     data = file.file.read(1_000_001)
     if len(data) > 1_000_000:
@@ -100,7 +104,7 @@ def upload_company_invitations(
     try:
         with connect() as conn:
             ensure_schema(conn)
-            stored = add_invitations(conn, file.filename or "", parsed)
+            stored = add_invitations(conn, session.company_id, file.filename or "", parsed)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
     except NoOpenRound as exc:

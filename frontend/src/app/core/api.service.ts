@@ -17,6 +17,7 @@ import {
   CompanyOverview,
   InvitationRoster,
   InvitationUploadResult,
+  ToolSubmitResult,
 } from './models';
 
 /**
@@ -78,6 +79,22 @@ export class ApiService {
   getCompanyInvitations(passage: string): Observable<InvitationRoster> {
     return this.http.get<InvitationRoster>(`${this.base}/company/invitations`, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
+  }
+
+  openTool(token: string): Observable<{ state: string }> {
+    return this.http.post<{ state: string }>(`${this.base}/tool/access`, { token });
+  }
+
+  submitTool(
+    token: string,
+    answers: number[],
+    demographics: Record<string, string>,
+  ): Observable<ToolSubmitResult> {
+    return this.http.post<ToolSubmitResult>(`${this.base}/tool/responses`, {
+      token,
+      answers,
+      demographics,
     });
   }
 

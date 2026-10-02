@@ -170,14 +170,42 @@ CREATE TABLE IF NOT EXISTS hse_responses (
 CREATE INDEX IF NOT EXISTS hse_responses_round
     ON hse_responses (round_id, submitted_on);
 
+CREATE TABLE IF NOT EXISTS company_users (
+    id uuid PRIMARY KEY,
+    company_id uuid NOT NULL REFERENCES companies (id),
+    username text NOT NULL UNIQUE,
+    password_hash text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Existing local lists were stored on slug pilot. They belong to the internal account.
+UPDATE companies
+SET slug = 'internal', name = 'Uso interno'
+WHERE slug = 'pilot';
+
 INSERT INTO companies (id, slug, name)
-VALUES ('11111111-1111-4111-8111-111111111111', 'pilot', 'Empresa piloto')
+VALUES ('11111111-1111-4111-8111-111111111111', 'internal', 'Uso interno')
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO companies (id, slug, name)
+VALUES ('33333333-3333-4333-8333-333333333333', 'hse-it', 'HSE-IT')
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO company_rounds (id, company_id, label, opened_on)
 SELECT '22222222-2222-4222-8222-222222222222', c.id, 'rodada-1', CURRENT_DATE
 FROM companies AS c
-WHERE c.slug = 'pilot'
+WHERE c.slug = 'internal'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM company_rounds AS r
+      WHERE r.company_id = c.id
+        AND r.closed_on IS NULL
+  );
+
+INSERT INTO company_rounds (id, company_id, label, opened_on)
+SELECT '44444444-4444-4444-8444-444444444444', c.id, 'rodada-1', CURRENT_DATE
+FROM companies AS c
+WHERE c.slug = 'hse-it'
   AND NOT EXISTS (
       SELECT 1
       FROM company_rounds AS r

@@ -25,15 +25,16 @@ The API refuses a URL whose host is not `127.0.0.1`, `localhost`, `::1`, or the 
 
 An empty `DATABASE_URL`, or any non-PostgreSQL value, leaves the rest of the site up. The company overview stays the simulated wave. The invitation list returns “database unavailable” until PostgreSQL is running.
 
-## One company, modelled anyway
+## Companies
 
-| | |
-|---|---|
-| Slug | `pilot` |
-| Name | `Empresa piloto` (a placeholder, not a client name) |
-| Open round | `rodada-1` |
+Two companies are seeded. A later company is another row. It does not share rounds, uploads, invitations, or answers with these two.
 
-Later companies are more rows in `companies`, each with their own rounds, uploads, and invitations. This step only has an admin flow for `pilot`. The company page at `/empresa` still signs in with the published test account (`admin` / `admintest`). That session is the admin for `pilot`. Replace that account before a real employee list is uploaded on the server. The password is in `backend/app/api/v1/company.py` and must not be the gate for a real list.
+| Slug | Name | Account |
+|---|---|---|
+| `internal` | Uso interno | `admin` / `admintest` |
+| `hse-it` | HSE-IT | `artigo` / `voltarassamambanhas` |
+
+Each has an open round `rodada-1`. `internal` is for tests on this project. `hse-it` is for the paper. Do not upload a client list into either.
 
 `/empresa` stays in the footer. `/tool` stays out of the header and the footer.
 
@@ -123,9 +124,9 @@ Each person gets one link:
 
 `https://stephan.net.br/tool?t=<link_token>`
 
-No token, no campaign page. A token whose invitation is already `submitted` does not open a second form. `/tool` is not in the header or the footer.
+The host is `PUBLIC_APP_URL` (default `https://stephan.net.br`), not `FRONTEND_URL`. A local API still sends the public site.
 
-That gate is not built yet. The route `/tool` that exists today is the local reading: it keeps answers in the browser and posts nothing. It is already off the menu. Do not link it. When the campaign form is built, it replaces that open page and must refuse to render without a pending token.
+`POST /api/v1/tool/access` with the token opens the form when the invitation is `pending`. `POST /api/v1/tool/responses` stores the 35 raw marks on that invitation’s company and round, then marks the invitation `submitted`, in one transaction. The token is not written on the answer. A second post with the same token is refused. No token: `/tool` stays the local reading and posts nothing. `/tool` is not in the header or the footer. Do not link the local reading.
 
 Saving the list sends the link to each new address. The message uses the site colors and the Stephan lockup: a short note, a button, and the same link in plain text. It does not name the person. SMTP settings (`SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`) live in `debt.txt`. If they are missing, a new address is not stored. An address already invited in this round does not get a second message.
 
@@ -202,7 +203,7 @@ A successful response looks like this. Tokens are not included.
 | Column | |
 |---|---|
 | `id` | uuid |
-| `slug` | unique, `pilot` today |
+| `slug` | unique. `internal` and `hse-it` are seeded |
 | `name` | display name, not frozen |
 | `created_at` | |
 
@@ -280,7 +281,7 @@ In `debt.txt`:
 DATABASE_URL=postgresql://stephan:stephan@127.0.0.1:5432/stephan
 ```
 
-Restart the API after changing `debt.txt`. The first upload creates the tables and the `pilot` company.
+Restart the API after changing `debt.txt`. The first upload creates the tables and the seeded companies.
 
 If the API itself runs under Compose, its URL is `postgresql://stephan:stephan@db:5432/stephan` (the Compose network, still not a public port). Host-run `uvicorn` uses `127.0.0.1`.
 

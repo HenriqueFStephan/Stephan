@@ -1,8 +1,8 @@
-"""Store invitation lists and, later, anonymous HSE answers.
+"""Store invitation lists and anonymous HSE answers for one company at a time.
 
 The answer write does not take an email, a token, or an invitation id.
-Marking the invitation submitted is a separate step and is not done here yet,
-because the form pages are not built.
+The invitation is marked submitted in the same transaction, after the lookup
+by token hash, and that id is not copied onto the answer.
 """
 
 from __future__ import annotations
@@ -18,8 +18,6 @@ from psycopg.types.json import Json
 
 from app.services.invitation_file import ParsedInvitations
 from app.services.invitation_mail import MailDeliveryError, MailNotConfigured, deliver_invitations
-
-PILOT_SLUG = "pilot"
 
 # Identifiers we already refused. This is not the list of demographic fields.
 BLOCKED_DEMOGRAPHIC_KEYS = frozenset(
@@ -48,15 +46,23 @@ ITEM_COLUMNS = tuple(f"i{number:02d}" for number in range(1, 36))
 
 
 class NoOpenRound(Exception):
-    """The pilot company has no open round to attach this list to."""
+    """This company has no open round to attach the list or the answer to."""
+
+
+class UnknownInvitation(Exception):
+    """No invitation has this token."""
+
+
+class InvitationAlreadySubmitted(Exception):
+    """This link was already used."""
 
 
 class DemographicRejected(Exception):
     """A demographic payload tried to carry an identifier or a nested value."""
 
 
-def add_invitations(conn, filename: str, parsed: ParsedInvitations) -> dict[str, Any]:
-    company_id, round_id, round_label = _open_round(conn)
+def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) -> dict[str, Any]:
+    company_id, round_id, round_label = _open_round(conn, company_id)
     existing = {
         row["email"]
         for row in conn.execute(
@@ -116,9 +122,9 @@ def add_invitations(conn, filename: str, parsed: ParsedInvitations) -> dict[str,
     }
 
 
-def list_invitations(conn) -> dict[str, Any]:
-    """Participation for the open round. Counts and shares only: no addresses."""
-    _company_id, round_id, round_label = _open_round(conn)
+def list_invitations(conn, company_id) -> dict[str, Any]:
+    """Participation for this company's open round. Counts and shares only: no addresses."""
+    _company_id, round_id, round_label = _open_round(conn, company_id)
     row = conn.execute(
         """
         SELECT
@@ -142,9 +148,59 @@ def list_invitations(conn) -> dict[str, Any]:
     }
 
 
+def submit_invitation(
+    conn,
+    token: str,
+    *,
+    submitted_on: date,
+    demographics: dict[str, Any],
+    answers: list[int],
+) -> UUID:
+    """Save one anonymous form for the invitation's company and mark that link used.
+
+    The token is only the lookup key. It is not written on the answer.
+    """
+    digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    invitation = conn.execute(
+        """
+        SELECT id, company_id, round_id, status
+        FROM invitations
+        WHERE link_token_hash = %s
+        FOR UPDATE
+        """,
+        (digest,),
+    ).fetchone()
+    if invitation is None:
+        raise UnknownInvitation()
+    if invitation["status"] != "pending":
+        raise InvitationAlreadySubmitted()
+    response_id = record_response(
+        conn,
+        company_id=invitation["company_id"],
+        round_id=invitation["round_id"],
+        submitted_on=submitted_on,
+        demographics=demographics,
+        answers=answers,
+    )
+    updated = conn.execute(
+        """
+        UPDATE invitations
+        SET status = 'submitted', submitted_at = now()
+        WHERE id = %s
+          AND status = 'pending'
+        """,
+        (invitation["id"],),
+    )
+    if updated.rowcount != 1:
+        raise InvitationAlreadySubmitted()
+    return response_id
+
+
 def record_response(
     conn,
     *,
+    company_id,
+    round_id,
     submitted_on: date,
     demographics: dict[str, Any],
     answers: list[int],
@@ -153,7 +209,6 @@ def record_response(
     if len(answers) != 35 or any(type(value) is not int or not 1 <= value <= 5 for value in answers):
         raise ValueError("HSE answers must be 35 integers from 1 to 5")
     cleaned = clean_demographics(demographics)
-    company_id, round_id, _label = _open_round(conn)
     response_id = uuid4()
     columns = ", ".join(ITEM_COLUMNS)
     placeholders = ", ".join(["%s"] * 35)
@@ -199,16 +254,30 @@ def _percent(part: int, whole: int) -> int | None:
     return round(100 * part / whole)
 
 
-def _open_round(conn) -> tuple[Any, Any, str]:
+def invitation_is_pending(conn, token: str) -> bool:
+    """True when this token can still open the form. Does not return the address."""
+    digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    row = conn.execute(
+        "SELECT status FROM invitations WHERE link_token_hash = %s",
+        (digest,),
+    ).fetchone()
+    if row is None:
+        raise UnknownInvitation()
+    if row["status"] != "pending":
+        raise InvitationAlreadySubmitted()
+    return True
+
+
+def _open_round(conn, company_id) -> tuple[Any, Any, str]:
     row = conn.execute(
         """
         SELECT c.id AS company_id, r.id AS round_id, r.label
         FROM companies AS c
         JOIN company_rounds AS r ON r.company_id = c.id
-        WHERE c.slug = %s
+        WHERE c.id = %s
           AND r.closed_on IS NULL
         """,
-        (PILOT_SLUG,),
+        (company_id,),
     ).fetchone()
     if row is None:
         raise NoOpenRound()

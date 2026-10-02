@@ -52,6 +52,12 @@ export interface BlockwallUnlockResponse {
 export interface CompanyLoginResponse {
   success: boolean;
   passage: string;
+  company_slug: string;
+  company_name: string;
+}
+
+export interface ToolSubmitResult {
+  saved: boolean;
 }
 
 export interface CompanyAlphaRow {

@@ -40,7 +40,7 @@ def test_simulated_wave_has_one_hundred_forms():
     assert "answers" not in overview
 
 
-def test_login_rejects_a_wrong_password():
+def test_login_rejects_a_wrong_password(postgres):
     response = client.post(
         "/api/v1/company/login",
         json={"username": "admin", "password": "nope"},
@@ -49,14 +49,17 @@ def test_login_rejects_a_wrong_password():
     assert "passage" not in response.json()
 
 
-def test_login_opens_the_overview():
+def test_login_opens_the_overview(postgres):
     logged_in = client.post(
         "/api/v1/company/login",
         json={"username": "admin", "password": "admintest"},
     )
     assert logged_in.status_code == 200
-    passage = logged_in.json()["passage"]
+    body = logged_in.json()
+    passage = body["passage"]
     assert passage != "admintest"
+    assert body["company_slug"] == "internal"
+    assert body["company_name"] == "Uso interno"
 
     missing = client.get("/api/v1/company/overview")
     assert missing.status_code == 401

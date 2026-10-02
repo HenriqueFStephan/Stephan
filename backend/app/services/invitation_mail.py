@@ -36,7 +36,7 @@ def smtp_ready(settings: Settings | None = None) -> bool:
 
 def invitation_link(token: str, settings: Settings | None = None) -> str:
     current = settings or get_settings()
-    origin = (current.frontend_url or "http://localhost:4200").rstrip("/")
+    origin = (current.public_app_url or "https://stephan.net.br").rstrip("/")
     return f"{origin}/tool?t={token}"
 
 

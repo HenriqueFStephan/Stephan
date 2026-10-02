@@ -10,13 +10,27 @@
   </header>
 
   <div class="tool__main">
+    <section *ngIf="phase === 'checking'" class="card">
+      <p class="lead">{{ 'tool.opening' | t }}</p>
+    </section>
+
+    <section *ngIf="phase === 'invalid'" class="card">
+      <h1>{{ 'tool.title' | t }}</h1>
+      <p class="lead">{{ 'tool.invalid' | t }}</p>
+    </section>
+
+    <section *ngIf="phase === 'used'" class="card">
+      <h1>{{ 'tool.title' | t }}</h1>
+      <p class="lead">{{ 'tool.used' | t }}</p>
+    </section>
+
     <section *ngIf="phase === 'intro'" class="card">
       <h1>{{ 'tool.title' | t }}</h1>
       <p class="lead">{{ 'tool.lead' | t }}</p>
       <ul class="factors">
         <li *ngFor="let id of dimensions">{{ dimensionName(id) }}</li>
       </ul>
-      <p class="note">{{ 'tool.anon' | t }}</p>
+      <p class="note">{{ (campaign ? 'tool.campaignAnon' : 'tool.anon') | t }}</p>
       <label class="field">
         {{ 'tool.sector' | t }}
         <input type="text" name="sector" [(ngModel)]="sector" [attr.placeholder]="'tool.sectorHint' | t" autocomplete="off" />
@@ -56,13 +70,15 @@
           (click)="finish()"
           [disabled]="answers[index] == null"
         >
-          {{ 'tool.see' | t }}
+          {{ (saving ? 'tool.sending' : (campaign ? 'tool.send' : 'tool.see')) | t }}
         </button>
       </div>
+      <p class="error" *ngIf="saveFailed" role="alert">{{ 'tool.saveFailed' | t }}</p>
     </section>
 
     <section *ngIf="phase === 'results'" class="card">
       <h1>{{ 'tool.resultsTitle' | t }}</h1>
+      <p class="note" *ngIf="campaign">{{ 'tool.campaignSaved' | t }}</p>
       <p *ngIf="sector.trim()" class="sector">{{ sector.trim() }}</p>
       <p class="lead">{{ 'tool.resultsLead' | t }}</p>
       <ol class="meters">
@@ -87,8 +103,8 @@
         <button type="button" class="button" (click)="copySummary()">
           {{ (copied ? 'tool.copied' : 'tool.copy') | t }}
         </button>
-        <button type="button" class="text" (click)="back()">{{ 'tool.revise' | t }}</button>
-        <button type="button" class="text" (click)="restart()">{{ 'tool.restart' | t }}</button>
+        <button type="button" class="text" *ngIf="!campaign" (click)="back()">{{ 'tool.revise' | t }}</button>
+        <button type="button" class="text" *ngIf="!campaign" (click)="restart()">{{ 'tool.restart' | t }}</button>
       </div>
       <pre *ngIf="summaryText" class="summary">{{ summaryText }}</pre>
       <p class="reference">{{ 'tool.reference' | t }}</p>
