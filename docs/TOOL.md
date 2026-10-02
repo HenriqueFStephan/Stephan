@@ -2,7 +2,7 @@
 
 This is the store for one company’s HSE Management Standards Indicator Tool wave: about 300 anonymous answers, plus the invitation list used to send each person a link. It replaces nothing on the public site. A public-site schema (pages, posts, comments, practice contact details) was drafted elsewhere and has been discarded. Do not rebuild it.
 
-The form pages that would show the 35 items are not part of this step. Confirm the Portuguese wording before building them. Until then, answers are keyed by item number and the question text is not copied into the database.
+`/tool` shows the introduction, then the sociodemographic questionnaire (Anexo B), then the 35 items. With `?t=`, that is the campaign form. Without a token, it is the local reading and posts nothing. The working Portuguese for the 35 items lives in `frontend/src/app/features/tool/hse-it.ts` and is not copied into the database. Anexo B sentences live in `frontend/src/app/features/tool/profile.ts`. The database stores codes.
 
 ## Where PostgreSQL runs
 
@@ -76,15 +76,31 @@ The link token stays on the invitation so the same link keeps working after the 
 
 The original file is not kept. A rejected file is not stored at all.
 
-## Open decision: demographics
+## Anexo B on the form
 
-Age and sex are the examples we have. The exact fields are not decided. Do not freeze them as columns.
+The sociodemographic and occupational questions are the page after the introduction, before the 35 items. They belong to the form. Each answer is a column on `hse_responses`, the same row as `i01`–`i35`. They are not columns on `invitations`. There is still no foreign key from an answer to an invitation.
 
-They will sit in `hse_responses.demographics`, a JSON object, on the answer. They do not sit on the invitation. An empty object is valid, and it is the only value until the form exists.
+Age band and economic sector are required. The other nine may be left blank. A blank is SQL `NULL`. A new form that omits a required answer is refused, and the invitation stays `pending`.
 
-Adding a field later is a new key in that object, not a migration, as long as the value is a scalar (text, number, or boolean) and the key is not an identifier. Keys are stored in lowercase. Text values are capped at 80 characters so a job title cannot hide in a free-text field by accident.
+Stored values are stable codes, not the sentences on the page. A name, a job title, or any other free text cannot be written into these columns.
 
-These keys are refused, because we already decided not to keep them. This list is not the list of allowed demographics:
+`demographics` is that same set of codes as a JSON object, written in the same insert as the columns. It is not an open bag. Unknown keys are refused. Keys and codes are lowercase.
+
+| Column | Required | Codes |
+|---|---|---|
+| `age_band` | yes | `18_24`, `25_34`, `35_44`, `45_54`, `55_64`, `65_plus` |
+| `gender` | no | `female`, `male`, `undisclosed` |
+| `education` | no | `fundamental`, `high_school`, `higher_incomplete`, `higher_complete`, `postgraduate` |
+| `economic_sector` | yes | `manufacturing`, `retail`, `services`, `health`, `education`, `it`, `construction`, `transport`, `agribusiness`, `public_admin`, `other` |
+| `org_size` | no | `micro`, `small`, `medium`, `large`, `unknown` |
+| `employment_bond` | no | `clt`, `public_statute`, `autonomous_pj`, `intern_apprentice`, `other` |
+| `tenure_org` | no | `lt_1`, `y1_3`, `y4_10`, `gt_10` |
+| `tenure_profession` | no | `lt_1`, `y1_5`, `y6_15`, `gt_15` |
+| `work_shift` | no | `day_fixed`, `night_fixed`, `rotating`, `flexible` |
+| `leadership` | no | `yes`, `no` |
+| `region` | no | `north`, `northeast`, `center_west`, `southeast`, `south` |
+
+These keys are still refused, on top of any key that is not in the table above:
 
 `name`, `nome`, `full_name`, `email`, `e-mail`, `mail`, `job`, `job_title`, `jobtitle`, `cargo`, `funcao`, `função`, `token`, `link_token`, `ip`, `invitation_id`, `invitation`
 
@@ -92,7 +108,7 @@ Do not add name or job title unless that is decided later, in writing, as its ow
 
 ## Re-identification inside one company
 
-About 300 people is still a small workplace. Age and sex together, or age alone in a small team, can point at one person even when the row has no name. The company page must stay an aggregate. Do not add a person list of answers, a raw export, or a single-form view. The invitation list (who has not finished) is a separate list and must not be shown beside an answer.
+About 300 people is still a small workplace. Age band together with gender, sector, region, or leadership can point at one person even when the row has no name. The company page must stay an aggregate. Do not add a person list of answers, a raw export, or a single-form view. The invitation list (who has not finished) is a separate list and must not be shown beside an answer.
 
 The same warning is already in `docs/COMPANY_PORTAL.md` for groups under five. It applies to demographics here even when the whole company is large enough to show a mean.
 
@@ -250,12 +266,13 @@ Unique on `(round_id, email)`.
 | `id` | new random uuid |
 | `company_id`, `round_id` | the wave, not a person |
 | `submitted_on` | date |
-| `demographics` | JSON object, default `{}` |
+| `demographics` | the same Anexo B codes as JSON, default `{}` on older rows |
+| `age_band` … `region` | Anexo B codes, null when that question was skipped |
 | `i01` … `i35` | raw marks 1–5, official order |
 
 Schema file: `backend/app/db/schema.sql`. The API applies it on the first invitation request.
 
-`record_response` in `backend/app/services/campaign_store.py` inserts an answer with no email, token, or invitation id. It is not exposed on HTTP until the form exists.
+`record_response` in `backend/app/services/campaign_store.py` inserts an answer with no email, token, or invitation id. `POST /api/v1/tool/responses` calls it and then marks the invitation submitted, in one transaction.
 
 ## Local setup
 
@@ -324,8 +341,8 @@ ss -ltn 'sport = :5432'
 
 ## What a later step still has to do
 
-- Confirm the Portuguese item wording, then build the form.
+- Confirm the Portuguese HSE item wording. The working translation is already on the form.
 - Render `/tool` only when `t` matches a pending invitation. No token, no page.
-- Save the 35 raw marks and the demographics in one transaction with the status change above.
+- Save the 35 raw marks and Anexo B in one transaction with the status change above. This is what `POST /api/v1/tool/responses` does.
 - Replace `admin` / `admintest` before a real list is uploaded on the server.
 - Point the company overview at `hse_responses` when a real wave should replace the simulated one. Until then, `source` stays `simulated`.

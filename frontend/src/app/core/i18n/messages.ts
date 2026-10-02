@@ -117,6 +117,11 @@ const ptBR = {
   'tool.sector': 'Setor ou equipe',
   'tool.sectorHint': 'Opcional. Só para nomear esta leitura.',
   'tool.start': 'Começar',
+  'tool.profile.title': 'Questionário sociodemográfico e ocupacional',
+  'tool.profile.lead':
+    'As perguntas abaixo têm como propósito descrever de forma agregada as características da amostra populacional do estudo. Suas respostas são inteiramente anônimas e livres de identificação nominal. Responda marcando a opção condizente com a sua situação profissional vigente.',
+  'tool.profile.required': 'Preenchimento obrigatório',
+  'tool.profile.continue': 'Continuar',
   'tool.progress': '{{current}} de {{total}}',
   'tool.back': 'Voltar',
   'tool.shift': 'Daqui em diante, diga o quanto concorda com a frase.',
@@ -337,6 +342,11 @@ export const en: Record<MsgKey, string> = {
   'tool.sector': 'Area or team',
   'tool.sectorHint': 'Optional. Only to name this reading.',
   'tool.start': 'Begin',
+  'tool.profile.title': 'Sociodemographic and occupational questionnaire',
+  'tool.profile.lead':
+    'The questions below describe, in aggregate, the characteristics of the study sample. Your answers are entirely anonymous and carry no name. Mark the option that matches your current work situation.',
+  'tool.profile.required': 'Required',
+  'tool.profile.continue': 'Continue',
   'tool.progress': '{{current}} of {{total}}',
   'tool.back': 'Back',
   'tool.shift': 'From here, say how far you agree with the statement.',

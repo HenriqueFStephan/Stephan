@@ -5,7 +5,8 @@
 -- hse_responses does not. There is no foreign key from an answer to an invitation,
 -- and the answer has no email, token, or client address.
 -- company_id and round_id are the shared wave, not a person.
--- Demographics are one JSON object so the field list can still change.
+-- Anexo B is columns on hse_responses, the same row as the 35 items.
+-- It is not stored on the invitation. demographics holds the same closed codes.
 -- Blocked keys are identifiers we already refused, not the allowed list.
 
 CREATE TABLE IF NOT EXISTS companies (
@@ -68,6 +69,17 @@ CREATE TABLE IF NOT EXISTS hse_responses (
     round_id uuid NOT NULL REFERENCES company_rounds (id),
     submitted_on date NOT NULL,
     demographics jsonb NOT NULL DEFAULT '{}'::jsonb,
+    age_band text,
+    gender text,
+    education text,
+    economic_sector text,
+    org_size text,
+    employment_bond text,
+    tenure_org text,
+    tenure_profession text,
+    work_shift text,
+    leadership text,
+    region text,
     i01 smallint NOT NULL,
     i02 smallint NOT NULL,
     i03 smallint NOT NULL,
@@ -164,7 +176,18 @@ CREATE TABLE IF NOT EXISTS hse_responses (
                 'invitation'
             ]
         )
-    )
+    ),
+    CONSTRAINT hse_responses_age_band CHECK (age_band IS NULL OR age_band IN ('18_24', '25_34', '35_44', '45_54', '55_64', '65_plus')),
+    CONSTRAINT hse_responses_gender CHECK (gender IS NULL OR gender IN ('female', 'male', 'undisclosed')),
+    CONSTRAINT hse_responses_education CHECK (education IS NULL OR education IN ('fundamental', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate')),
+    CONSTRAINT hse_responses_economic_sector CHECK (economic_sector IS NULL OR economic_sector IN ('manufacturing', 'retail', 'services', 'health', 'education', 'it', 'construction', 'transport', 'agribusiness', 'public_admin', 'other')),
+    CONSTRAINT hse_responses_org_size CHECK (org_size IS NULL OR org_size IN ('micro', 'small', 'medium', 'large', 'unknown')),
+    CONSTRAINT hse_responses_employment_bond CHECK (employment_bond IS NULL OR employment_bond IN ('clt', 'public_statute', 'autonomous_pj', 'intern_apprentice', 'other')),
+    CONSTRAINT hse_responses_tenure_org CHECK (tenure_org IS NULL OR tenure_org IN ('lt_1', 'y1_3', 'y4_10', 'gt_10')),
+    CONSTRAINT hse_responses_tenure_profession CHECK (tenure_profession IS NULL OR tenure_profession IN ('lt_1', 'y1_5', 'y6_15', 'gt_15')),
+    CONSTRAINT hse_responses_work_shift CHECK (work_shift IS NULL OR work_shift IN ('day_fixed', 'night_fixed', 'rotating', 'flexible')),
+    CONSTRAINT hse_responses_leadership CHECK (leadership IS NULL OR leadership IN ('yes', 'no')),
+    CONSTRAINT hse_responses_region CHECK (region IS NULL OR region IN ('north', 'northeast', 'center_west', 'southeast', 'south'))
 );
 
 CREATE INDEX IF NOT EXISTS hse_responses_round
@@ -214,3 +237,17 @@ WHERE c.slug = 'hse-it'
   );
 
 ALTER TABLE invitations ADD COLUMN IF NOT EXISTS sent_at timestamptz;
+
+-- Existing databases already have hse_responses. New installs get these columns
+-- from CREATE TABLE, so each ADD is skipped once the column is there.
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS age_band text CONSTRAINT hse_responses_age_band CHECK (age_band IS NULL OR age_band IN ('18_24', '25_34', '35_44', '45_54', '55_64', '65_plus'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS gender text CONSTRAINT hse_responses_gender CHECK (gender IS NULL OR gender IN ('female', 'male', 'undisclosed'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS education text CONSTRAINT hse_responses_education CHECK (education IS NULL OR education IN ('fundamental', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS economic_sector text CONSTRAINT hse_responses_economic_sector CHECK (economic_sector IS NULL OR economic_sector IN ('manufacturing', 'retail', 'services', 'health', 'education', 'it', 'construction', 'transport', 'agribusiness', 'public_admin', 'other'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS org_size text CONSTRAINT hse_responses_org_size CHECK (org_size IS NULL OR org_size IN ('micro', 'small', 'medium', 'large', 'unknown'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS employment_bond text CONSTRAINT hse_responses_employment_bond CHECK (employment_bond IS NULL OR employment_bond IN ('clt', 'public_statute', 'autonomous_pj', 'intern_apprentice', 'other'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS tenure_org text CONSTRAINT hse_responses_tenure_org CHECK (tenure_org IS NULL OR tenure_org IN ('lt_1', 'y1_3', 'y4_10', 'gt_10'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS tenure_profession text CONSTRAINT hse_responses_tenure_profession CHECK (tenure_profession IS NULL OR tenure_profession IN ('lt_1', 'y1_5', 'y6_15', 'gt_15'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS work_shift text CONSTRAINT hse_responses_work_shift CHECK (work_shift IS NULL OR work_shift IN ('day_fixed', 'night_fixed', 'rotating', 'flexible'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS leadership text CONSTRAINT hse_responses_leadership CHECK (leadership IS NULL OR leadership IN ('yes', 'no'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS region text CONSTRAINT hse_responses_region CHECK (region IS NULL OR region IN ('north', 'northeast', 'center_west', 'southeast', 'south'));

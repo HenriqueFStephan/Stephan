@@ -15,6 +15,8 @@ from app.db.session import SCHEMA_PATH, DatabaseUnavailable, connect, ensure_sch
 from app.main import app
 from app.services.campaign_store import (
     BLOCKED_DEMOGRAPHIC_KEYS,
+    DEMOGRAPHIC_FIELDS,
+    REQUIRED_DEMOGRAPHIC_KEYS,
     DemographicRejected,
     clean_demographics,
     record_response,
@@ -47,15 +49,53 @@ def test_blocked_demographic_keys_match_the_schema():
     assert keys == set(BLOCKED_DEMOGRAPHIC_KEYS)
 
 
-def test_demographics_stay_open_and_reject_identifiers():
-    assert clean_demographics({}) == {}
-    assert clean_demographics({"Age": 42, "Sex": "feminino"}) == {"age": 42, "sex": "feminino"}
+def test_demographics_are_the_annex_and_reject_identifiers():
+    assert clean_demographics({"Age_Band": "35_44", "economic_sector": "Health", "Leadership": "yes"}) == {
+        "age_band": "35_44",
+        "economic_sector": "health",
+        "leadership": "yes",
+    }
     with pytest.raises(DemographicRejected):
-        clean_demographics({"nome": "Ada"})
+        clean_demographics({})
     with pytest.raises(DemographicRejected):
-        clean_demographics({"job_title": "analista"})
+        clean_demographics({"age_band": "35_44"})
     with pytest.raises(DemographicRejected):
-        clean_demographics({"note": {"nested": True}})
+        clean_demographics({"age_band": "35_44", "economic_sector": "health", "nome": "Ada"})
+    with pytest.raises(DemographicRejected):
+        clean_demographics({"age_band": "35_44", "economic_sector": "health", "job_title": "analista"})
+    with pytest.raises(DemographicRejected):
+        clean_demographics({"age_band": "35_44", "economic_sector": "health", "area": "expedição"})
+    with pytest.raises(DemographicRejected):
+        clean_demographics({"age_band": "35_44", "economic_sector": "nope"})
+    with pytest.raises(DemographicRejected):
+        clean_demographics({"age_band": "35_44", "economic_sector": "health", "note": {"nested": True}})
+
+
+def test_annex_codes_match_the_schema_and_the_form():
+    sql = SCHEMA_PATH.read_text(encoding="utf-8")
+    for column, values in DEMOGRAPHIC_FIELDS.items():
+        bodies = re.findall(
+            rf"CHECK \({column} IS NULL OR {column} IN \((.*?)\)\)",
+            sql,
+        )
+        assert len(bodies) == 2
+        for body in bodies:
+            assert re.findall(r"'([^']*)'", body) == list(values)
+    text = (ROOT / "frontend/src/app/features/tool/profile.ts").read_text(encoding="utf-8")
+    questions = re.findall(
+        r"\{\s*id: '(?P<id>[a-z0-9_]+)',\s*"
+        r"required: (?P<required>true|false),\s*"
+        r"pt: '(?P<pt>[^']*)',\s*"
+        r"en: '(?P<en>[^']*)',\s*"
+        r"options: \[(?P<options>.*?)\]\s*,?\s*\}",
+        text,
+        re.S,
+    )
+    assert [item[0] for item in questions] == list(DEMOGRAPHIC_FIELDS)
+    for key, required, _pt, _en, options in questions:
+        found = re.findall(r"id: '([a-z0-9_]+)'", options)
+        assert found == list(DEMOGRAPHIC_FIELDS[key])
+        assert (required == "true") is (key in REQUIRED_DEMOGRAPHIC_KEYS)
 
 
 def test_tool_stays_out_of_the_public_menu_and_footer():
@@ -208,6 +248,9 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             assert "email" not in columns
             assert "link_token" not in columns
             assert "invitation_id" not in columns
+            assert "age_band" in columns
+            assert "economic_sector" in columns
+            assert "region" in columns
             company = conn.execute("SELECT id FROM companies WHERE slug = 'internal'").fetchone()
             opened = conn.execute(
                 """
@@ -216,17 +259,30 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
                 """,
                 (company["id"],),
             ).fetchone()
+            annex = {
+                "age_band": "35_44",
+                "gender": "female",
+                "economic_sector": "health",
+                "leadership": "no",
+                "region": "southeast",
+            }
             response_id = record_response(
                 conn,
                 company_id=company["id"],
                 round_id=opened["id"],
                 submitted_on=date(2026, 10, 1),
-                demographics={"age": 40},
+                demographics=annex,
                 answers=[3] * 35,
             )
-            saved = client.post(
+            refused = client.post(
                 "/api/v1/tool/responses",
                 json={"token": sent[0][1], "answers": [3] * 35, "demographics": {}},
+            )
+            assert refused.status_code == 400
+            assert refused.json()["detail"]["code"] == "demographics"
+            saved = client.post(
+                "/api/v1/tool/responses",
+                json={"token": sent[0][1], "answers": [3] * 35, "demographics": annex},
             )
             assert saved.status_code == 200
             assert sent[0][1] not in saved.text
@@ -249,10 +305,31 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             assert other.json()["invited"] == 0
             assert email not in other.text
             stored = conn.execute(
-                "SELECT demographics FROM hse_responses WHERE id = %s",
+                """
+                SELECT demographics, age_band, gender, economic_sector, education, leadership, region
+                FROM hse_responses WHERE id = %s
+                """,
                 (response_id,),
             ).fetchone()
-            assert stored["demographics"]["age"] == 40
+            assert stored["demographics"]["age_band"] == "35_44"
+            assert stored["age_band"] == "35_44"
+            assert stored["gender"] == "female"
+            assert stored["economic_sector"] == "health"
+            assert stored["leadership"] == "no"
+            assert stored["region"] == "southeast"
+            assert stored["education"] is None
+            posted_ids = _ids(conn, "hse_responses") - before_answers - {response_id}
+            assert len(posted_ids) == 1
+            posted = conn.execute(
+                """
+                SELECT age_band, economic_sector
+                FROM hse_responses
+                WHERE id = %s
+                """,
+                (posted_ids.pop(),),
+            ).fetchone()
+            assert posted["age_band"] == "35_44"
+            assert posted["economic_sector"] == "health"
             conn.commit()
     finally:
         with connect() as conn:

@@ -58,8 +58,6 @@ DATABASE_URL=postgresql://stephan:stephan@127.0.0.1:5432/stephan
 
 The password above is the local Docker default. The Lightsail password is different and stays in `/opt/stephan/debt.txt`.
 
-## Where to add the questionnaire later
+## Questionnaire on `/tool`
 
-- New route next to `frontend/src/app/app.routes.ts`. The campaign form waits on confirmed Portuguese wording and must open only with an invitation token. See [TOOL.md](TOOL.md). Do not add `/tool` to the header or the footer.
-- New router under `backend/app/api/v1/`, included from `backend/app/main.py`
-- Call it from `frontend/src/app/core/api.service.ts`
+The campaign form is already `/tool?t=`. After the introduction comes Anexo B, then the 35 HSE-IT items. Anexo B is stored on `hse_responses`, not on the invitation. See [TOOL.md](TOOL.md). Do not add `/tool` to the header or the footer.

@@ -19,8 +19,15 @@ import {
   hseSummary,
   scoreHse,
 } from './hse-it';
+import {
+  PROFILE_QUESTIONS,
+  ProfileOption,
+  ProfileQuestion,
+  isProfileReady,
+  profilePayload,
+} from './profile';
 
-type Phase = 'checking' | 'invalid' | 'used' | 'intro' | 'ask' | 'results';
+type Phase = 'checking' | 'invalid' | 'used' | 'intro' | 'profile' | 'ask' | 'results';
 
 const ADVANCE_MS = 180;
 
@@ -34,10 +41,12 @@ const ADVANCE_MS = 180;
 export class ToolComponent implements OnInit, OnDestroy {
   readonly dimensions = DIMENSION_ORDER;
   readonly items = HSE_ITEMS;
+  readonly profileQuestions = PROFILE_QUESTIONS;
 
   phase: Phase = 'intro';
   index = 0;
   sector = '';
+  profile: Record<string, string> = {};
   answers: (number | null)[] = Array(HSE_ITEMS.length).fill(null);
   scores: DimensionScore[] = [];
   copied = false;
@@ -81,13 +90,36 @@ export class ToolComponent implements OnInit, OnDestroy {
     return this.items[this.index];
   }
 
+  get profileReady(): boolean {
+    return isProfileReady(this.profile);
+  }
+
   toggleLang(): void {
     this.i18n.setLang(this.i18n.lang() === 'pt-BR' ? 'en' : 'pt-BR');
   }
 
   start(): void {
+    this.phase = 'profile';
+    this.reveal();
+  }
+
+  questionText(question: ProfileQuestion): string {
+    return this.i18n.lang() === 'en' ? question.en : question.pt;
+  }
+
+  optionText(option: ProfileOption): string {
+    return this.i18n.lang() === 'en' ? option.en : option.pt;
+  }
+
+  chooseProfile(questionId: string, optionId: string): void {
+    this.profile = { ...this.profile, [questionId]: optionId };
+  }
+
+  continueProfile(): void {
+    if (!this.profileReady) {
+      return;
+    }
     this.phase = 'ask';
-    this.index = 0;
     this.reveal();
   }
 
@@ -116,14 +148,23 @@ export class ToolComponent implements OnInit, OnDestroy {
       this.reveal();
       return;
     }
-    if (this.index > 0) {
-      this.index -= 1;
+    if (this.phase === 'ask') {
+      if (this.index > 0) {
+        this.index -= 1;
+      } else {
+        this.phase = 'profile';
+      }
+      this.reveal();
+      return;
+    }
+    if (this.phase === 'profile') {
+      this.phase = 'intro';
       this.reveal();
     }
   }
 
   finish(): void {
-    if (this.answers.some((value) => value == null) || this.saving) {
+    if (this.answers.some((value) => value == null) || this.saving || !this.profileReady) {
       return;
     }
     this.clearAdvance();
@@ -133,9 +174,8 @@ export class ToolComponent implements OnInit, OnDestroy {
     }
     this.saving = true;
     this.saveFailed = false;
-    const area = this.sector.trim();
     this.api
-      .submitTool(this.token, this.answers as number[], area ? { area } : {})
+      .submitTool(this.token, this.answers as number[], profilePayload(this.profile))
       .subscribe({
         next: () => {
           this.saving = false;
@@ -151,6 +191,7 @@ export class ToolComponent implements OnInit, OnDestroy {
   restart(): void {
     this.clearAdvance();
     this.answers = Array(this.items.length).fill(null);
+    this.profile = {};
     this.scores = [];
     this.index = 0;
     this.phase = 'intro';

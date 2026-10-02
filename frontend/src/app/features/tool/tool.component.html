@@ -31,11 +31,45 @@
         <li *ngFor="let id of dimensions">{{ dimensionName(id) }}</li>
       </ul>
       <p class="note">{{ (campaign ? 'tool.campaignAnon' : 'tool.anon') | t }}</p>
-      <label class="field">
+      <label class="field" *ngIf="!campaign">
         {{ 'tool.sector' | t }}
         <input type="text" name="sector" [(ngModel)]="sector" [attr.placeholder]="'tool.sectorHint' | t" autocomplete="off" />
       </label>
       <button type="button" class="button" (click)="start()">{{ 'tool.start' | t }}</button>
+    </section>
+
+    <section *ngIf="phase === 'profile'" class="card">
+      <h1>{{ 'tool.profile.title' | t }}</h1>
+      <p class="lead">{{ 'tool.profile.lead' | t }}</p>
+      <fieldset
+        class="profile"
+        *ngFor="let question of profileQuestions; let i = index"
+        [attr.data-question]="question.id"
+      >
+        <legend>
+          <span class="profile__q">{{ i + 1 }}. {{ questionText(question) }}</span>
+          <span class="profile__required" *ngIf="question.required">{{ 'tool.profile.required' | t }}</span>
+        </legend>
+        <div class="choices" role="radiogroup" [attr.aria-label]="questionText(question)">
+          <button
+            type="button"
+            class="choice"
+            *ngFor="let option of question.options"
+            role="radio"
+            [attr.aria-checked]="profile[question.id] === option.id"
+            [class.is-selected]="profile[question.id] === option.id"
+            (click)="chooseProfile(question.id, option.id)"
+          >
+            <span>{{ optionText(option) }}</span>
+          </button>
+        </div>
+      </fieldset>
+      <div class="ask__nav">
+        <button type="button" class="text" (click)="back()">{{ 'tool.back' | t }}</button>
+        <button type="button" class="button" (click)="continueProfile()" [disabled]="!profileReady">
+          {{ 'tool.profile.continue' | t }}
+        </button>
+      </div>
     </section>
 
     <section *ngIf="phase === 'ask'" class="card">
@@ -60,7 +94,7 @@
         </button>
       </div>
       <div class="ask__nav">
-        <button type="button" class="text" (click)="back()" [disabled]="index === 0">
+        <button type="button" class="text" (click)="back()">
           {{ 'tool.back' | t }}
         </button>
         <button
@@ -68,7 +102,7 @@
           type="button"
           class="button"
           (click)="finish()"
-          [disabled]="answers[index] == null"
+          [disabled]="answers[index] == null || !profileReady"
         >
           {{ (saving ? 'tool.sending' : (campaign ? 'tool.send' : 'tool.see')) | t }}
         </button>

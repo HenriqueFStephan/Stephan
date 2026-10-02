@@ -19,6 +19,36 @@ from psycopg.types.json import Json
 from app.services.invitation_file import ParsedInvitations
 from app.services.invitation_mail import MailDeliveryError, MailNotConfigured, deliver_invitations
 
+# Anexo B codes stored on hse_responses. The Portuguese sentences live in the form.
+# Keep this aligned with frontend/src/app/features/tool/profile.ts.
+DEMOGRAPHIC_FIELDS: dict[str, tuple[str, ...]] = {
+    "age_band": ("18_24", "25_34", "35_44", "45_54", "55_64", "65_plus"),
+    "gender": ("female", "male", "undisclosed"),
+    "education": ("fundamental", "high_school", "higher_incomplete", "higher_complete", "postgraduate"),
+    "economic_sector": (
+        "manufacturing",
+        "retail",
+        "services",
+        "health",
+        "education",
+        "it",
+        "construction",
+        "transport",
+        "agribusiness",
+        "public_admin",
+        "other",
+    ),
+    "org_size": ("micro", "small", "medium", "large", "unknown"),
+    "employment_bond": ("clt", "public_statute", "autonomous_pj", "intern_apprentice", "other"),
+    "tenure_org": ("lt_1", "y1_3", "y4_10", "gt_10"),
+    "tenure_profession": ("lt_1", "y1_5", "y6_15", "gt_15"),
+    "work_shift": ("day_fixed", "night_fixed", "rotating", "flexible"),
+    "leadership": ("yes", "no"),
+    "region": ("north", "northeast", "center_west", "southeast", "south"),
+}
+REQUIRED_DEMOGRAPHIC_KEYS = frozenset({"age_band", "economic_sector"})
+DEMOGRAPHIC_COLUMNS = tuple(DEMOGRAPHIC_FIELDS)
+
 # Identifiers we already refused. This is not the list of demographic fields.
 BLOCKED_DEMOGRAPHIC_KEYS = frozenset(
     {
@@ -212,39 +242,44 @@ def record_response(
     response_id = uuid4()
     columns = ", ".join(ITEM_COLUMNS)
     placeholders = ", ".join(["%s"] * 35)
+    demo_columns = ", ".join(DEMOGRAPHIC_COLUMNS)
+    demo_placeholders = ", ".join(["%s"] * len(DEMOGRAPHIC_COLUMNS))
+    demo_values = [cleaned.get(column) for column in DEMOGRAPHIC_COLUMNS]
     conn.execute(
         f"""
         INSERT INTO hse_responses (
-            id, company_id, round_id, submitted_on, demographics, {columns}
+            id, company_id, round_id, submitted_on, demographics, {demo_columns}, {columns}
         )
-        VALUES (%s, %s, %s, %s, %s, {placeholders})
+        VALUES (%s, %s, %s, %s, %s, {demo_placeholders}, {placeholders})
         """,
-        (response_id, company_id, round_id, submitted_on, Json(cleaned), *answers),
+        (response_id, company_id, round_id, submitted_on, Json(cleaned), *demo_values, *answers),
     )
     return response_id
 
 
 def clean_demographics(raw: dict[str, Any]) -> dict[str, Any]:
+    """Keep Anexo B codes only. Required answers are age band and economic sector."""
     if not isinstance(raw, dict):
         raise DemographicRejected("demographics must be an object")
     cleaned: dict[str, Any] = {}
     for key, value in raw.items():
-        if not isinstance(key, str) or not key.strip() or len(key.strip()) > 40:
+        if not isinstance(key, str) or not key.strip():
             raise DemographicRejected("invalid demographic key")
         norm = key.strip().casefold()
         if norm in BLOCKED_DEMOGRAPHIC_KEYS:
             raise DemographicRejected(norm)
-        if isinstance(value, bool) or value is None or isinstance(value, (int, float, str)):
-            if isinstance(value, str) and len(value) > 80:
-                raise DemographicRejected("demographic value is too long")
-            if isinstance(value, bool):
-                cleaned[norm] = value
-            elif isinstance(value, float) and value != value:
-                raise DemographicRejected("invalid demographic value")
-            else:
-                cleaned[norm] = value
-            continue
-        raise DemographicRejected("demographic values must be scalars")
+        allowed = DEMOGRAPHIC_FIELDS.get(norm)
+        if allowed is None:
+            raise DemographicRejected("unknown demographic key")
+        if isinstance(value, bool) or not isinstance(value, str):
+            raise DemographicRejected("invalid demographic value")
+        norm_value = value.strip().casefold()
+        if norm_value not in allowed:
+            raise DemographicRejected("invalid demographic value")
+        cleaned[norm] = norm_value
+    missing = REQUIRED_DEMOGRAPHIC_KEYS - cleaned.keys()
+    if missing:
+        raise DemographicRejected("required demographic")
     return cleaned
 
 
