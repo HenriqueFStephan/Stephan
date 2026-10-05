@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-28T07:15:31.082636+00:00",
+  "updated_at": "2026-10-05T07:19:52.679965+00:00",
   "notes": "Sources already posted in weekly law-report issues. The weekly report skips these DOIs and URLs.",
   "papers": [
     {
@@ -67,6 +67,83 @@
       "published": "2026-09-25",
       "category": "methods",
       "first_seen": "2026-09-28"
+    },
+    {
+      "title": "Psychosocial Safety Climate (PSC-12 and PSC-4) scales",
+      "url": "https://doi.org/10.1093/occmed/kqag116",
+      "doi": "10.1093/occmed/kqag116",
+      "journal": "Occupational Medicine",
+      "authors": "Ali Afsharian et al.",
+      "year": 2026,
+      "published": "2026-09-26",
+      "category": "methods",
+      "first_seen": "2026-10-05"
+    },
+    {
+      "title": "Occupational burnout in women schoolteachers in Kazakhstan: psychometric evaluation and psychosocial correlates within the job demands-resources framework",
+      "url": "https://doi.org/10.3389/fpsyg.2026.1945234",
+      "doi": "10.3389/fpsyg.2026.1945234",
+      "journal": "Frontiers in Psychology",
+      "authors": "Nurlan Smagulov et al.",
+      "year": 2026,
+      "published": "2026-09-29",
+      "category": "methods",
+      "first_seen": "2026-10-05"
+    },
+    {
+      "title": "Work intensity: updating approaches to the assessment of psychosocial factors in occupational health",
+      "url": "https://doi.org/10.31089/1026-9428-2026-66-5-534-542",
+      "doi": "10.31089/1026-9428-2026-66-5-534-542",
+      "journal": "Russian Journal of Occupational Health and Industrial Ecology",
+      "authors": "Anna V. Novikova et al.",
+      "year": 2026,
+      "published": "2026-09-11",
+      "category": "methods",
+      "first_seen": "2026-10-05"
+    },
+    {
+      "title": "Riding the waves: Gender, psychosocial risks, and mental health in offshore oil & gas employees",
+      "url": "https://doi.org/10.1080/15555240.2026.2724346",
+      "doi": "10.1080/15555240.2026.2724346",
+      "journal": "Journal of Workplace Behavioral Health",
+      "authors": "Nur Dalilah Mohd Rani et al.",
+      "year": 2026,
+      "published": "2026-09-06",
+      "category": "methods",
+      "first_seen": "2026-10-05"
+    },
+    {
+      "title": "Workplace Phubbing in Nursing Teams: Occupational Mental Health–Relevant Psychosocial Stressors and Team Cooperation",
+      "url": "https://doi.org/10.3390/psychiatryint7050202",
+      "doi": "10.3390/psychiatryint7050202",
+      "journal": "Psychiatry International",
+      "authors": "Authors per publisher record",
+      "year": 2026,
+      "published": "2026-09-07",
+      "category": "psychosocial",
+      "first_seen": "2026-10-05"
+    },
+    {
+      "title": "Psychosocial working conditions, burnout, and work engagement among social workers in Germany: a cross-sectional COPSOQ III study with occupational group comparisons",
+      "url": "https://doi.org/10.1080/02650533.2026.2739976",
+      "doi": "10.1080/02650533.2026.2739976",
+      "journal": "Journal of Social Work Practice",
+      "authors": "Ines Dieckmännken et al.",
+      "year": 2026,
+      "published": "2026-10-01",
+      "category": "methods",
+      "first_seen": "2026-10-05"
+    },
+    {
+      "title": "Psychosocial Factors and Occupational Stress in Operating Room Nurses: Implications for Perioperative Nursing Practice in the Philippines",
+      "url": "https://doi.org/10.1177/21650799261490088",
+      "doi": "10.1177/21650799261490088",
+      "journal": "Workplace Health & Safety",
+      "authors": "Darius King A. Galo et al.",
+      "year": 2026,
+      "published": "2026-09-24",
+      "category": "psychosocial",
+      "first_seen": "2026-10-05"
     }
   ]
 }
