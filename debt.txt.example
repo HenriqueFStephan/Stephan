@@ -35,3 +35,9 @@ STUDIO_ACCESS_TOKEN=
 STUDIO_ATTACHMENTS_BRANCH=studio-attachments
 # When set, the public site shows a maintenance page until this password is entered.
 BLOCKWALL_KEY=
+
+# Not read by the API yet. When a payment institution is connected, put the
+# secret here and on Render. Never in the Angular app, and never a card number.
+# PAYMENT_PROVIDER=
+# PAYMENT_ACCESS_TOKEN=
+

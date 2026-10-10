@@ -7,6 +7,8 @@ import {
   ApiStatus,
   ContactPayload,
   ContactResponse,
+  OrderPayload,
+  OrderResponse,
   StudioIssuePayload,
   StudioIssueResponse,
   StudioStatusResponse,
@@ -34,6 +36,10 @@ export class ApiService {
 
   submitContact(payload: ContactPayload): Observable<ContactResponse> {
     return this.http.post<ContactResponse>(`${this.base}/contact`, payload);
+  }
+
+  submitOrder(payload: OrderPayload): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(`${this.base}/orders`, payload);
   }
 
   getStatus(): Observable<ApiStatus> {

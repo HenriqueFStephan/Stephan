@@ -21,5 +21,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/company/company.component').then((m) => m.CompanyComponent),
   },
+  {
+    path: 'cadastro',
+    loadComponent: () =>
+      import('./features/billing/cadastro.component').then((m) => m.CadastroComponent),
+  },
+  {
+    path: 'pagamento',
+    loadComponent: () =>
+      import('./features/billing/pagamento.component').then((m) => m.PagamentoComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

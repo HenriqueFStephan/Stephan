@@ -1,0 +1,191 @@
+<div class="billing">
+  <header class="bar">
+    <a href="/" class="brand" aria-label="Stephan">
+      <img src="assets/brand/stephan-lockup.png" alt="Stephan" />
+    </a>
+    <div class="bar__side">
+      <p class="steps">
+        <a routerLink="/cadastro">{{ 'bill.stepCadastro' | t }}</a>
+        <span aria-hidden="true">/</span>
+        <a routerLink="/pagamento" class="on">{{ 'bill.stepPay' | t }}</a>
+      </p>
+      <button type="button" class="text" (click)="toggleLang()">{{ 'nav.lang' | t }}</button>
+    </div>
+  </header>
+
+  <div class="main" *ngIf="receipt as done">
+    <section class="card">
+      <h1>{{ 'bill.doneTitle' | t }}</h1>
+      <p class="lead">{{ 'bill.doneBody' | t:{ reference: done.reference, company: done.company } }}</p>
+      <p class="note" *ngIf="done.quotedCents as price">{{ 'bill.quoted' | t:{ price: money(price) } }}</p>
+      <p class="note" *ngIf="done.quotedCents == null">{{ 'bill.noQuote' | t }}</p>
+      <p class="note">{{ 'bill.notCharged' | t }}</p>
+      <p class="note" *ngIf="offer.supplier.sacEmail">{{ 'bill.withdrawNow' | t:{ email: offer.supplier.sacEmail } }}</p>
+      <p class="note" *ngIf="!offer.supplier.sacEmail">{{ 'bill.withdrawNoMail' | t }}</p>
+      <a routerLink="/cadastro" class="button" (click)="another()">{{ 'bill.another' | t }}</a>
+    </section>
+    <app-supplier-card />
+  </div>
+
+  <div class="main" *ngIf="!receipt && missingDraft">
+    <section class="card">
+      <h1>{{ 'bill.payTitle' | t }}</h1>
+      <p class="lead">{{ 'bill.needDraft' | t }}</p>
+      <a routerLink="/cadastro" class="button">{{ 'bill.toCadastro' | t }}</a>
+    </section>
+    <app-supplier-card />
+  </div>
+
+  <div class="main main--wide" *ngIf="!receipt && draft as order">
+    <h1>{{ 'bill.payTitle' | t }}</h1>
+    <p class="lead">{{ 'bill.payLead' | t }}</p>
+    <p class="error" *ngIf="invalid" role="alert">{{ 'bill.err.form' | t }}</p>
+
+    <div class="layout">
+      <div>
+        <section class="card">
+          <h2>{{ 'bill.offerTitle' | t }}</h2>
+          <ol>
+            <li>{{ 'bill.offer1' | t }}</li>
+            <li>{{ 'bill.offer2' | t }}</li>
+            <li>{{ 'bill.offer3' | t }}</li>
+            <li>{{ 'bill.offer4' | t }}</li>
+          </ol>
+          <p class="limit">{{ 'bill.offerLimit' | t }}</p>
+          <p class="note" *ngIf="offer.service.executionBusinessDays as days">
+            {{ 'bill.executionDays' | t:{ days: days } }}
+          </p>
+          <p class="note" *ngIf="offer.service.executionBusinessDays == null">{{ 'bill.executionPending' | t }}</p>
+        </section>
+
+        <section class="card">
+          <h2>{{ 'bill.summaryTitle' | t }}</h2>
+          <p class="note">{{ 'bill.summaryIntro' | t }}</p>
+          <dl class="facts">
+            <div>
+              <dt>{{ 'bill.legalName' | t }}</dt>
+              <dd>{{ order.legalName }}</dd>
+            </div>
+            <div *ngIf="order.tradeName">
+              <dt>{{ 'bill.tradeName' | t }}</dt>
+              <dd>{{ order.tradeName }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'bill.cnpj' | t }}</dt>
+              <dd>{{ order.cnpj }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'bill.nfeEmail' | t }}</dt>
+              <dd>{{ order.nfeEmail }}</dd>
+            </div>
+            <div class="span-2">
+              <dt>{{ 'bill.sectionAddress' | t }}</dt>
+              <dd>{{ order.street }}, {{ order.number }}<span *ngIf="order.complement">, {{ order.complement }}</span> — {{ order.district }}, {{ order.city }}/{{ order.state }}, {{ order.postalCode }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'bill.workers' | t }}</dt>
+              <dd>{{ 'bill.workersValue' | t:{ headcount: order.headcount, sites: order.sites } }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'bill.activity' | t }}</dt>
+              <dd>{{ order.activity }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'bill.repName' | t }}</dt>
+              <dd>{{ order.repName }} · {{ order.repRole }} · {{ order.repCpf }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'bill.sectionContact' | t }}</dt>
+              <dd>{{ order.contactName }} · {{ order.contactEmail }}</dd>
+            </div>
+          </dl>
+          <a routerLink="/cadastro" class="link" (click)="edit()">{{ 'bill.changeData' | t }}</a>
+          <p class="limit">{{ 'bill.summaryCancel' | t }}</p>
+        </section>
+
+        <section class="card">
+          <h2>{{ 'bill.methodTitle' | t }}</h2>
+          <label class="choice">
+            <input type="radio" name="method" value="pix" [ngModel]="order.method" (ngModelChange)="choose($event)" />
+            <span>
+              <strong>{{ 'bill.pix' | t }}</strong>
+              <small>{{ 'bill.pixNote' | t }}</small>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="method" value="boleto" [ngModel]="order.method" (ngModelChange)="choose($event)" />
+            <span>
+              <strong>{{ 'bill.boleto' | t }}</strong>
+              <small>{{ 'bill.boletoNote' | t }}</small>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="method" value="card" [ngModel]="order.method" (ngModelChange)="choose($event)" />
+            <span>
+              <strong>{{ 'bill.card' | t }}</strong>
+              <small>{{ 'bill.cardNote' | t }}</small>
+            </span>
+          </label>
+          <small class="field-error" *ngIf="errorFor('method') as msg">{{ msg | t }}</small>
+          <label *ngIf="order.method === 'card' && plans.length > 1">
+            <span>{{ 'bill.installments' | t }}</span>
+            <select name="installments" [ngModel]="order.installments" (ngModelChange)="order.installments = $event">
+              <option *ngFor="let plan of plans" [ngValue]="plan.count">{{ planLabel(plan) }}</option>
+            </select>
+          </label>
+        </section>
+
+        <form (ngSubmit)="submit()">
+          <section class="card">
+            <h2>{{ 'bill.withdrawTitle' | t }}</h2>
+            <p class="note">{{ 'bill.withdrawBody' | t }}</p>
+            <label class="check">
+              <input type="checkbox" name="summary" [(ngModel)]="order.summaryAck" />
+              <span>{{ 'bill.summaryAck' | t }}</span>
+            </label>
+            <small class="field-error" *ngIf="errorFor('summaryAck') as msg">{{ msg | t }}</small>
+            <label class="check">
+              <input type="checkbox" name="accept" [(ngModel)]="order.acceptContract" />
+              <span>{{ 'bill.acceptContract' | t }}</span>
+            </label>
+            <small class="field-error" *ngIf="errorFor('acceptContract') as msg">{{ msg | t }}</small>
+            <label class="check">
+              <input type="checkbox" name="privacy" [(ngModel)]="order.privacyAck" />
+              <span>{{ 'bill.privacyAck' | t }}</span>
+            </label>
+            <small class="field-error" *ngIf="errorFor('privacyAck') as msg">{{ msg | t }}</small>
+            <label class="check">
+              <input type="checkbox" name="marketing" [(ngModel)]="order.marketing" />
+              <span>{{ 'bill.marketing' | t }}</span>
+            </label>
+            <p class="note">{{ 'bill.registerNote' | t }}</p>
+            <button type="submit" class="button" [disabled]="submitting">
+              {{ submitting ? ('bill.confirming' | t) : ('bill.register' | t) }}
+            </button>
+            <p class="error" *ngIf="failed" role="alert">{{ 'bill.fail' | t }}</p>
+          </section>
+        </form>
+      </div>
+
+      <aside class="side">
+        <section class="card">
+          <h2>{{ 'bill.priceTitle' | t }}</h2>
+          <p class="price" *ngIf="total as due">{{ money(due) }}</p>
+          <p class="price price--pending" *ngIf="total == null">{{ 'bill.pricePending' | t }}</p>
+          <ul class="lines" *ngIf="breakdown as row">
+            <li><span>{{ 'bill.priceService' | t }}</span><span>{{ money(row.service) }}</span></li>
+            <li *ngIf="row.issIncluded">
+              <span>{{ 'bill.priceIssIn' | t:{ rate: row.rate } }}</span><span>{{ money(row.iss) }}</span>
+            </li>
+            <li *ngIf="!row.issIncluded">
+              <span>{{ 'bill.priceIssOut' | t:{ rate: row.rate } }}</span><span>{{ money(row.iss) }}</span>
+            </li>
+            <li><span>{{ 'bill.priceFreight' | t }}</span><span>{{ money(0) }}</span></li>
+            <li><span>{{ 'bill.priceTotal' | t }}</span><strong>{{ money(row.total) }}</strong></li>
+          </ul>
+        </section>
+        <app-supplier-card />
+      </aside>
+    </div>
+  </div>
+</div>

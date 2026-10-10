@@ -40,6 +40,47 @@ export interface ContactResponse {
   message: string;
 }
 
+export interface OrderPayload {
+  legal_name: string;
+  trade_name: string;
+  cnpj: string;
+  municipal_registration: string;
+  nfe_email: string;
+  phone: string;
+  postal_code: string;
+  street: string;
+  number: string;
+  complement: string;
+  district: string;
+  city: string;
+  state: string;
+  headcount: number;
+  sites: number;
+  activity: string;
+  rep_name: string;
+  rep_cpf: string;
+  rep_role: string;
+  rep_email: string;
+  rep_phone: string;
+  contact_name: string;
+  contact_role: string;
+  contact_email: string;
+  contact_phone: string;
+  accept_contract: boolean;
+  privacy_ack: boolean;
+  marketing: boolean;
+  method: 'pix' | 'boleto' | 'card';
+  installments: number;
+  summary_ack: boolean;
+  quoted_price_cents: number | null;
+}
+
+export interface OrderResponse {
+  success: boolean;
+  reference: string;
+  charged: boolean;
+}
+
 export interface BlockwallStatus {
   enabled: boolean;
 }

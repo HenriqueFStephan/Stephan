@@ -44,13 +44,8 @@ export class AppComponent {
         typeof location !== 'undefined'
           ? location.pathname.split('?')[0].replace(/\/+$/, '')
           : '';
-      this.bare =
-        routed === '/studio' ||
-        here === '/studio' ||
-        routed === '/tool' ||
-        here === '/tool' ||
-        routed === '/empresa' ||
-        here === '/empresa';
+      const barePaths = ['/studio', '/tool', '/empresa', '/cadastro', '/pagamento'];
+      this.bare = barePaths.includes(routed) || barePaths.includes(here);
     };
     router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))

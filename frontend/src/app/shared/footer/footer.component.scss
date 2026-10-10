@@ -24,6 +24,11 @@ footer a:hover {
   color: $color-primary-mid;
 }
 
+footer nav {
+  display: flex;
+  gap: 1.25rem;
+}
+
 footer p {
   margin: 0;
 }

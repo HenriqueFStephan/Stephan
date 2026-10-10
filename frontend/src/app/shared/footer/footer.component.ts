@@ -10,7 +10,10 @@ import { TranslatePipe } from '../../core/i18n';
   template: `
     <footer>
       <img src="assets/brand/stephan-word.png" alt="stephan" />
-      <a routerLink="/empresa">{{ 'footer.company' | t }}</a>
+      <nav>
+        <a routerLink="/cadastro">{{ 'footer.hire' | t }}</a>
+        <a routerLink="/empresa">{{ 'footer.company' | t }}</a>
+      </nav>
       <p>{{ 'footer.note' | t }}</p>
     </footer>
   `,

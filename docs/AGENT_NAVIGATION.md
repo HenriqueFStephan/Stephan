@@ -10,6 +10,8 @@
 | `backend/app/api/v1/studio.py` | Studio gate and issue creation. |
 | `backend/app/api/v1/blockwall.py` | Maintenance wall. On while `BLOCKWALL_KEY` is set. |
 | `frontend/src/app/features/company/` | Company portal at `/empresa`. Footer link, not the header. |
+| `frontend/src/app/features/billing/` | Signup at `/cadastro` and payment at `/pagamento`. Public offer facts live in `offer.config.ts`. |
+| `backend/app/api/v1/orders.py` | Stores a signup in `backend/data/orders.jsonl`. Does not charge. No card fields. |
 | `backend/app/api/v1/company.py` | Company login. `internal` and `hse-it` do not share invitations. |
 | `backend/app/db/schema.sql` | PostgreSQL schema for the HSE campaign. |
 | `docs/TOOL.md` | `/tool` campaign: anonymity, upload formats, local and Lightsail PostgreSQL. |
@@ -18,6 +20,7 @@
 | `netlify.toml` | Frontend build and `/api/v1` proxy. |
 | `render.yaml` | API service. |
 | `.github/workflows/` | Lightsail deploy, Render deploy hook, weekly law report, issue solver. |
+| `docs/NFSE.md` | National service invoice: tags, Simples Nacional, Fator R, and what emission still needs. |
 | `docs/research/` | Destination for `[POST]` briefings. |
 
 Public copy lives in `frontend/src/app/core/i18n/messages.ts`. Do not invent the partners' names.

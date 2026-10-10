@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class StudioBlock(BaseModel):
@@ -70,6 +70,130 @@ class ContactCreate(BaseModel):
 class ContactAck(BaseModel):
     success: bool
     message: str = ""
+
+
+_STATES = {
+    "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
+    "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+}
+
+
+class OrderCreate(BaseModel):
+    """Company signup. Card numbers are not a field: the API never stores them."""
+
+    legal_name: str = Field(..., min_length=2, max_length=160)
+    trade_name: str = Field(default="", max_length=160)
+    cnpj: str = Field(..., min_length=14, max_length=18)
+    municipal_registration: str = Field(default="", max_length=40)
+    nfe_email: str = Field(..., min_length=3, max_length=200)
+    phone: str = Field(..., min_length=10, max_length=20)
+    postal_code: str = Field(..., min_length=8, max_length=9)
+    street: str = Field(..., min_length=1, max_length=160)
+    number: str = Field(..., min_length=1, max_length=20)
+    complement: str = Field(default="", max_length=80)
+    district: str = Field(..., min_length=1, max_length=80)
+    city: str = Field(..., min_length=1, max_length=80)
+    state: str = Field(..., min_length=2, max_length=2)
+    headcount: int = Field(..., ge=1, le=1_000_000)
+    sites: int = Field(..., ge=1, le=10_000)
+    activity: str = Field(..., min_length=2, max_length=160)
+    rep_name: str = Field(..., min_length=2, max_length=120)
+    rep_cpf: str = Field(..., min_length=11, max_length=14)
+    rep_role: str = Field(..., min_length=2, max_length=80)
+    rep_email: str = Field(..., min_length=3, max_length=200)
+    rep_phone: str = Field(..., min_length=10, max_length=20)
+    contact_name: str = Field(..., min_length=2, max_length=120)
+    contact_role: str = Field(..., min_length=2, max_length=80)
+    contact_email: str = Field(..., min_length=3, max_length=200)
+    contact_phone: str = Field(..., min_length=10, max_length=20)
+    accept_contract: bool
+    privacy_ack: bool
+    marketing: bool = False
+    method: Literal["pix", "boleto", "card"]
+    installments: int = Field(default=1, ge=1, le=12)
+    summary_ack: bool
+    quoted_price_cents: int | None = Field(default=None, ge=0, le=100_000_000_00)
+
+    @field_validator(
+        "legal_name", "trade_name", "cnpj", "municipal_registration", "nfe_email",
+        "phone", "postal_code", "street", "number", "complement", "district", "city",
+        "state", "activity", "rep_name", "rep_cpf", "rep_role", "rep_email", "rep_phone",
+        "contact_name", "contact_role", "contact_email", "contact_phone",
+    )
+    @classmethod
+    def strip_text(cls, value: str) -> str:
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("nfe_email", "rep_email", "contact_email")
+    @classmethod
+    def email_shape(cls, value: str) -> str:
+        domain = value.split("@")[-1] if "@" in value else ""
+        if value.count("@") != 1 or "." not in domain:
+            raise ValueError("invalid email")
+        return value
+
+    @field_validator("cnpj")
+    @classmethod
+    def cnpj_digits(cls, value: str) -> str:
+        from app.services.br_docs import is_cnpj
+
+        if not is_cnpj(value):
+            raise ValueError("invalid cnpj")
+        return value
+
+    @field_validator("rep_cpf")
+    @classmethod
+    def cpf_digits(cls, value: str) -> str:
+        from app.services.br_docs import is_cpf
+
+        if not is_cpf(value):
+            raise ValueError("invalid cpf")
+        return value
+
+    @field_validator("phone", "rep_phone", "contact_phone")
+    @classmethod
+    def phone_digits(cls, value: str) -> str:
+        from app.services.br_docs import only_digits
+
+        if len(only_digits(value)) not in (10, 11):
+            raise ValueError("invalid phone")
+        return value
+
+    @field_validator("postal_code")
+    @classmethod
+    def cep_digits(cls, value: str) -> str:
+        from app.services.br_docs import only_digits
+
+        if len(only_digits(value)) != 8:
+            raise ValueError("invalid cep")
+        return value
+
+    @field_validator("state")
+    @classmethod
+    def state_code(cls, value: str) -> str:
+        code = value.upper()
+        if code not in _STATES:
+            raise ValueError("invalid state")
+        return code
+
+    @field_validator("accept_contract", "privacy_ack", "summary_ack")
+    @classmethod
+    def must_accept(cls, value: bool) -> bool:
+        if value is not True:
+            raise ValueError("acceptance required")
+        return value
+
+    @model_validator(mode="after")
+    def installments_follow_method(self) -> "OrderCreate":
+        if self.method != "card" and self.installments != 1:
+            raise ValueError("installments only apply to card")
+        return self
+
+
+class OrderAck(BaseModel):
+    success: bool
+    reference: str
+    charged: bool = False
 
 
 class BlockwallStatus(BaseModel):
