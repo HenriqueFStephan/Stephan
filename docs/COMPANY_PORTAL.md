@@ -1,6 +1,6 @@
 # Company portal
 
-`/empresa` is the page a hiring organization uses to see group results from the HSE-IT forms. It is linked from the footer, not from the public header.
+`/empresa` is the page a hiring organization uses to see group results from the HSE-IT forms. It is the header Login link.
 
 The page speaks Portuguese by default, with the same EN toggle as the rest of the site.
 

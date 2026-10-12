@@ -126,7 +126,9 @@ def test_tool_stays_out_of_the_public_menu_and_footer():
     footer = (ROOT / "frontend/src/app/shared/footer/footer.component.ts").read_text(encoding="utf-8")
     assert "/tool" not in header
     assert "/tool" not in footer
-    assert 'routerLink="/empresa"' in footer
+    assert 'routerLink="/empresa"' in header
+    assert 'routerLink="/empresa"' not in footer
+    assert 'routerLink="/abordagem"' not in footer
 
 
 def test_upload_rejects_a_name_column_without_storing_it(postgres):

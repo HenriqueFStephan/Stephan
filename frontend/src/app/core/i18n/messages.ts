@@ -161,8 +161,6 @@ const ptBR = {
   'tool.reference':
     'Faixas do HSE Management Standards Analysis Tool, com dados de 136 organizações. Isto é um teste local: não é diagnóstico, laudo nem inventário de riscos.',
 
-  'footer.company': 'Acesso da empresa',
-
   'company.eyebrow': 'Empresas',
   'company.title': 'Leitura da organização',
   'company.lead':
@@ -253,8 +251,6 @@ const ptBR = {
   'company.sector.admin': 'Administrativo',
   'company.sector.commercial': 'Comercial',
   'company.sector.care': 'Cuidado',
-
-  'footer.hire': 'Contratar',
 
   'bill.stepPlan': '1. Plano',
   'bill.stepCadastro': '2. Cadastro',
@@ -576,8 +572,6 @@ export const en: Record<MsgKey, string> = {
   'tool.reference':
     'Bands from the HSE Management Standards Analysis Tool, using data from 136 organisations. This is a local test: not a diagnosis, a report, or a risk inventory.',
 
-  'footer.company': 'Company access',
-
   'company.eyebrow': 'Companies',
   'company.title': 'Organization reading',
   'company.lead':
@@ -666,8 +660,6 @@ export const en: Record<MsgKey, string> = {
   'company.sector.admin': 'Administration',
   'company.sector.commercial': 'Commercial',
   'company.sector.care': 'Care',
-
-  'footer.hire': 'Sign up',
 
   'bill.stepPlan': '1. Plan',
   'bill.stepCadastro': '2. Signup',

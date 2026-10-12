@@ -53,7 +53,7 @@ Also confirm after the first Netlify deploy:
 
 ## Cadastro and payment
 
-The pages are `/cadastro` and `/pagamento`. The footer links to signup. The API stores the order in `backend/data/orders.jsonl` (gitignored, and it contains the signer CPF). It does not charge.
+The pages are `/cadastro` and `/pagamento`. The header register link starts signup. The API stores the order in `backend/data/orders.jsonl` (gitignored, and it contains the signer CPF). It does not charge.
 
 Public facts of the offer go in `frontend/src/app/features/billing/offer.config.ts`. Leave a field empty until it is real. The payment page lists whatever is still blank. Rebuild the site after editing the file.
 

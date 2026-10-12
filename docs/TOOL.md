@@ -36,7 +36,7 @@ Two companies are seeded. A later company is another row. It does not share roun
 
 Each has an open round `rodada-1`. `internal` is for tests on this project. `hse-it` is for the paper. Do not upload a client list into either.
 
-`/empresa` stays in the footer. `/tool` stays out of the header and the footer.
+`/empresa` is the header Login link. `/tool` stays out of the header and the footer.
 
 ## Rounds
 
