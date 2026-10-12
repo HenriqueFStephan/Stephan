@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { provideRouter } from '@angular/router';
 
-import { ApiService } from '../../core/api.service';
 import { I18nService } from '../../core/i18n';
 import { HomeComponent } from './home.component';
 
@@ -9,12 +8,9 @@ describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
 
   beforeEach(async () => {
-    const api = jasmine.createSpyObj<ApiService>('ApiService', ['submitContact']);
-    api.submitContact.and.returnValue(of({ success: true, message: 'ok' }));
-
     await TestBed.configureTestingModule({
       imports: [HomeComponent],
-      providers: [{ provide: ApiService, useValue: api }],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     TestBed.inject(I18nService).setLang('pt-BR');
@@ -22,37 +18,43 @@ describe('HomeComponent', () => {
     fixture.detectChanges();
   });
 
+  it('sends the approach button to the plans page', () => {
+    const link = (fixture.nativeElement as HTMLElement).querySelector('.hero a.button');
+    expect(link?.getAttribute('href')).toBe('/abordagem');
+  });
+
   it('shows the Portuguese hero title', () => {
     const h1 = (fixture.nativeElement as HTMLElement).querySelector('h1');
     expect(h1?.textContent?.trim()).toBe('Compreender o trabalho para gerenciar os riscos.');
   });
 
-  it('renders four method segments with half-width copy and placeholder art', () => {
+  it('renders the investigation as form, report, and follow-up', () => {
     const root = fixture.nativeElement as HTMLElement;
     const segments = root.querySelectorAll('#investigamos .thread__segment');
-    expect(segments.length).toBe(4);
+    expect(segments.length).toBe(3);
 
-    segments.forEach((segment) => {
-      const copy = segment.querySelector('.thread__copy');
-      const figure = segment.querySelector('.thread__figure img');
-      expect(copy).withContext('each segment has a copy block').not.toBeNull();
-      expect(figure).withContext('each segment has placeholder art').not.toBeNull();
-      expect(figure?.getAttribute('src')).toMatch(/^assets\/method\/method-/);
-    });
+    const titles = Array.from(root.querySelectorAll('#investigamos .thread__copy h3')).map((node) =>
+      node.textContent?.trim(),
+    );
+    expect(titles).toEqual(['HSE-IT', 'Observação', 'Follow-up']);
+
+    const sources = Array.from(root.querySelectorAll('#investigamos .thread__figure img')).map((img) =>
+      img.getAttribute('src'),
+    );
+    expect(sources).toEqual([
+      'assets/method/method-hse.svg',
+      'assets/method/method-observe.svg',
+      'assets/method/method-follow.svg',
+    ]);
 
     expect(root.querySelector('.thread__segment--text-first')).not.toBeNull();
     expect(root.querySelector('.thread__segment--image-first')).not.toBeNull();
   });
 
-  it('shows partner photos in the people section', () => {
+  it('leaves the people and contact sections off the home page', () => {
     const root = fixture.nativeElement as HTMLElement;
-    const section = root.querySelector('#socios');
-    expect(section).withContext('people section').not.toBeNull();
-
-    const photos = section!.querySelectorAll<HTMLImageElement>('.people__photo');
-    expect(photos.length).toBe(3);
-    expect(photos[0].src).toContain('assets/people/partner-psych.jpg');
-    expect(photos[1].src).toContain('assets/people/partner-epi.jpg');
-    expect(photos[2].src).toContain('assets/people/partner-tech.jpg');
+    expect(root.querySelector('#socios')).toBeNull();
+    expect(root.querySelector('#contato')).toBeNull();
+    expect(root.querySelector('form')).toBeNull();
   });
 });

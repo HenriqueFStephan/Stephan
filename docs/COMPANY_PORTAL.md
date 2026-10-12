@@ -1,6 +1,6 @@
 # Company portal
 
-`/empresa` is the page a hiring organization uses to see group results from the HSE-IT forms. It is linked from the footer, not from the public header. While `BLOCKWALL_KEY` is set, the maintenance wall still sits in front of it, like the rest of the site.
+`/empresa` is the page a hiring organization uses to see group results from the HSE-IT forms. It is linked from the footer, not from the public header.
 
 The page speaks Portuguese by default, with the same EN toggle as the rest of the site.
 
@@ -65,7 +65,7 @@ The reading labels use conventional cut points, not a risk scale: 0.90 and above
 Keep `CompanyOverview` as the response the page already renders. When a real campaign replaces the fixture, `demo_overview()` becomes a query and the template stays.
 
 1. **Accounts.** `admin` and `artigo` are stored users, each tied to one company. A future company is a new `companies` row, an open round, and a `company_users` row. Do not point that company at `internal` or `hse-it`. Passwords are hashed. The passage is issued on the server. The password is not compiled into the Angular app.
-2. **Ingest.** The campaign store, the invitation list, and the anonymity rules are in `docs/TOOL.md`. This page uploads the email list for the signed-in company and shows the round as two percentages, finished and not yet. It does not list who finished. The simulated overview stays until real answers replace it. A link with `?t=` opens the campaign form and stores one anonymous answer for that company.
+2. **Ingest.** The campaign store, the invitation list, and the anonymity rules are in `docs/TOOL.md`. This page uploads the email list for the signed-in company. The Rodadas table shows each wave as two percentages, finished and not yet, with the day it opened. It does not list who finished. The simulated overview stays until real answers replace it. A link with `?t=` opens the campaign form and stores one anonymous answer for that company.
 3. **Rows.** Anonymous answers are `hse_responses` in that document: company, round, day, the Anexo B columns (and the same codes in `demographics`), and 35 raw marks. No email, token, or invitation id on the answer.
 4. **Overview.** Filter those rows to the logged-in company and to the open campaign (or an explicit date window). Return the same JSON. Set `source` to `recorded`. The demonstration note then hides.
 5. **Alpha.** Call the same `cronbach_alpha` on the scored items of that set every time the overview is read. Keep showing `n` and the newest `submitted_on`. Decide in the campaign whether “latest” means the open wave or a trailing window, and say that choice in the sentence that already carries `n` and the date.

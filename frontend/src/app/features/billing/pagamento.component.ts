@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { ApiService } from '../../core/api.service';
-import { I18nService, TranslatePipe } from '../../core/i18n';
+import { I18nService, MsgKey, TranslatePipe } from '../../core/i18n';
 import {
   BillingDraft,
   BillingReceipt,
@@ -20,15 +20,8 @@ import {
   validateCadastro,
   validatePayment,
 } from './draft';
-import {
-  CardPlan,
-  cardPlans,
-  formatBrl,
-  formatRate,
-  issAmountCents,
-  offer,
-  totalCents,
-} from './offer.config';
+import { formatBrl, offer } from './offer.config';
+import { bandForHeadcount, isPlanId, monthlyCents, planById } from './plans';
 import { SupplierCardComponent } from './supplier-card.component';
 
 @Component({
@@ -68,39 +61,31 @@ export class PagamentoComponent implements OnInit {
     this.i18n.setLang(this.i18n.lang() === 'pt-BR' ? 'en' : 'pt-BR');
   }
 
-  get plans(): CardPlan[] {
-    return cardPlans();
+  get includedKeys(): MsgKey[] {
+    const plan = this.draft ? planById(this.draft.plan) : null;
+    if (!plan) return [];
+    return [...plan.featureKeys, ...plan.extraKeys];
   }
 
-  get total(): number | null {
-    return totalCents();
+  get monthly(): number | null {
+    if (!this.draft || !isPlanId(this.draft.plan)) return null;
+    return monthlyCents(this.draft.plan, Number(this.draft.headcount));
   }
 
-  get iss(): number | null {
-    return issAmountCents();
+  get bandLabel(): string {
+    if (!this.draft) return '';
+    const band = bandForHeadcount(Number(this.draft.headcount));
+    return band ? this.i18n.t(band.labelKey) : '';
   }
 
-  get breakdown(): { service: number; iss: number; total: number; rate: string; issIncluded: boolean } | null {
-    const total = this.total;
-    const iss = this.iss;
-    const service = offer.price.cents;
-    if (total == null || iss == null || service == null) return null;
-    return {
-      service,
-      iss,
-      total,
-      rate: this.rate(),
-      issIncluded: offer.price.issIncluded,
-    };
+  planTitle(id: string | undefined): string {
+    if (!id) return '';
+    const plan = planById(id);
+    return plan ? this.i18n.t(plan.titleKey) : '';
   }
 
   money(cents: number): string {
     return formatBrl(cents);
-  }
-
-  rate(): string {
-    const value = offer.price.issRatePercent;
-    return value == null ? '' : formatRate(value);
   }
 
   errorFor(key: keyof BillingDraft): string {
@@ -111,27 +96,16 @@ export class PagamentoComponent implements OnInit {
     return this.attempted && Object.keys(this.errors).length > 0;
   }
 
-  slice(plan: CardPlan): string {
-    return formatBrl(plan.totalCents / plan.count);
+  get backLink(): string {
+    const loaded = loadDraft();
+    return loaded && isPlanId(loaded.plan) ? '/cadastro' : '/abordagem';
   }
 
   choose(method: string): void {
     if (!this.draft) return;
     if (method !== 'pix' && method !== 'boleto' && method !== 'card') return;
     this.draft.method = method;
-    if (method !== 'card') this.draft.installments = 1;
-    else if (!this.plans.some((plan) => plan.count === this.draft?.installments)) {
-      this.draft.installments = 1;
-    }
-  }
-
-  planLabel(plan: CardPlan): string {
-    const total = formatBrl(plan.totalCents);
-    if (plan.count === 1) return this.i18n.t('bill.planCash', { amount: total });
-    if (plan.evenSlice && plan.totalCents === this.total) {
-      return this.i18n.t('bill.planEven', { count: plan.count, slice: this.slice(plan), total });
-    }
-    return this.i18n.t('bill.planInterest', { count: plan.count, total });
+    this.draft.installments = 1;
   }
 
   edit(): void {
@@ -140,22 +114,22 @@ export class PagamentoComponent implements OnInit {
 
   submit(): void {
     if (!this.draft || this.submitting) return;
+    const quoted = this.monthly;
+    if (quoted == null) return;
+    this.draft.installments = 1;
     this.attempted = true;
     this.failed = false;
-    this.errors = validatePayment(
-      this.draft,
-      this.plans.map((plan) => plan.count),
-    );
+    this.errors = validatePayment(this.draft, []);
     if (Object.keys(this.errors).length) return;
     saveDraft(this.draft);
     this.submitting = true;
-    const quoted = this.total;
     this.api.submitOrder(toOrderPayload(this.draft, quoted)).subscribe({
       next: (response) => {
         const receipt: BillingReceipt = {
           reference: response.reference,
           company: this.draft?.legalName.trim() || '',
           quotedCents: quoted,
+          plan: this.draft?.plan ?? '',
         };
         clearDraft();
         saveReceipt(receipt);

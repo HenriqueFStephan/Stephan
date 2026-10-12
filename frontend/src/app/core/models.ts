@@ -72,22 +72,14 @@ export interface OrderPayload {
   method: 'pix' | 'boleto' | 'card';
   installments: number;
   summary_ack: boolean;
-  quoted_price_cents: number | null;
+  plan: 'hse' | 'analise';
+  quoted_price_cents: number;
 }
 
 export interface OrderResponse {
   success: boolean;
   reference: string;
   charged: boolean;
-}
-
-export interface BlockwallStatus {
-  enabled: boolean;
-}
-
-export interface BlockwallUnlockResponse {
-  success: boolean;
-  passage: string;
 }
 
 export interface CompanyLoginResponse {
@@ -161,6 +153,16 @@ export interface InvitationRoster {
   invited: number;
   responded_percent: number | null;
   waiting_percent: number | null;
+}
+
+export interface CompanyRoundRow {
+  label: string;
+  opened_on: string;
+  closed_on: string | null;
+  invited: number;
+  responded_percent: number | null;
+  waiting_percent: number | null;
+  latest_response_on: string | null;
 }
 
 export interface CompanyOverview {

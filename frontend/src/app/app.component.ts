@@ -4,28 +4,24 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 
 import { I18nService } from './core/i18n';
-import { BlockwallComponent } from './features/blockwall/blockwall.component';
 import { FooterComponent } from './shared/footer/footer.component';
 import { HeaderComponent } from './shared/header/header.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent, FooterComponent, BlockwallComponent],
+  imports: [CommonModule, RouterOutlet, HeaderComponent, FooterComponent],
   template: `
-    <app-blockwall *ngIf="!open" (cleared)="open = true" />
-    <ng-container *ngIf="open">
-      <ng-container *ngIf="bare; else site">
-        <router-outlet />
-      </ng-container>
-      <ng-template #site>
-        <app-header />
-        <main>
-          <router-outlet />
-        </main>
-        <app-footer />
-      </ng-template>
+    <ng-container *ngIf="bare; else site">
+      <router-outlet />
     </ng-container>
+    <ng-template #site>
+      <app-header />
+      <main>
+        <router-outlet />
+      </main>
+      <app-footer />
+    </ng-template>
   `,
   styles: [`
     main {
@@ -35,7 +31,6 @@ import { HeaderComponent } from './shared/header/header.component';
 })
 export class AppComponent {
   bare = false;
-  open = false;
 
   constructor(router: Router, _i18n: I18nService) {
     const sync = (): void => {

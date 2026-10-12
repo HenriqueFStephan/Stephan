@@ -327,6 +327,23 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             assert other.status_code == 200
             assert other.json()["invited"] == 0
             assert email not in other.text
+            listed = client.get("/api/v1/company/rounds", headers=headers)
+            assert listed.status_code == 200
+            waves = listed.json()
+            current = next(row for row in waves if row["closed_on"] is None)
+            assert current["invited"] >= 1
+            assert current["responded_percent"] + current["waiting_percent"] == 100
+            assert current["opened_on"]
+            assert current["latest_response_on"]
+            assert email not in listed.text
+            assert "@" not in listed.text
+            other_rounds = client.get(
+                "/api/v1/company/rounds",
+                headers={"X-Company-Token": artigo.json()["passage"]},
+            )
+            assert other_rounds.status_code == 200
+            assert email not in other_rounds.text
+            assert all(row["invited"] == 0 for row in other_rounds.json())
             stored = conn.execute(
                 """
                 SELECT demographics, age_band, gender, economic_sector, education, leadership, region

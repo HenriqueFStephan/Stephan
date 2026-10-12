@@ -43,7 +43,8 @@ def payload(**overrides):
         "method": "pix",
         "installments": 1,
         "summary_ack": True,
-        "quoted_price_cents": None,
+        "plan": "hse",
+        "quoted_price_cents": 69_000,
     }
     body.update(overrides)
     return body
@@ -65,6 +66,8 @@ def test_order_is_stored_and_not_charged():
     assert stored["charged"] is False
     assert stored["state"] == "SP"
     assert stored["marketing"] is False
+    assert stored["plan"] == "hse"
+    assert stored["quoted_price_cents"] == 69_000
     assert "52998224725" in stored["rep_cpf"].replace(".", "").replace("-", "")
 
 
@@ -73,6 +76,27 @@ def test_order_rejects_a_bad_cnpj_and_a_missing_acceptance():
     assert bad_cnpj.status_code == 422
     declined = client.post("/api/v1/orders", json=payload(accept_contract=False))
     assert declined.status_code == 422
+
+
+def test_order_rejects_a_quote_outside_the_band():
+    mismatch = client.post("/api/v1/orders", json=payload(quoted_price_cents=1))
+    assert mismatch.status_code == 422
+    unknown = client.post("/api/v1/orders", json=payload(plan="ciclo"))
+    assert unknown.status_code == 422
+
+
+def test_order_stores_the_larger_plan_on_its_band():
+    response = client.post(
+        "/api/v1/orders",
+        json=payload(plan="analise", headcount=220, quoted_price_cents=469_000),
+    )
+    assert response.status_code == 200
+    path = DATA_DIR / "orders.jsonl"
+    stored = json.loads(path.read_text(encoding="utf-8").splitlines()[-1])
+    assert stored["plan"] == "analise"
+    assert stored["headcount"] == 220
+    assert stored["quoted_price_cents"] == 469_000
+    assert stored["charged"] is False
 
 
 def test_order_drops_a_card_number():

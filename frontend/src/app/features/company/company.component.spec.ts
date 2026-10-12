@@ -34,10 +34,20 @@ describe('CompanyComponent', () => {
     api = jasmine.createSpyObj<ApiService>('ApiService', [
       'loginCompany',
       'getCompanyOverview',
-      'getCompanyInvitations',
+      'getCompanyRounds',
     ]);
-    api.getCompanyInvitations.and.returnValue(
-      of({ round_label: 'rodada-1', invited: 0, responded_percent: null, waiting_percent: null }),
+    api.getCompanyRounds.and.returnValue(
+      of([
+        {
+          label: 'rodada-1',
+          opened_on: '2026-08-03',
+          closed_on: null,
+          invited: 10,
+          responded_percent: 40,
+          waiting_percent: 60,
+          latest_response_on: null,
+        },
+      ]),
     );
 
     await TestBed.configureTestingModule({
@@ -87,12 +97,38 @@ describe('CompanyComponent', () => {
     expect(sessionStorage.getItem(PASSAGE_KEY)).toBe('clearance');
     expect(component.password).toBe('');
     expect(root.querySelector('#alpha-title')?.textContent).toContain('Alfa de Cronbach');
-    expect(root.querySelector('#invite-title')?.textContent).toContain('Quem recebe o link');
+    expect(root.querySelector('#invite-title')?.textContent).toContain('Enviar formulários');
+    expect(root.querySelector('#rounds-title')?.textContent).toContain('Rodadas');
+    expect(root.textContent).toContain('rodada-1');
+    expect(root.textContent).toContain('40%');
+    expect(root.textContent).toContain('60%');
+    expect(root.textContent).toContain('Aberta');
     expect(root.textContent).toContain('0,917');
+    expect(root.textContent).not.toContain('100 respostas completas');
+    expect(root.querySelector('[aria-labelledby="alpha-title"] tbody')?.querySelectorAll('tr').length).toBe(1);
+    const expand = Array.from(root.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Ver as escalas'),
+    ) as HTMLButtonElement;
+    expand.click();
+    fixture.detectChanges();
     expect(root.textContent).toContain('26/09/2026');
     expect(root.textContent).toContain('100 respostas completas');
+    expect(root.querySelector('[aria-labelledby="alpha-title"] tbody')?.querySelectorAll('tr').length).toBe(2);
     expect(root.textContent).toContain('Demonstração');
-    expect(root.textContent).toContain('Nesta rodada ainda não há convites.');
+    expect(root.textContent).not.toContain('Nesta rodada ainda não há convites.');
     expect(root.textContent).not.toContain('@');
+    expect(root.querySelector('.meters')).not.toBeNull();
+    expect(root.querySelector('.stacks')).toBeNull();
+    expect(root.querySelector('.sectors')).toBeNull();
+
+    const sectors = Array.from(root.querySelectorAll('[role="tab"]')).find((tab) =>
+      tab.textContent?.includes('Por área'),
+    ) as HTMLButtonElement;
+    sectors.click();
+    fixture.detectChanges();
+    expect(root.querySelector('.meters')).toBeNull();
+    expect(root.querySelector('.sectors')).not.toBeNull();
+    expect(root.querySelector('.file__pick')?.textContent?.trim()).toBe('Escolher arquivo');
+    expect(root.querySelector('input[type="file"]')?.classList.contains('file__input')).toBeTrue();
   });
 });

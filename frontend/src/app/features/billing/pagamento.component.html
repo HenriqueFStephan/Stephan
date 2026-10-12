@@ -5,7 +5,9 @@
     </a>
     <div class="bar__side">
       <p class="steps">
-        <a routerLink="/cadastro">{{ 'bill.stepCadastro' | t }}</a>
+        <a routerLink="/abordagem">{{ 'bill.stepPlan' | t }}</a>
+        <span aria-hidden="true">/</span>
+        <a routerLink="/cadastro" (click)="edit()">{{ 'bill.stepCadastro' | t }}</a>
         <span aria-hidden="true">/</span>
         <a routerLink="/pagamento" class="on">{{ 'bill.stepPay' | t }}</a>
       </p>
@@ -17,12 +19,13 @@
     <section class="card">
       <h1>{{ 'bill.doneTitle' | t }}</h1>
       <p class="lead">{{ 'bill.doneBody' | t:{ reference: done.reference, company: done.company } }}</p>
+      <p class="note" *ngIf="planTitle(done.plan) as title">{{ title }}</p>
       <p class="note" *ngIf="done.quotedCents as price">{{ 'bill.quoted' | t:{ price: money(price) } }}</p>
       <p class="note" *ngIf="done.quotedCents == null">{{ 'bill.noQuote' | t }}</p>
       <p class="note">{{ 'bill.notCharged' | t }}</p>
       <p class="note" *ngIf="offer.supplier.sacEmail">{{ 'bill.withdrawNow' | t:{ email: offer.supplier.sacEmail } }}</p>
       <p class="note" *ngIf="!offer.supplier.sacEmail">{{ 'bill.withdrawNoMail' | t }}</p>
-      <a routerLink="/cadastro" class="button" (click)="another()">{{ 'bill.another' | t }}</a>
+      <a routerLink="/abordagem" class="button" (click)="another()">{{ 'bill.another' | t }}</a>
     </section>
     <app-supplier-card />
   </div>
@@ -31,7 +34,9 @@
     <section class="card">
       <h1>{{ 'bill.payTitle' | t }}</h1>
       <p class="lead">{{ 'bill.needDraft' | t }}</p>
-      <a routerLink="/cadastro" class="button">{{ 'bill.toCadastro' | t }}</a>
+      <a [routerLink]="backLink" class="button">
+        {{ (backLink === '/cadastro' ? 'bill.toCadastro' : 'approach.step1') | t }}
+      </a>
     </section>
     <app-supplier-card />
   </div>
@@ -44,24 +49,22 @@
     <div class="layout">
       <div>
         <section class="card">
-          <h2>{{ 'bill.offerTitle' | t }}</h2>
-          <ol>
-            <li>{{ 'bill.offer1' | t }}</li>
-            <li>{{ 'bill.offer2' | t }}</li>
-            <li>{{ 'bill.offer3' | t }}</li>
-            <li>{{ 'bill.offer4' | t }}</li>
-          </ol>
+          <h2>{{ planTitle(order.plan) }}</h2>
+          <ul>
+            <li *ngFor="let key of includedKeys">{{ key | t }}</li>
+          </ul>
+          <p class="note">{{ 'bill.monthlyNote' | t }}</p>
           <p class="limit">{{ 'bill.offerLimit' | t }}</p>
-          <p class="note" *ngIf="offer.service.executionBusinessDays as days">
-            {{ 'bill.executionDays' | t:{ days: days } }}
-          </p>
-          <p class="note" *ngIf="offer.service.executionBusinessDays == null">{{ 'bill.executionPending' | t }}</p>
         </section>
 
         <section class="card">
           <h2>{{ 'bill.summaryTitle' | t }}</h2>
           <p class="note">{{ 'bill.summaryIntro' | t }}</p>
           <dl class="facts">
+            <div class="span-2">
+              <dt>{{ 'bill.chosenPlan' | t }}</dt>
+              <dd>{{ planTitle(order.plan) }}</dd>
+            </div>
             <div>
               <dt>{{ 'bill.legalName' | t }}</dt>
               <dd>{{ order.legalName }}</dd>
@@ -127,12 +130,6 @@
             </span>
           </label>
           <small class="field-error" *ngIf="errorFor('method') as msg">{{ msg | t }}</small>
-          <label *ngIf="order.method === 'card' && plans.length > 1">
-            <span>{{ 'bill.installments' | t }}</span>
-            <select name="installments" [ngModel]="order.installments" (ngModelChange)="order.installments = $event">
-              <option *ngFor="let plan of plans" [ngValue]="plan.count">{{ planLabel(plan) }}</option>
-            </select>
-          </label>
         </section>
 
         <form (ngSubmit)="submit()">
@@ -170,19 +167,10 @@
       <aside class="side">
         <section class="card">
           <h2>{{ 'bill.priceTitle' | t }}</h2>
-          <p class="price" *ngIf="total as due">{{ money(due) }}</p>
-          <p class="price price--pending" *ngIf="total == null">{{ 'bill.pricePending' | t }}</p>
-          <ul class="lines" *ngIf="breakdown as row">
-            <li><span>{{ 'bill.priceService' | t }}</span><span>{{ money(row.service) }}</span></li>
-            <li *ngIf="row.issIncluded">
-              <span>{{ 'bill.priceIssIn' | t:{ rate: row.rate } }}</span><span>{{ money(row.iss) }}</span>
-            </li>
-            <li *ngIf="!row.issIncluded">
-              <span>{{ 'bill.priceIssOut' | t:{ rate: row.rate } }}</span><span>{{ money(row.iss) }}</span>
-            </li>
-            <li><span>{{ 'bill.priceFreight' | t }}</span><span>{{ money(0) }}</span></li>
-            <li><span>{{ 'bill.priceTotal' | t }}</span><strong>{{ money(row.total) }}</strong></li>
-          </ul>
+          <p class="price" *ngIf="monthly as due">{{ money(due) }}</p>
+          <p class="price price--pending" *ngIf="monthly == null">{{ 'bill.pricePending' | t }}</p>
+          <p class="note" *ngIf="monthly != null">{{ 'bill.priceMonth' | t }} · {{ bandLabel }}</p>
+          <p class="note" *ngIf="monthly != null && offer.price.issRatePercent == null">{{ 'bill.issPending' | t }}</p>
         </section>
         <app-supplier-card />
       </aside>

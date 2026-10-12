@@ -8,10 +8,10 @@
 | `backend/app/main.py` | App factory, `/health`, `/api/v1/status`. |
 | `backend/app/api/v1/contact.py` | Contact form. Writes `backend/data/messages.jsonl`. |
 | `backend/app/api/v1/studio.py` | Studio gate and issue creation. |
-| `backend/app/api/v1/blockwall.py` | Maintenance wall. On while `BLOCKWALL_KEY` is set. |
 | `frontend/src/app/features/company/` | Company portal at `/empresa`. Footer link, not the header. |
-| `frontend/src/app/features/billing/` | Signup at `/cadastro` and payment at `/pagamento`. Public offer facts live in `offer.config.ts`. |
-| `backend/app/api/v1/orders.py` | Stores a signup in `backend/data/orders.jsonl`. Does not charge. No card fields. |
+| `frontend/src/app/features/approach/` | Plans page at `/abordagem`. The home CTA and the footer hire link land here. |
+| `frontend/src/app/features/billing/` | Signup at `/cadastro` and payment at `/pagamento`. Monthly bands live in `plans.ts`. Supplier facts stay in `offer.config.ts`. |
+| `backend/app/api/v1/orders.py` | Stores a signup in `backend/data/orders.jsonl`. Does not charge. No card fields. The monthly fee is checked against `backend/app/services/plans.py`. |
 | `backend/app/api/v1/company.py` | Company login. `internal` and `hse-it` do not share invitations. |
 | `backend/app/db/schema.sql` | PostgreSQL schema for the HSE campaign. |
 | `docs/TOOL.md` | `/tool` campaign: anonymity, upload formats, local and Lightsail PostgreSQL. |

@@ -11,7 +11,7 @@ import { TranslatePipe } from '../../core/i18n';
     <footer>
       <img src="assets/brand/stephan-word.png" alt="stephan" />
       <nav>
-        <a routerLink="/cadastro">{{ 'footer.hire' | t }}</a>
+        <a routerLink="/abordagem">{{ 'footer.hire' | t }}</a>
         <a routerLink="/empresa">{{ 'footer.company' | t }}</a>
       </nav>
       <p>{{ 'footer.note' | t }}</p>

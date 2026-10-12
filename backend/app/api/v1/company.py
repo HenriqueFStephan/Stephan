@@ -14,10 +14,11 @@ from app.models.schemas import (
     CompanyLogin,
     CompanyLoginResponse,
     CompanyOverview,
+    CompanyRoundRow,
     InvitationRoster,
     InvitationUploadResult,
 )
-from app.services.campaign_store import NoOpenRound, add_invitations, list_invitations
+from app.services.campaign_store import NoOpenRound, add_invitations, list_invitations, list_rounds
 from app.services.company_accounts import (
     CompanySession,
     authenticate,
@@ -84,6 +85,17 @@ def company_invitations(session: CompanySession = Depends(require_company_token)
     except NoOpenRound as exc:
         raise HTTPException(status_code=409, detail={"code": "no_open_round"}) from exc
     return InvitationRoster.model_validate(roster)
+
+
+@router.get("/rounds", response_model=list[CompanyRoundRow])
+def company_rounds(session: CompanySession = Depends(require_company_token)) -> list[CompanyRoundRow]:
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            rows = list_rounds(conn, session.company_id)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    return [CompanyRoundRow.model_validate(row) for row in rows]
 
 
 @router.post("/invitations", response_model=InvitationUploadResult)

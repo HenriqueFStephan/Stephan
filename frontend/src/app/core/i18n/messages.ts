@@ -2,16 +2,52 @@ const ptBR = {
   'meta.title': 'Stephan',
   'meta.description':
     'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
-  'nav.work': 'O que fazemos',
-  'nav.method': 'Como investigamos',
-  'nav.people': 'Quem está por trás',
   'nav.contact': 'Contato',
+  'nav.register': 'Cadastro',
+  'nav.login': 'Login',
   'nav.lang': 'EN',
 
   'hero.title': 'Compreender o trabalho para gerenciar os riscos.',
   'hero.lead':
     'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
   'hero.cta': 'Conheça nossa abordagem',
+
+  'approach.title': 'Nossa abordagem',
+  'approach.lead':
+    'Dois planos para usar o HSE-IT na organização, do menor ao maior. A mensalidade segue quantas pessoas o plano alcança.',
+  'approach.smaller': 'Plano menor',
+  'approach.bigger': 'Plano maior',
+  'approach.step1': 'Escolha o plano',
+  'approach.step2': 'Cadastre a organização',
+  'approach.step3': 'Confirme a mensalidade e a forma de pagamento',
+  'approach.includesPrevious': 'Inclui o plano anterior:',
+  'approach.also': 'E ainda:',
+  'approach.from': 'A partir de {{price}} por mês',
+  'approach.hire': 'Contratar este plano',
+  'approach.tableTitle': 'Mensalidade pelo porte',
+  'approach.tableLead':
+    'O valor do mês é o da faixa em que as pessoas abrangidas se encaixam. A faixa não precisa ser o quadro inteiro, se o plano alcançar só uma parte.',
+  'approach.people': 'Pessoas abrangidas',
+  'approach.perMonth': '/mês',
+
+  'plan.hse.title': 'Implementação do formulário HSE-IT',
+  'plan.hse.short': 'HSE-IT',
+  'plan.hse.f1': 'Use a ferramenta para enviar o formulário às pessoas da organização.',
+  'plan.hse.f2': 'Acompanhe estatísticas e relatórios da saúde mental no trabalho da empresa.',
+  'plan.hse.f3':
+    'Segurança e anonimato nos resultados da organização. Na rodada, a resposta fica sem nome e sem e-mail.',
+  'plan.analise.title': 'HSE-IT + análises em profundidade com a Dra. Renata Stephan',
+  'plan.analise.short': 'HSE-IT + análises',
+  'plan.analise.f1': 'Leitura em profundidade dos resultados do grupo, feita pela Dra. Renata Stephan.',
+  'plan.analise.f2':
+    'Devolutiva com quem organiza o trabalho, para o número não se separar da situação.',
+  'plan.analise.f3': 'Prioridades do mês: o que mudar primeiro nas condições de trabalho.',
+  'plan.analise.f4':
+    'Registro escrito do que a média do grupo permite afirmar, e do que ainda não permite.',
+  'plan.band.xs': 'Até 49 pessoas',
+  'plan.band.s': 'De 50 a 199 pessoas',
+  'plan.band.m': 'De 200 a 499 pessoas',
+  'plan.band.l': '500 pessoas ou mais',
 
   'work.title': 'O que fazemos',
   'work.assess.title': 'Avaliação',
@@ -26,32 +62,16 @@ const ptBR = {
 
   'method.title': 'Como investigamos',
   'method.lead':
-    'Caracterização, observação, HSE-IT e grupos focais são partes de uma mesma investigação.',
-  'method.company.title': 'Caracterização da empresa',
-  'method.company.body':
-    'Entendemos a estrutura, os processos e o que a organização já sabe sobre o próprio trabalho.',
-  'method.observe.title': 'Observação',
-  'method.observe.body':
-    'Olhamos a atividade como ela acontece, para não depender só do que se diz sobre ela.',
+    'Três momentos de uma mesma investigação: o formulário HSE-IT, o relatório dos resultados e o follow-up.',
   'method.hse.title': 'HSE-IT',
   'method.hse.body':
-    'Usamos o indicador como uma leitura coletiva das condições de trabalho, não como um veredito individual.',
-  'method.groups.title': 'Grupos focais',
-  'method.groups.body':
-    'A escuta devolve contexto aos resultados e mostra o que a organização reconhece como risco.',
-
-  'people.title': 'Quem está por trás',
-  'people.lead':
-    'Três sócios. A prática reúne psicologia, epidemiologia e tecnologia.',
-  'people.psych.title': 'Psicologia',
-  'people.psych.body':
-    'A escuta do trabalho e a leitura das relações que organizam a atividade.',
-  'people.epi.title': 'Epidemiologia',
-  'people.epi.body':
-    'O cuidado com a evidência: o que os dados permitem afirmar, e o que ainda não permitem.',
-  'people.tech.title': 'Tecnologia',
-  'people.tech.body':
-    'O modo de registrar, cruzar e devolver os achados sem perder o vínculo com o campo.',
+    'O primeiro passo é o formulário HSE-IT. Trinta e cinco perguntas sobre os últimos seis meses percorrem as dimensões do trabalho: demandas, controle, apoio, relações, clareza de papel e mudança. Cada pessoa responde sobre as condições do próprio trabalho, e o conjunto anônimo vira uma leitura do grupo.',
+  'method.observe.title': 'Observação',
+  'method.observe.body':
+    'As respostas voltam em relatório. Médias por dimensão, a distribuição das faixas e as comparações no grupo mostram onde as condições de trabalho pesam, e com que intensidade. A observação é essa análise estatística dos resultados.',
+  'method.follow.title': 'Follow-up',
+  'method.follow.body':
+    'A Dra. Renata Stephan analisa os achados em profundidade. Nos grupos focais, quem faz o trabalho situa os números, e dessa escuta saem ações propostas para a organização.',
 
   'contact.title': 'Contato',
   'contact.lead': 'Vamos conversar sobre a realidade da sua organização.',
@@ -141,14 +161,6 @@ const ptBR = {
   'tool.reference':
     'Faixas do HSE Management Standards Analysis Tool, com dados de 136 organizações. Isto é um teste local: não é diagnóstico, laudo nem inventário de riscos.',
 
-  'wall.title': 'Site em manutenção',
-  'wall.lead': 'Estamos a atualizar o site. Volte em breve.',
-  'wall.password': 'Senha',
-  'wall.enter': 'Entrar',
-  'wall.checking': 'Verificando…',
-  'wall.badPassword': 'Senha incorreta.',
-  'wall.unreachable': 'Não foi possível contactar o servidor. Tente de novo em instantes.',
-
   'footer.company': 'Acesso da empresa',
 
   'company.eyebrow': 'Empresas',
@@ -167,6 +179,8 @@ const ptBR = {
     'Demonstração. As 100 respostas são simuladas, com o mesmo questionário do HSE-IT. Não descrevem uma organização real.',
   'company.demoName': 'Organização de demonstração',
   'company.alphaTitle': 'Alfa de Cronbach',
+  'company.alphaMore': 'Ver as escalas',
+  'company.alphaLess': 'Ocultar as escalas',
   'company.alphaLead':
     'Consistência interna das respostas desta leitura. Não é uma nota de risco: diz o quanto os itens de uma mesma escala caminham juntos.',
   'company.alphaLatest':
@@ -183,6 +197,7 @@ const ptBR = {
   'company.reading.questionable': 'De 0,60 a 0,70. Consistência frágil.',
   'company.reading.weak': 'Abaixo de 0,60. Os itens desta escala pouco caminham juntos.',
   'company.reading.unknown': 'Não calculado.',
+  'company.readingLabel': 'Leituras do grupo',
   'company.dimensionsTitle': 'Condições por fator',
   'company.dimensionsLead':
     'Média do grupo, de 1 a 5. Quanto maior, mais favorável. Os traços na barra são os percentis 20, 50 e 80 da referência do HSE.',
@@ -201,10 +216,20 @@ const ptBR = {
   'company.respondents': '{{count}} pessoas',
   'company.reference':
     'Faixas do HSE Management Standards Analysis Tool, com dados de 136 organizações. A média do grupo não substitui a escuta do trabalho.',
-  'company.inviteTitle': 'Quem recebe o link',
+  'company.inviteTitle': 'Enviar formulários',
+  'company.roundsTitle': 'Rodadas',
+  'company.roundsEmpty': 'Ainda não há rodadas.',
+  'company.roundOpen': 'Aberta',
+  'company.colRound': 'Rodada',
+  'company.colOpened': 'Início',
+  'company.colClosed': 'Encerramento',
+  'company.colInvited': 'Convidados',
+  'company.colLatest': 'Última resposta',
   'company.inviteLead':
     'Envie a lista de e-mails desta rodada. O único campo é o e-mail. Uma coluna a mais é recusada e não fica gravada. Quem já está nesta rodada, ou aparece duas vezes no arquivo, não ganha outro link. Cada e-mail novo recebe o link agora.',
   'company.inviteFile': 'Arquivo JSON, CSV ou Excel',
+  'company.inviteChoose': 'Escolher arquivo',
+  'company.inviteNone': 'Nenhum arquivo selecionado',
   'company.inviteSend': 'Enviar a lista',
   'company.inviteSending': 'Enviando…',
   'company.inviteAccepted': 'O link foi enviado para {{count}} pessoas.',
@@ -231,14 +256,23 @@ const ptBR = {
 
   'footer.hire': 'Contratar',
 
-  'bill.stepCadastro': '1. Cadastro',
-  'bill.stepPay': '2. Pagamento',
+  'bill.stepPlan': '1. Plano',
+  'bill.stepCadastro': '2. Cadastro',
+  'bill.stepPay': '3. Pagamento',
   'bill.cadastroTitle': 'Cadastro da organização',
   'bill.cadastroLead':
-    'Estes dados identificam quem contrata o ciclo e quem recebe a nota fiscal. A lista de trabalhadores não entra aqui.',
+    'Estes dados identificam quem contrata o plano e quem recebe a nota fiscal. A lista de trabalhadores não entra aqui.',
   'bill.payTitle': 'Pagamento',
   'bill.payLead':
-    'O resumo abaixo é o contrato, antes de qualquer registro. Dá para voltar e corrigir. Este passo não debita um valor.',
+    'O resumo abaixo é o contrato do plano, antes de qualquer registro. A mensalidade está ao lado. Dá para voltar e corrigir. Este passo não debita um valor.',
+  'bill.chosenPlan': 'Plano escolhido',
+  'bill.changePlan': 'Trocar de plano',
+  'bill.monthlyPreview': '{{band}}: {{price}} por mês',
+  'bill.monthlyNote':
+    'A cobrança é mensal. O valor segue a faixa das pessoas abrangidas e se repete enquanto o plano estiver ativo.',
+  'bill.priceMonth': 'por mês',
+  'bill.issPending':
+    'A alíquota de ISS do município do prestador ainda não entra neste resumo. O valor acima é a mensalidade do plano.',
   'bill.sectionCompany': 'Quem contrata',
   'bill.sectionAddress': 'Endereço da nota',
   'bill.sectionRep': 'Quem assina',
@@ -253,7 +287,7 @@ const ptBR = {
   'bill.activityHint': 'O ramo da organização, com as palavras de vocês.',
   'bill.headcount': 'Pessoas abrangidas',
   'bill.headcountHint':
-    'Quantas pessoas o ciclo alcança, não o quadro inteiro se a rodada for só de uma parte.',
+    'Quantas pessoas o plano alcança. Este número define a faixa da mensalidade. Não precisa ser o quadro inteiro se o plano for só de uma parte.',
   'bill.sites': 'Estabelecimentos',
   'bill.sitesHint': 'Quantas unidades entram neste ciclo.',
   'bill.nfeEmail': 'E-mail da nota fiscal',
@@ -278,7 +312,7 @@ const ptBR = {
   'bill.contactEmail': 'E-mail',
   'bill.contactPhone': 'Telefone',
   'bill.privacyNote':
-    'Razão social e CNPJ identificam a contratante no contrato e na nota fiscal de serviço. Nome, CPF, e-mail e telefone de quem assina e de quem acompanha a investigação são dados pessoais, usados para contratar, emitir a nota e conduzir o ciclo. A base é a execução do contrato e a obrigação fiscal. A caixa de notícias, na página seguinte, vem desmarcada: sem ela, não há recado fora deste pedido. A lista de trabalhadores e as respostas do questionário não fazem parte deste cadastro. Na rodada, a resposta segue sem nome e sem e-mail.',
+    'Razão social e CNPJ identificam a contratante no contrato e na nota fiscal de serviço. Nome, CPF, e-mail e telefone de quem assina e de quem acompanha a investigação são dados pessoais, usados para contratar, emitir a nota e conduzir o plano. A base é a execução do contrato e a obrigação fiscal. A caixa de notícias, na página seguinte, vem desmarcada: sem ela, não há recado fora deste pedido. A lista de trabalhadores e as respostas do questionário não fazem parte deste cadastro. Na rodada, a resposta segue sem nome e sem e-mail.',
   'bill.continue': 'Seguir para o pagamento',
   'bill.optional': 'opcional',
   'bill.err.form': 'Revise o que está marcado.',
@@ -318,7 +352,7 @@ const ptBR = {
     'A leitura devolvida à organização é do grupo. Uma resposta sozinha não descreve uma pessoa, e uma área pequena não deve ser lida como um grupo estável.',
   'bill.offerLimit':
     'Isto não é atendimento clínico, não substitui exame ocupacional e não produz laudo individual.',
-  'bill.priceTitle': 'Preço',
+  'bill.priceTitle': 'Mensalidade',
   'bill.pricePending': 'O preço ainda não foi publicado. Sem ele, não há total a cobrar.',
   'bill.priceService': 'Serviço',
   'bill.priceIssIn': 'ISS {{rate}}% incluso',
@@ -331,13 +365,13 @@ const ptBR = {
   'bill.methodTitle': 'Forma de pagamento',
   'bill.pix': 'Pix',
   'bill.pixNote':
-    'QR Code dinâmico, no total desta página, em nome do prestador publicado ao lado. A confirmação vem da instituição de pagamento.',
+    'QR Code dinâmico, na mensalidade desta página, em nome do prestador publicado ao lado. A confirmação vem da instituição de pagamento. Cada mês pede uma nova cobrança.',
   'bill.boleto': 'Boleto',
   'bill.boletoNote':
-    'A compensação pode levar até 3 dias úteis. O ciclo só começa depois da confirmação. O boleto sai para o CNPJ contratante.',
+    'A compensação pode levar até 3 dias úteis. O plano segue depois da confirmação. O boleto sai para o CNPJ contratante, no valor da mensalidade.',
   'bill.card': 'Cartão',
   'bill.cardNote':
-    'O número do cartão não é digitado neste site. Quando a cobrança estiver ligada, o formulário abre no ambiente da instituição de pagamento.',
+    'O número do cartão não é digitado neste site. Quando a cobrança estiver ligada, o formulário abre no ambiente da instituição de pagamento, para a mensalidade.',
   'bill.installments': 'Parcelas no cartão',
   'bill.planCash': 'À vista, {{amount}}',
   'bill.planEven': '{{count}} vezes de {{slice}}, total {{total}}, sem acréscimo',
@@ -345,10 +379,10 @@ const ptBR = {
   'bill.summaryTitle': 'Resumo antes de registrar',
   'bill.summaryIntro': 'Confira quem contrata. Um erro aqui sai na nota e no contrato.',
   'bill.summaryCancel':
-    'Antes do início da coleta, o cancelamento devolve o valor integral. Depois que a coleta começa, é devido só o que já foi executado. Esta frase não afasta os 7 dias do art. 49 da Lei 8.078/1990 quando a contratante for consumidora.',
+    'A mensalidade cobre o mês em curso. O cancelamento antes do mês seguinte encerra a renovação; o mês já iniciado segue devido. Esta frase não afasta os 7 dias do art. 49 da Lei 8.078/1990 quando a contratante for consumidora.',
   'bill.summaryAck':
-    'Li o resumo, o preço, o prazo e as limitações do serviço, e posso corrigir os dados antes de registrar.',
-  'bill.acceptContract': 'Aceito contratar este ciclo nos termos deste resumo.',
+    'Li o resumo, a mensalidade, a faixa e as limitações do serviço, e posso corrigir os dados antes de registrar.',
+  'bill.acceptContract': 'Aceito contratar este plano, na mensalidade desta página, nos termos deste resumo.',
   'bill.privacyAck': 'Estou ciente de como os dados deste cadastro são usados.',
   'bill.marketing': 'Quero receber notícias da prática, além das mensagens deste contrato.',
   'bill.register': 'Registrar pedido',
@@ -359,20 +393,20 @@ const ptBR = {
   'bill.doneBody': 'Pedido {{reference}} registrado para {{company}}.',
   'bill.notCharged':
     'Nenhum valor foi debitado. Pix, boleto e cartão ainda não estão ligados a uma instituição de pagamento.',
-  'bill.quoted': 'Valor exibido nesta confirmação: {{price}}.',
+  'bill.quoted': 'Mensalidade desta confirmação: {{price}}.',
   'bill.noQuote': 'O preço não estava publicado, então este pedido não traz um valor.',
   'bill.fail': 'Não foi possível registrar agora. Tente de novo em instantes.',
   'bill.needDraft': 'O pagamento pede o cadastro da organização antes do resumo.',
   'bill.toCadastro': 'Ir para o cadastro',
   'bill.changeData': 'Alterar estes dados',
-  'bill.another': 'Fazer outro cadastro',
+  'bill.another': 'Escolher outro plano',
   'bill.workers': 'Abrangência',
   'bill.workersValue': '{{headcount}} pessoas em {{sites}} estabelecimentos',
   'bill.sac': 'Atendimento: {{email}}',
   'bill.privacyContact': 'Privacidade: {{email}}',
   'bill.withdrawTitle': 'Desistência e aceite',
   'bill.withdrawBody':
-    'Quando a contratante é consumidora, nos termos do art. 2º da Lei 8.078/1990, pode desistir em 7 dias, contados da contratação ou do recebimento do serviço, pelo mesmo canal usado aqui, sem justificar e sem custo. O que tiver sido pago volta de imediato, com atualização monetária (art. 49). A desistência também desfaz o que for acessório a este contrato, sem ônus (Decreto 7.962/2013, art. 5º). Se o contrato for entre empresas e o ciclo entrar na gestão de riscos do trabalho da contratante, o art. 49 não se aplica de modo automático: vale a frase de cancelamento destacada acima.',
+    'Quando a contratante é consumidora, nos termos do art. 2º da Lei 8.078/1990, pode desistir em 7 dias, contados da contratação ou do recebimento do serviço, pelo mesmo canal usado aqui, sem justificar e sem custo. O que tiver sido pago volta de imediato, com atualização monetária (art. 49). A desistência também desfaz o que for acessório a este contrato, sem ônus (Decreto 7.962/2013, art. 5º). Se o contrato for entre empresas e o plano entrar na gestão de riscos do trabalho da contratante, o art. 49 não se aplica de modo automático: vale a frase de cancelamento destacada acima.',
   'bill.withdrawNow': 'Para desistir, quando couber, escreva para {{email}} com o número do pedido.',
   'bill.withdrawNoMail': 'O e-mail de atendimento ainda não foi publicado. Guarde o número do pedido.',
 } as const;
@@ -383,10 +417,9 @@ export const en: Record<MsgKey, string> = {
   'meta.title': 'Stephan',
   'meta.description':
     'Psychosocial risk assessment and management, with method, listening, and evidence.',
-  'nav.work': 'What we do',
-  'nav.method': 'How we investigate',
-  'nav.people': 'Who is behind it',
   'nav.contact': 'Contact',
+  'nav.register': 'Register',
+  'nav.login': 'Login',
   'nav.lang': 'PT',
 
   'hero.title': 'Understand the work in order to change the risks.',
@@ -394,10 +427,47 @@ export const en: Record<MsgKey, string> = {
     'Psychosocial risk assessment and management, with method, listening, and evidence.',
   'hero.cta': 'See our approach',
 
+  'approach.title': 'Our approach',
+  'approach.lead':
+    'Two plans for using the HSE-IT in an organization, from the smaller to the larger. The monthly fee follows how many people the plan covers.',
+  'approach.smaller': 'Smaller plan',
+  'approach.bigger': 'Larger plan',
+  'approach.step1': 'Choose the plan',
+  'approach.step2': 'Register the organization',
+  'approach.step3': 'Confirm the monthly fee and how to pay',
+  'approach.includesPrevious': 'Includes the previous plan:',
+  'approach.also': 'And also:',
+  'approach.from': 'From {{price}} per month',
+  'approach.hire': 'Hire this plan',
+  'approach.tableTitle': 'Monthly fee by size',
+  'approach.tableLead':
+    'The fee for the month is the band that the people covered fall into. The band does not have to be the whole workforce, if the plan covers only part of it.',
+  'approach.people': 'People covered',
+  'approach.perMonth': '/month',
+
+  'plan.hse.title': 'HSE-IT Form Implementation',
+  'plan.hse.short': 'HSE-IT',
+  'plan.hse.f1': 'Use the tool to send the form to people in the organization.',
+  'plan.hse.f2': 'Review statistics and reports on mental health at work in the company.',
+  'plan.hse.f3':
+    'Security and anonymity in the organization’s results. In a round, an answer is stored without a name and without an email.',
+  'plan.analise.title': 'HSE-IT + depth analyses by Dr. Renata Stephan',
+  'plan.analise.short': 'HSE-IT + analyses',
+  'plan.analise.f1': 'A depth reading of the group results, by Dr. Renata Stephan.',
+  'plan.analise.f2':
+    'A return of the findings with the people who organize the work, so the number stays tied to the situation.',
+  'plan.analise.f3': 'Priorities for the month: what to change first in working conditions.',
+  'plan.analise.f4':
+    'A written record of what the group average can support, and what it cannot yet support.',
+  'plan.band.xs': 'Up to 49 people',
+  'plan.band.s': '50 to 199 people',
+  'plan.band.m': '200 to 499 people',
+  'plan.band.l': '500 people or more',
+
   'work.title': 'What we do',
   'work.assess.title': 'Assessment',
   'work.assess.body':
-    'We identify psychosocial factors in the organization’s actual work, not in a generic model.',
+    'We identify psychosocial factors in the organization’s actual work, not in a generic model. That assessment is the HSE-IT form: people answer about the conditions of their own work, and the result is a reading of the group, not a verdict on one person.',
   'work.read.title': 'Reading the results',
   'work.read.body':
     'We interpret the findings with the people who do the work, so the number stays tied to the situation.',
@@ -407,28 +477,16 @@ export const en: Record<MsgKey, string> = {
 
   'method.title': 'How we investigate',
   'method.lead':
-    'Company profile, observation, the HSE-IT, and focus groups are parts of one investigation.',
-  'method.company.title': 'Company profile',
-  'method.company.body':
-    'We learn the structure, the processes, and what the organization already knows about its own work.',
-  'method.observe.title': 'Observation',
-  'method.observe.body':
-    'We look at the activity as it happens, so the account of the work is not the only source.',
+    'Three moments of one investigation: the HSE-IT form, a report of the results, and follow-up.',
   'method.hse.title': 'HSE-IT',
   'method.hse.body':
-    'We use the indicator as a collective reading of working conditions, not as a verdict on a person.',
-  'method.groups.title': 'Focus groups',
-  'method.groups.body':
-    'Listening gives the results their context and shows what the organization recognizes as risk.',
-
-  'people.title': 'Who is behind it',
-  'people.lead': 'Three partners. The practice brings together psychology, epidemiology, and technology.',
-  'people.psych.title': 'Psychology',
-  'people.psych.body': 'Listening to the work, and reading the relations that organize the activity.',
-  'people.epi.title': 'Epidemiology',
-  'people.epi.body': 'Care with evidence: what the data can support, and what they cannot yet support.',
-  'people.tech.title': 'Technology',
-  'people.tech.body': 'How findings are recorded, compared, and returned without losing the link to the field.',
+    'The first step is the HSE-IT form. Thirty-five questions about the last six months move through the dimensions of work: demands, control, support, relationships, role clarity, and change. Each person answers about the conditions of their own work, and the anonymous set becomes a reading of the group.',
+  'method.observe.title': 'Observation',
+  'method.observe.body':
+    'The answers come back as a report. Means by dimension, how the bands are distributed, and comparisons within the group show where working conditions weigh, and how heavily. Observation is that statistical analysis of the results.',
+  'method.follow.title': 'Follow-up',
+  'method.follow.body':
+    'Dr. Renata Stephan analyzes the findings in depth. In focus groups, the people who do the work place the numbers in context, and from that listening come proposed actions for the organization.',
 
   'contact.title': 'Contact',
   'contact.lead': 'Let’s talk about the reality of your organization.',
@@ -518,14 +576,6 @@ export const en: Record<MsgKey, string> = {
   'tool.reference':
     'Bands from the HSE Management Standards Analysis Tool, using data from 136 organisations. This is a local test: not a diagnosis, a report, or a risk inventory.',
 
-  'wall.title': 'Site under maintenance',
-  'wall.lead': 'We are updating the site. Please come back soon.',
-  'wall.password': 'Password',
-  'wall.enter': 'Enter',
-  'wall.checking': 'Checking…',
-  'wall.badPassword': 'Incorrect password.',
-  'wall.unreachable': 'The server could not be reached. Try again in a moment.',
-
   'footer.company': 'Company access',
 
   'company.eyebrow': 'Companies',
@@ -544,6 +594,8 @@ export const en: Record<MsgKey, string> = {
     'Demonstration. The 100 responses are simulated, using the same HSE-IT questionnaire. They do not describe a real organization.',
   'company.demoName': 'Demonstration organization',
   'company.alphaTitle': 'Cronbach’s alpha',
+  'company.alphaMore': 'Show the scales',
+  'company.alphaLess': 'Hide the scales',
   'company.alphaLead':
     'Internal consistency of the answers in this reading. It is not a risk score: it says how far items on the same scale move together.',
   'company.alphaLatest': 'Calculated on {{n}} complete responses. The latest was submitted on {{date}}.',
@@ -559,6 +611,7 @@ export const en: Record<MsgKey, string> = {
   'company.reading.questionable': 'From 0.60 to 0.70. Fragile consistency.',
   'company.reading.weak': 'Below 0.60. Items on this scale barely move together.',
   'company.reading.unknown': 'Not calculated.',
+  'company.readingLabel': 'Group readings',
   'company.dimensionsTitle': 'Conditions by factor',
   'company.dimensionsLead':
     'Group mean, from 1 to 5. Higher is more favorable. The marks on each bar are the 20th, 50th, and 80th percentiles of the HSE reference.',
@@ -577,10 +630,20 @@ export const en: Record<MsgKey, string> = {
   'company.respondents': '{{count}} people',
   'company.reference':
     'Bands from the HSE Management Standards Analysis Tool, using data from 136 organisations. A group mean does not replace listening to the work.',
-  'company.inviteTitle': 'Who receives the link',
+  'company.inviteTitle': 'Send forms',
+  'company.roundsTitle': 'Rounds',
+  'company.roundsEmpty': 'There are no rounds yet.',
+  'company.roundOpen': 'Open',
+  'company.colRound': 'Round',
+  'company.colOpened': 'Started',
+  'company.colClosed': 'Closed',
+  'company.colInvited': 'Invited',
+  'company.colLatest': 'Latest answer',
   'company.inviteLead':
     'Upload this round’s email list. The only field is the email. An extra column is rejected and is not stored. Someone already in this round, or listed twice in the file, does not get a second link. Each new address is sent the link now.',
   'company.inviteFile': 'JSON, CSV, or Excel file',
+  'company.inviteChoose': 'Choose file',
+  'company.inviteNone': 'No file selected',
   'company.inviteSend': 'Send the list',
   'company.inviteSending': 'Sending…',
   'company.inviteAccepted': 'The link was sent to {{count}} people.',
@@ -606,14 +669,23 @@ export const en: Record<MsgKey, string> = {
 
   'footer.hire': 'Sign up',
 
-  'bill.stepCadastro': '1. Signup',
-  'bill.stepPay': '2. Payment',
+  'bill.stepPlan': '1. Plan',
+  'bill.stepCadastro': '2. Signup',
+  'bill.stepPay': '3. Payment',
   'bill.cadastroTitle': 'Organization signup',
   'bill.cadastroLead':
-    'These details name who hires the cycle and who receives the invoice. The worker list does not belong here.',
+    'These details name who hires the plan and who receives the invoice. The worker list does not belong here.',
   'bill.payTitle': 'Payment',
   'bill.payLead':
-    'The summary below is the contract, before anything is recorded. You can go back and correct it. This step does not debit anything.',
+    'The summary below is the plan contract, before anything is recorded. The monthly fee is beside it. You can go back and correct it. This step does not debit anything.',
+  'bill.chosenPlan': 'Chosen plan',
+  'bill.changePlan': 'Change plan',
+  'bill.monthlyPreview': '{{band}}: {{price}} per month',
+  'bill.monthlyNote':
+    'The charge is monthly. The amount follows the band of people covered and repeats while the plan is active.',
+  'bill.priceMonth': 'per month',
+  'bill.issPending':
+    'The supplier city’s ISS rate is not in this summary yet. The amount above is the plan’s monthly fee.',
   'bill.sectionCompany': 'Who is hiring',
   'bill.sectionAddress': 'Invoice address',
   'bill.sectionRep': 'Who signs',
@@ -628,7 +700,7 @@ export const en: Record<MsgKey, string> = {
   'bill.activityHint': 'The line of work, in your own words.',
   'bill.headcount': 'People covered',
   'bill.headcountHint':
-    'How many people this cycle reaches, not the whole workforce if the round covers only part of it.',
+    'How many people this plan covers. This number sets the monthly band. It does not have to be the whole workforce if the plan covers only part of it.',
   'bill.sites': 'Sites',
   'bill.sitesHint': 'How many establishments are in this cycle.',
   'bill.nfeEmail': 'Invoice email',
@@ -654,7 +726,7 @@ export const en: Record<MsgKey, string> = {
   'bill.contactEmail': 'Email',
   'bill.contactPhone': 'Phone',
   'bill.privacyNote':
-    'Legal name and CNPJ identify the hiring organization on the contract and on the service invoice. The name, CPF, email, and phone of the signer and of the person who follows the investigation are personal data, used to contract, issue the invoice, and carry out the cycle. The basis is performing the contract and the tax duty. The news checkbox on the next page starts unchecked: without it, there is no message outside this order. The worker list and the questionnaire answers are not part of this signup. In a round, an answer is stored without a name and without an email.',
+    'Legal name and CNPJ identify the hiring organization on the contract and on the service invoice. The name, CPF, email, and phone of the signer and of the person who follows the investigation are personal data, used to contract, issue the invoice, and carry out the plan. The basis is performing the contract and the tax duty. The news checkbox on the next page starts unchecked: without it, there is no message outside this order. The worker list and the questionnaire answers are not part of this signup. In a round, an answer is stored without a name and without an email.',
   'bill.continue': 'Continue to payment',
   'bill.optional': 'optional',
   'bill.err.form': 'Check what is marked.',
@@ -694,7 +766,7 @@ export const en: Record<MsgKey, string> = {
     'What the organization receives is a group reading. One answer does not describe a person, and a small area should not be read as a stable group.',
   'bill.offerLimit':
     'This is not clinical care, it does not replace an occupational health exam, and it does not produce an individual report.',
-  'bill.priceTitle': 'Price',
+  'bill.priceTitle': 'Monthly fee',
   'bill.pricePending': 'The price has not been published yet. Without it, there is no total to charge.',
   'bill.priceService': 'Service',
   'bill.priceIssIn': 'ISS {{rate}}% included',
@@ -707,13 +779,13 @@ export const en: Record<MsgKey, string> = {
   'bill.methodTitle': 'How to pay',
   'bill.pix': 'Pix',
   'bill.pixNote':
-    'A dynamic QR code, for the total on this page, in the name of the supplier shown beside it. Confirmation comes from the payment institution.',
+    'A dynamic QR code, for the monthly fee on this page, in the name of the supplier shown beside it. Confirmation comes from the payment institution. Each month asks for a new charge.',
   'bill.boleto': 'Boleto',
   'bill.boletoNote':
-    'Clearing can take up to 3 business days. The cycle starts only after confirmation. The boleto is issued to the hiring CNPJ.',
+    'Clearing can take up to 3 business days. The plan continues after confirmation. The boleto is issued to the hiring CNPJ, for the monthly fee.',
   'bill.card': 'Card',
   'bill.cardNote':
-    'The card number is not typed on this site. When charging is connected, the form opens in the payment institution environment.',
+    'The card number is not typed on this site. When charging is connected, the form opens in the payment institution environment, for the monthly fee.',
   'bill.installments': 'Card installments',
   'bill.planCash': 'Cash, {{amount}}',
   'bill.planEven': '{{count}} times {{slice}}, total {{total}}, with nothing added',
@@ -721,10 +793,10 @@ export const en: Record<MsgKey, string> = {
   'bill.summaryTitle': 'Summary before recording',
   'bill.summaryIntro': 'Check who is hiring. A mistake here lands on the invoice and on the contract.',
   'bill.summaryCancel':
-    'Before collection starts, cancellation returns the full amount. After collection starts, only the work already done is due. This sentence does not set aside the 7 days of article 49 of Law 8.078/1990 when the hiring organization is a consumer.',
+    'The monthly fee covers the current month. Cancellation before the next month stops the renewal; a month already started stays due. This sentence does not set aside the 7 days of article 49 of Law 8.078/1990 when the hiring organization is a consumer.',
   'bill.summaryAck':
-    'I read the summary, the price, the schedule, and the limits of the service, and I can correct the details before recording.',
-  'bill.acceptContract': 'I agree to hire this cycle on the terms of this summary.',
+    'I read the summary, the monthly fee, the band, and the limits of the service, and I can correct the details before recording.',
+  'bill.acceptContract': 'I agree to hire this plan, at the monthly fee on this page, on the terms of this summary.',
   'bill.privacyAck': 'I understand how the data in this signup is used.',
   'bill.marketing': 'I want news from the practice, beyond messages about this contract.',
   'bill.register': 'Record the order',
@@ -735,20 +807,20 @@ export const en: Record<MsgKey, string> = {
   'bill.doneBody': 'Order {{reference}} recorded for {{company}}.',
   'bill.notCharged':
     'Nothing was debited. Pix, boleto, and card are not yet connected to a payment institution.',
-  'bill.quoted': 'Amount shown on this confirmation: {{price}}.',
+  'bill.quoted': 'Monthly fee on this confirmation: {{price}}.',
   'bill.noQuote': 'The price was not published, so this order carries no amount.',
   'bill.fail': 'The order could not be recorded just now. Try again in a moment.',
   'bill.needDraft': 'Payment asks for the organization signup before the summary.',
   'bill.toCadastro': 'Go to signup',
   'bill.changeData': 'Change these details',
-  'bill.another': 'Start another signup',
+  'bill.another': 'Choose another plan',
   'bill.workers': 'Coverage',
   'bill.workersValue': '{{headcount}} people at {{sites}} sites',
   'bill.sac': 'Service: {{email}}',
   'bill.privacyContact': 'Privacy: {{email}}',
   'bill.withdrawTitle': 'Withdrawal and acceptance',
   'bill.withdrawBody':
-    'When the hiring organization is a consumer under article 2 of Law 8.078/1990, it may withdraw within 7 days of contracting or of receiving the service, through the same channel used here, without giving a reason and at no cost. Whatever was paid comes back at once, with a monetary update (article 49). Withdrawal also ends anything accessory to this contract, at no cost (Decree 7.962/2013, article 5). If the contract is between companies and the cycle becomes part of the hiring organization management of risks at work, article 49 does not apply automatically: the cancellation sentence highlighted above governs.',
+    'When the hiring organization is a consumer under article 2 of Law 8.078/1990, it may withdraw within 7 days of contracting or of receiving the service, through the same channel used here, without giving a reason and at no cost. Whatever was paid comes back at once, with a monetary update (article 49). Withdrawal also ends anything accessory to this contract, at no cost (Decree 7.962/2013, article 5). If the contract is between companies and the plan becomes part of the hiring organization management of risks at work, article 49 does not apply automatically: the cancellation sentence highlighted above governs.',
   'bill.withdrawNow': 'To withdraw, when that right applies, write to {{email}} with the order number.',
   'bill.withdrawNoMail': 'The service email has not been published yet. Keep the order number.',
 };

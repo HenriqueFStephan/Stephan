@@ -9,8 +9,8 @@ import {
   CompanyAlphaRow,
   CompanyBandRow,
   CompanyOverview,
+  CompanyRoundRow,
   CompanySectorRow,
-  InvitationRoster,
   InvitationUploadResult,
 } from '../../core/models';
 import {
@@ -51,6 +51,11 @@ interface BandPart {
 })
 export class CompanyComponent implements OnInit {
   readonly bandKeys: Band[] = ['urgent', 'improve', 'good', 'maintain'];
+  readonly readings = [
+    { id: 'dimensions', titleKey: 'company.dimensionsTitle', leadKey: 'company.dimensionsLead' },
+    { id: 'bands', titleKey: 'company.bandsTitle', leadKey: 'company.bandsLead' },
+    { id: 'sectors', titleKey: 'company.sectorsTitle', leadKey: 'company.sectorsLead' },
+  ] as const;
   readonly chartWidth = 640;
   readonly chartHeight = 188;
 
@@ -66,7 +71,10 @@ export class CompanyComponent implements OnInit {
   inviteErrorKey = '';
   inviteUnknownColumns = '';
   inviteResult: InvitationUploadResult | null = null;
-  roster: InvitationRoster | null = null;
+  rounds: CompanyRoundRow[] | null = null;
+  roundsError = false;
+  alphaOpen = false;
+  reading: (typeof this.readings)[number]['id'] = 'dimensions';
 
   constructor(
     private api: ApiService,
@@ -120,7 +128,9 @@ export class CompanyComponent implements OnInit {
     this.inviteResult = null;
     this.inviteErrorKey = '';
     this.inviteUnknownColumns = '';
-    this.roster = null;
+    this.rounds = null;
+    this.roundsError = false;
+    this.alphaOpen = false;
     this.phase = 'login';
   }
 
@@ -147,7 +157,7 @@ export class CompanyComponent implements OnInit {
         this.inviteResult = result;
         this.inviteFile = null;
         input.value = '';
-        this.refreshRoster(passage);
+        this.refreshRounds(passage);
       },
       error: (err: HttpErrorResponse) => {
         this.inviteSubmitting = false;
@@ -179,6 +189,10 @@ export class CompanyComponent implements OnInit {
       return this.i18n.t('company.demoName');
     }
     return this.overview?.company_id ?? '';
+  }
+
+  readingLead(): string {
+    return this.readings.find((item) => item.id === this.reading)?.leadKey ?? 'company.dimensionsLead';
   }
 
   scaleName(id: string): string {
@@ -295,13 +309,26 @@ export class CompanyComponent implements OnInit {
     return this.overview?.alpha[0] ?? null;
   }
 
+  hasMoreAlpha(): boolean {
+    return (this.overview?.alpha.length ?? 0) > 1;
+  }
+
+  visibleAlpha(): CompanyAlphaRow[] {
+    const rows = this.overview?.alpha ?? [];
+    return this.alphaOpen ? rows : rows.slice(0, 1);
+  }
+
+  shareText(value: number | null): string {
+    return value == null ? '—' : `${value}%`;
+  }
+
   private load(passage: string): void {
     this.phase = 'loading';
     this.api.getCompanyOverview(passage).subscribe({
       next: (overview) => {
         this.overview = overview;
         this.phase = 'ready';
-        this.refreshRoster(passage);
+        this.refreshRounds(passage);
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
@@ -316,19 +343,15 @@ export class CompanyComponent implements OnInit {
     });
   }
 
-  private refreshRoster(passage: string): void {
-    this.api.getCompanyInvitations(passage).subscribe({
-      next: (roster) => {
-        this.roster = roster;
-        if (this.inviteErrorKey === 'company.inviteUnreachable') {
-          this.inviteErrorKey = '';
-        }
+  private refreshRounds(passage: string): void {
+    this.api.getCompanyRounds(passage).subscribe({
+      next: (rounds) => {
+        this.rounds = rounds;
+        this.roundsError = false;
       },
       error: () => {
-        this.roster = null;
-        if (!this.inviteErrorKey) {
-          this.inviteErrorKey = 'company.inviteUnreachable';
-        }
+        this.rounds = null;
+        this.roundsError = true;
       },
     });
   }

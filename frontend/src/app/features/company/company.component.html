@@ -46,29 +46,26 @@
 
     <section class="card" aria-labelledby="invite-title">
       <h2 id="invite-title">{{ 'company.inviteTitle' | t }}</h2>
-      <div class="invite__status" *ngIf="roster">
-        <p class="note">{{ 'company.inviteRound' | t:{ label: roster.round_label } }}</p>
-        <p class="invite__rate" *ngIf="roster.invited" [attr.aria-label]="'company.participationLabel' | t">
-          <span><strong>{{ roster.responded_percent }}%</strong> {{ 'company.respondedShare' | t }}</span>
-          <span><strong>{{ roster.waiting_percent }}%</strong> {{ 'company.waitingShare' | t }}</span>
-        </p>
-        <p class="note" *ngIf="!roster.invited">{{ 'company.participationEmpty' | t }}</p>
-      </div>
-      <p class="lead">{{ 'company.inviteLead' | t }}</p>
       <form (ngSubmit)="uploadInvites(inviteInput)">
-        <label>
-          <span>{{ 'company.inviteFile' | t }}</span>
-          <input
-            #inviteInput
-            type="file"
-            name="invite-file"
-            accept=".json,.csv,.xlsx,text/csv,application/json"
-            (change)="onInviteFile($event)"
-          />
-        </label>
-        <button type="submit" class="button" [disabled]="inviteSubmitting || !inviteFile">
-          {{ inviteSubmitting ? ('company.inviteSending' | t) : ('company.inviteSend' | t) }}
-        </button>
+        <div class="file-row">
+          <label class="file-field">
+            <span class="file">
+              <input
+                #inviteInput
+                class="file__input"
+                type="file"
+                name="invite-file"
+                accept=".json,.csv,.xlsx,text/csv,application/json"
+                (change)="onInviteFile($event)"
+              />
+              <span class="file__pick">{{ 'company.inviteChoose' | t }}</span>
+              <span class="file__name">{{ inviteFile?.name || ('company.inviteNone' | t) }}</span>
+            </span>
+          </label>
+          <button type="submit" class="button" [disabled]="inviteSubmitting || !inviteFile">
+            {{ inviteSubmitting ? ('company.inviteSending' | t) : ('company.inviteSend' | t) }}
+          </button>
+        </div>
         <p class="error" *ngIf="inviteErrorKey" role="alert">
           {{ inviteErrorKey | t:{ columns: inviteUnknownColumns } }}
         </p>
@@ -105,10 +102,53 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="rounds-title">
+      <h2 id="rounds-title">{{ 'company.roundsTitle' | t }}</h2>
+      <p class="error" *ngIf="roundsError" role="alert">{{ 'company.inviteUnreachable' | t }}</p>
+      <p class="note" *ngIf="rounds && !rounds.length">{{ 'company.roundsEmpty' | t }}</p>
+      <div class="table-wrap" *ngIf="rounds?.length">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">{{ 'company.colRound' | t }}</th>
+              <th scope="col">{{ 'company.colOpened' | t }}</th>
+              <th scope="col">{{ 'company.colClosed' | t }}</th>
+              <th scope="col">{{ 'company.colInvited' | t }}</th>
+              <th scope="col">{{ 'company.respondedShare' | t }}</th>
+              <th scope="col">{{ 'company.waitingShare' | t }}</th>
+              <th scope="col">{{ 'company.colLatest' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let round of rounds">
+              <th scope="row">{{ round.label }}</th>
+              <td>{{ formatIso(round.opened_on) }}</td>
+              <td>{{ round.closed_on ? formatIso(round.closed_on) : ('company.roundOpen' | t) }}</td>
+              <td>{{ round.invited }}</td>
+              <td>{{ shareText(round.responded_percent) }}</td>
+              <td>{{ shareText(round.waiting_percent) }}</td>
+              <td>{{ round.latest_response_on ? formatIso(round.latest_response_on) : '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="card" aria-labelledby="alpha-title">
-      <div class="alpha__top">
+      <div class="alpha__bar">
+        <h2 id="alpha-title">{{ 'company.alphaTitle' | t }}</h2>
+        <button
+          type="button"
+          class="alpha__toggle"
+          *ngIf="hasMoreAlpha()"
+          [attr.aria-expanded]="alphaOpen"
+          (click)="alphaOpen = !alphaOpen"
+        >
+          {{ (alphaOpen ? 'company.alphaLess' : 'company.alphaMore') | t }}
+        </button>
+      </div>
+      <div class="alpha__top" *ngIf="alphaOpen">
         <div>
-          <h2 id="alpha-title">{{ 'company.alphaTitle' | t }}</h2>
           <p class="lead">{{ 'company.alphaLead' | t }}</p>
           <p class="latest" *ngIf="overallAlpha() as overall">
             {{ 'company.alphaLatest' | t:{ n: overall.n, date: formatIso(overview.latest_response_on) } }}
@@ -131,7 +171,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of overview.alpha">
+            <tr *ngFor="let row of visibleAlpha()">
               <th scope="row">{{ scaleName(row.id) }}</th>
               <td>{{ row.items }}</td>
               <td>{{ alphaText(row.alpha) }}</td>
@@ -143,71 +183,80 @@
       </div>
     </section>
 
-    <section class="card" aria-labelledby="dimensions-title">
-      <h2 id="dimensions-title">{{ 'company.dimensionsTitle' | t }}</h2>
-      <p class="lead">{{ 'company.dimensionsLead' | t }}</p>
-      <ol class="meters">
-        <li *ngFor="let row of overview.dimensions">
-          <div class="meter__top">
-            <h3>{{ scaleName(row.id) }}</h3>
-            <span>{{ meanText(row.mean) }}</span>
-          </div>
-          <p class="meter__about">{{ dimensionAbout(row.id) }}</p>
-          <div class="meter__track">
-            <span class="meter__fill" [ngClass]="bandOf(row.id, row.mean)" [style.width.%]="fill(row.mean)"></span>
-            <span class="tick" *ngFor="let mark of ticks(row.id)" [style.left.%]="fill(mark)"></span>
-          </div>
-          <p class="meter__band">{{ bandSentence(row.id, row.mean) }}</p>
-        </li>
-      </ol>
-    </section>
-
-    <section class="card" aria-labelledby="bands-title">
-      <h2 id="bands-title">{{ 'company.bandsTitle' | t }}</h2>
-      <p class="lead">{{ 'company.bandsLead' | t }}</p>
-      <ul class="legend">
-        <li *ngFor="let key of bandKeys"><i [class]="key"></i>{{ ('company.band.' + key) | t }}</li>
-      </ul>
-      <ol class="stacks">
-        <li *ngFor="let row of overview.bands">
-          <span class="stack__name">{{ scaleName(row.id) }}</span>
-          <div class="stack">
-            <span
-              class="stack__part"
-              *ngFor="let part of bandParts(row)"
-              [ngClass]="part.key"
-              [style.width.%]="part.share"
-            ></span>
-          </div>
-          <p class="stack__counts">
-            <span class="urgent">{{ row.urgent }}</span>
-            <span class="improve">{{ row.improve }}</span>
-            <span class="good">{{ row.good }}</span>
-            <span class="maintain">{{ row.maintain }}</span>
-          </p>
-        </li>
-      </ol>
-    </section>
-
-    <section class="card" aria-labelledby="sectors-title">
-      <h2 id="sectors-title">{{ 'company.sectorsTitle' | t }}</h2>
-      <p class="lead">{{ 'company.sectorsLead' | t }}</p>
-      <div class="sectors">
-        <article *ngFor="let sector of overview.sectors">
-          <h3>
-            {{ sectorName(sector.id) }}
-            <span>{{ 'company.respondents' | t:{ count: sector.count } }}</span>
-          </h3>
-          <ol>
-            <li *ngFor="let row of sector.means">
-              <span>{{ scaleName(row.id) }}</span>
-              <span class="mini">
-                <span [style.width.%]="fill(row.mean)" [ngClass]="bandOf(row.id, row.mean)"></span>
-              </span>
-              <span class="mini__score">{{ meanText(row.mean) }}</span>
+    <section class="card" [attr.aria-labelledby]="'reading-' + reading">
+      <div class="switch" role="tablist" [attr.aria-label]="'company.readingLabel' | t">
+        <button
+          type="button"
+          role="tab"
+          *ngFor="let item of readings"
+          [id]="'reading-' + item.id"
+          [attr.aria-selected]="reading === item.id"
+          [attr.aria-controls]="'reading-panel'"
+          [class.is-on]="reading === item.id"
+          (click)="reading = item.id"
+        >
+          {{ item.titleKey | t }}
+        </button>
+      </div>
+      <div id="reading-panel" role="tabpanel" [attr.aria-labelledby]="'reading-' + reading">
+        <p class="lead">{{ readingLead() | t }}</p>
+        <ng-container [ngSwitch]="reading">
+          <ol class="meters" *ngSwitchCase="'dimensions'">
+            <li *ngFor="let row of overview.dimensions">
+              <div class="meter__top">
+                <h3>{{ scaleName(row.id) }}</h3>
+                <span>{{ meanText(row.mean) }}</span>
+              </div>
+              <p class="meter__about">{{ dimensionAbout(row.id) }}</p>
+              <div class="meter__track">
+                <span class="meter__fill" [ngClass]="bandOf(row.id, row.mean)" [style.width.%]="fill(row.mean)"></span>
+                <span class="tick" *ngFor="let mark of ticks(row.id)" [style.left.%]="fill(mark)"></span>
+              </div>
+              <p class="meter__band">{{ bandSentence(row.id, row.mean) }}</p>
             </li>
           </ol>
-        </article>
+          <ng-container *ngSwitchCase="'bands'">
+            <ul class="legend">
+              <li *ngFor="let key of bandKeys"><i [class]="key"></i>{{ ('company.band.' + key) | t }}</li>
+            </ul>
+            <ol class="stacks">
+              <li *ngFor="let row of overview.bands">
+                <span class="stack__name">{{ scaleName(row.id) }}</span>
+                <div class="stack">
+                  <span
+                    class="stack__part"
+                    *ngFor="let part of bandParts(row)"
+                    [ngClass]="part.key"
+                    [style.width.%]="part.share"
+                  ></span>
+                </div>
+                <p class="stack__counts">
+                  <span class="urgent">{{ row.urgent }}</span>
+                  <span class="improve">{{ row.improve }}</span>
+                  <span class="good">{{ row.good }}</span>
+                  <span class="maintain">{{ row.maintain }}</span>
+                </p>
+              </li>
+            </ol>
+          </ng-container>
+          <div class="sectors" *ngSwitchCase="'sectors'">
+            <article *ngFor="let sector of overview.sectors">
+              <h3>
+                {{ sectorName(sector.id) }}
+                <span>{{ 'company.respondents' | t:{ count: sector.count } }}</span>
+              </h3>
+              <ol>
+                <li *ngFor="let row of sector.means">
+                  <span>{{ scaleName(row.id) }}</span>
+                  <span class="mini">
+                    <span [style.width.%]="fill(row.mean)" [ngClass]="bandOf(row.id, row.mean)"></span>
+                  </span>
+                  <span class="mini__score">{{ meanText(row.mean) }}</span>
+                </li>
+              </ol>
+            </article>
+          </div>
+        </ng-container>
       </div>
     </section>
 

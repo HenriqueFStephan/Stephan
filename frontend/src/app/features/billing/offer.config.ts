@@ -1,8 +1,8 @@
 import { isCnpj, isEmail, isPhone, onlyDigits } from './br-docs';
 
 /**
- * Public facts of the offer. Cadastro and payment read only this file.
- * Leave a value empty until it is the real one. The payment page lists what is still blank.
+ * Public facts of the supplier. Monthly fees by company size live in plans.ts.
+ * Leave a supplier value empty until it is the real one. The payment page lists what is still blank.
  *
  * Do not put a gateway token, a Pix credential, or a card secret here.
  * Those belong in debt.txt and on Render, and only after a payment institution is connected.
@@ -99,9 +99,7 @@ export type OfferGap =
   | 'phone'
   | 'sac'
   | 'privacy'
-  | 'price'
-  | 'iss'
-  | 'days';
+  | 'iss';
 
 export function offerGaps(config: OfferConfig = offer): OfferGap[] {
   const supplier = config.supplier;
@@ -121,11 +119,8 @@ export function offerGaps(config: OfferConfig = offer): OfferGap[] {
   if (!isPhone(supplier.phone)) gaps.push('phone');
   if (!isEmail(supplier.sacEmail)) gaps.push('sac');
   if (!isEmail(supplier.privacyEmail)) gaps.push('privacy');
-  if (config.price.cents == null || config.price.cents <= 0) gaps.push('price');
   const rate = config.price.issRatePercent;
   if (rate == null || rate < 0 || rate > 5) gaps.push('iss');
-  const days = config.service.executionBusinessDays;
-  if (days == null || days < 1) gaps.push('days');
   return gaps;
 }
 

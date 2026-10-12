@@ -38,6 +38,7 @@ app-supplier-card {
 
 .steps {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.55rem;
   margin: 0;
   color: $color-text-muted;
@@ -106,6 +107,16 @@ h2 {
 .lead {
   margin: 0 0 1.25rem;
   max-width: 40rem;
+}
+
+.card ul:not(.gap) {
+  margin: 0 0 1rem;
+  padding-left: 1.15rem;
+  color: $color-text-muted;
+}
+
+.card li + li {
+  margin-top: 0.4rem;
 }
 
 .card {
@@ -325,6 +336,27 @@ em {
   flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $color-primary;
+}
+
+.plan-name {
+  margin: 0 0 0.75rem;
+  font-family: $font-heading;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: $color-primary;
+}
+
+.plan-banner {
+  margin-bottom: 1rem;
 }
 
 .link {

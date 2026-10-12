@@ -1,0 +1,31 @@
+<section class="contact">
+  <div class="container contact__grid">
+    <div>
+      <h1>{{ 'contact.title' | t }}</h1>
+      <p class="intro">{{ 'contact.lead' | t }}</p>
+    </div>
+    <form (ngSubmit)="submit()" #form="ngForm">
+      <label>
+        <span>{{ 'contact.name' | t }}</span>
+        <input name="name" [(ngModel)]="name" required />
+      </label>
+      <label>
+        <span>{{ 'contact.org' | t }}</span>
+        <input name="organization" [(ngModel)]="organization" />
+      </label>
+      <label>
+        <span>{{ 'contact.email' | t }}</span>
+        <input name="email" type="email" [(ngModel)]="email" required />
+      </label>
+      <label>
+        <span>{{ 'contact.message' | t }}</span>
+        <textarea name="message" rows="4" [(ngModel)]="message" required></textarea>
+      </label>
+      <button class="button" type="submit" [disabled]="sending || form.invalid">
+        {{ sending ? ('contact.sending' | t) : ('contact.send' | t) }}
+      </button>
+      <p class="form-note" *ngIf="sent">{{ 'contact.sent' | t }}</p>
+      <p class="form-note form-note--bad" *ngIf="failed">{{ 'contact.fail' | t }}</p>
+    </form>
+  </div>
+</section>

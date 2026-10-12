@@ -116,32 +116,20 @@ h3 {
   margin: -0.35rem 0 0.8rem;
 }
 
-.invite__status {
+.file-row {
   display: flex;
+  align-items: center;
+  gap: 1rem;
   flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.35rem 1.5rem;
-  margin-bottom: 0.85rem;
-
-  .note {
-    margin: 0;
-  }
 }
 
-.invite__rate {
+.file-row .file-field {
   margin: 0;
-  color: $color-text-muted;
-  font-size: 0.95rem;
+  flex: 1 1 auto;
+}
 
-  span + span {
-    margin-left: 1.15rem;
-  }
-
-  strong {
-    color: $color-text;
-    font-weight: 600;
-  }
+.file-row .button {
+  margin-left: auto;
 }
 
 .note {
@@ -171,6 +159,78 @@ label {
       border-color: $color-primary;
     }
   }
+}
+
+.switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 1.15rem;
+}
+
+.switch button {
+  margin: 0;
+  padding: 0.55rem 1.05rem;
+  border: 1px solid $color-border;
+  border-radius: 999px;
+  background: $color-bg;
+  color: $color-primary;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    border-color: $color-primary;
+  }
+
+  &.is-on,
+  &[aria-selected='true'] {
+    background: $color-primary;
+    border-color: $color-primary;
+    color: #f7f4ec;
+  }
+}
+
+.file {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+}
+
+.file-field .file__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.file__pick {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid $color-primary;
+  border-radius: 999px;
+  background: $color-surface;
+  color: $color-primary;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.file__input:focus-visible + .file__pick {
+  outline: 2px solid rgba($color-primary, 0.35);
+  outline-offset: 2px;
+}
+
+.file__name {
+  font-weight: 400;
+  color: $color-text-muted;
 }
 
 .button {
@@ -208,6 +268,34 @@ label {
   overflow: auto;
   margin: 0.35rem 0 1rem;
   padding-left: 1.15rem;
+}
+
+.alpha__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.alpha__toggle {
+  margin: 0;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid $color-border;
+  border-radius: 999px;
+  background: $color-bg;
+  color: $color-primary;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $color-primary;
+  }
 }
 
 .alpha__top {

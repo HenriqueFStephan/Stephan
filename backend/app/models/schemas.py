@@ -79,7 +79,7 @@ _STATES = {
 
 
 class OrderCreate(BaseModel):
-    """Company signup. Card numbers are not a field: the API never stores them."""
+    """Company signup for a monthly plan. Card numbers are not a field: the API never stores them."""
 
     legal_name: str = Field(..., min_length=2, max_length=160)
     trade_name: str = Field(default="", max_length=160)
@@ -112,7 +112,8 @@ class OrderCreate(BaseModel):
     method: Literal["pix", "boleto", "card"]
     installments: int = Field(default=1, ge=1, le=12)
     summary_ack: bool
-    quoted_price_cents: int | None = Field(default=None, ge=0, le=100_000_000_00)
+    plan: Literal["hse", "analise"]
+    quoted_price_cents: int = Field(..., ge=0, le=100_000_000_00)
 
     @field_validator(
         "legal_name", "trade_name", "cnpj", "municipal_registration", "nfe_email",
@@ -189,48 +190,19 @@ class OrderCreate(BaseModel):
             raise ValueError("installments only apply to card")
         return self
 
+    @model_validator(mode="after")
+    def quote_matches_band(self) -> "OrderCreate":
+        from app.services.plans import monthly_cents
+
+        if self.quoted_price_cents != monthly_cents(self.plan, self.headcount):
+            raise ValueError("quoted price does not match the monthly band")
+        return self
+
 
 class OrderAck(BaseModel):
     success: bool
     reference: str
     charged: bool = False
-
-
-class BlockwallStatus(BaseModel):
-    enabled: bool
-
-
-class BlockwallUnlock(BaseModel):
-    password: str = Field(..., min_length=1, max_length=200)
-
-    @field_validator("password")
-    @classmethod
-    def strip_password(cls, value: str) -> str:
-        stripped = value.strip()
-        if not stripped:
-            raise ValueError("password required")
-        return stripped
-
-
-class BlockwallResume(BaseModel):
-    passage: str = Field(..., min_length=1, max_length=128)
-
-    @field_validator("passage")
-    @classmethod
-    def strip_passage(cls, value: str) -> str:
-        stripped = value.strip()
-        if not stripped:
-            raise ValueError("passage required")
-        return stripped
-
-
-class BlockwallAck(BaseModel):
-    success: bool
-
-
-class BlockwallUnlockResponse(BaseModel):
-    success: bool
-    passage: str
 
 
 class CompanyLogin(BaseModel):
@@ -353,6 +325,16 @@ class InvitationRoster(BaseModel):
     invited: int
     responded_percent: int | None
     waiting_percent: int | None
+
+
+class CompanyRoundRow(BaseModel):
+    label: str
+    opened_on: str
+    closed_on: str | None
+    invited: int
+    responded_percent: int | None
+    waiting_percent: int | None
+    latest_response_on: str | None
 
 
 class HealthResponse(BaseModel):

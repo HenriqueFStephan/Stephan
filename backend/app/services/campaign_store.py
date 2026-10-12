@@ -178,6 +178,49 @@ def list_invitations(conn, company_id) -> dict[str, Any]:
     }
 
 
+def list_rounds(conn, company_id) -> list[dict[str, Any]]:
+    """Every wave for this company. Counts and dates only: no addresses."""
+    rows = conn.execute(
+        """
+        SELECT
+          r.label,
+          r.opened_on,
+          r.closed_on,
+          count(i.id) FILTER (WHERE i.status = 'pending') AS waiting,
+          count(i.id) FILTER (WHERE i.status = 'submitted') AS responded,
+          (
+            SELECT max(h.submitted_on)
+            FROM hse_responses AS h
+            WHERE h.round_id = r.id
+          ) AS latest_response_on
+        FROM company_rounds AS r
+        LEFT JOIN invitations AS i ON i.round_id = r.id
+        WHERE r.company_id = %s
+        GROUP BY r.id
+        ORDER BY r.opened_on DESC, r.label DESC
+        """,
+        (company_id,),
+    ).fetchall()
+    listed = []
+    for row in rows:
+        waiting = int(row["waiting"])
+        responded = int(row["responded"])
+        invited = waiting + responded
+        responded_percent = _percent(responded, invited)
+        listed.append(
+            {
+                "label": row["label"],
+                "opened_on": _day(row["opened_on"]),
+                "closed_on": _day(row["closed_on"]),
+                "invited": invited,
+                "responded_percent": responded_percent,
+                "waiting_percent": None if responded_percent is None else 100 - responded_percent,
+                "latest_response_on": _day(row["latest_response_on"]),
+            }
+        )
+    return listed
+
+
 def submit_invitation(
     conn,
     token: str,
@@ -381,6 +424,14 @@ def open_pending_invitation(conn, token: str) -> dict[str, Any] | None:
         "demographics": row["demographics"] or {},
         "answers": [row[column] for column in ITEM_COLUMNS],
     }
+
+
+def _day(value) -> str | None:
+    if value is None:
+        return None
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return str(value)
 
 
 def _percent(part: int, whole: int) -> int | None:

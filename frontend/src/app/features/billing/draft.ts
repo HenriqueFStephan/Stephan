@@ -1,5 +1,6 @@
 import { OrderPayload } from '../../core/models';
 import { BRAZIL_STATES, isCnpj, isCpf, isEmail, isPhone, onlyDigits } from './br-docs';
+import { isPlanId } from './plans';
 
 const DRAFT_KEY = 'stephan-billing-draft';
 const RECEIPT_KEY = 'stephan-billing-receipt';
@@ -37,12 +38,14 @@ export interface BillingDraft {
   method: '' | 'pix' | 'boleto' | 'card';
   installments: number;
   summaryAck: boolean;
+  plan: '' | 'hse' | 'analise';
 }
 
 export interface BillingReceipt {
   reference: string;
   company: string;
   quotedCents: number | null;
+  plan: string;
 }
 
 export type DraftErrors = Partial<Record<keyof BillingDraft, string>>;
@@ -81,6 +84,7 @@ export function emptyDraft(): BillingDraft {
     method: '',
     installments: 1,
     summaryAck: false,
+    plan: '',
   };
 }
 
@@ -98,7 +102,9 @@ function readJson<T>(key: string): T | null {
 export function loadDraft(): BillingDraft | null {
   const stored = readJson<Partial<BillingDraft>>(DRAFT_KEY);
   if (!stored) return null;
-  return { ...emptyDraft(), ...stored, marketing: stored.marketing === true };
+  const merged = { ...emptyDraft(), ...stored, marketing: stored.marketing === true };
+  if (!isPlanId(merged.plan)) merged.plan = '';
+  return merged;
 }
 
 export function saveDraft(draft: BillingDraft): void {
@@ -158,6 +164,7 @@ export function validateCadastro(draft: BillingDraft): DraftErrors {
   if (!errors.repCpf && !isCpf(draft.repCpf)) errors.repCpf = 'bill.err.cpf';
   if (!errors.repEmail && !isEmail(draft.repEmail)) errors.repEmail = 'bill.err.email';
   if (!errors.repPhone && !isPhone(draft.repPhone)) errors.repPhone = 'bill.err.phone';
+  if (!isPlanId(draft.plan)) errors.plan = 'bill.err.required';
   if (!draft.sameContact) {
     if (!draft.contactName.trim()) errors.contactName = 'bill.err.required';
     if (!draft.contactRole.trim()) errors.contactRole = 'bill.err.required';
@@ -181,8 +188,11 @@ export function validatePayment(draft: BillingDraft, plans: number[]): DraftErro
   return errors;
 }
 
-export function toOrderPayload(draft: BillingDraft, quotedCents: number | null): OrderPayload {
+export function toOrderPayload(draft: BillingDraft, quotedCents: number): OrderPayload {
   applySameContact(draft);
+  if (!isPlanId(draft.plan)) {
+    throw new Error('plan required');
+  }
   return {
     legal_name: draft.legalName.trim(),
     trade_name: draft.tradeName.trim(),
@@ -213,8 +223,9 @@ export function toOrderPayload(draft: BillingDraft, quotedCents: number | null):
     privacy_ack: draft.privacyAck,
     marketing: draft.marketing,
     method: draft.method as 'pix' | 'boleto' | 'card',
-    installments: draft.method === 'card' ? draft.installments : 1,
+    installments: 1,
     summary_ack: draft.summaryAck,
+    plan: draft.plan,
     quoted_price_cents: quotedCents,
   };
 }

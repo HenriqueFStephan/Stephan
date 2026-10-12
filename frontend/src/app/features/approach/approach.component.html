@@ -1,0 +1,52 @@
+<section class="approach">
+  <div class="container">
+    <h1>{{ 'approach.title' | t }}</h1>
+    <p class="intro">{{ 'approach.lead' | t }}</p>
+
+    <ol class="path">
+      <li><span>1</span>{{ 'approach.step1' | t }}</li>
+      <li><span>2</span>{{ 'approach.step2' | t }}</li>
+      <li><span>3</span>{{ 'approach.step3' | t }}</li>
+    </ol>
+
+    <div class="offers">
+      <article class="offer" *ngFor="let plan of plans" [class.offer--larger]="plan.extraKeys.length">
+        <p class="eyebrow">{{ (plan.extraKeys.length ? 'approach.bigger' : 'approach.smaller') | t }}</p>
+        <h2>{{ plan.titleKey | t }}</h2>
+        <p class="includes" *ngIf="plan.extraKeys.length">{{ 'approach.includesPrevious' | t }}</p>
+        <ul>
+          <li *ngFor="let key of plan.featureKeys">{{ key | t }}</li>
+        </ul>
+        <p class="includes" *ngIf="plan.extraKeys.length">{{ 'approach.also' | t }}</p>
+        <ul *ngIf="plan.extraKeys.length">
+          <li *ngFor="let key of plan.extraKeys">{{ key | t }}</li>
+        </ul>
+        <p class="from">{{ 'approach.from' | t:{ price: starting(plan.id) } }}</p>
+        <a class="button" [routerLink]="['/cadastro']" [queryParams]="{ plano: plan.id }">{{ 'approach.hire' | t }}</a>
+      </article>
+    </div>
+
+    <h2 class="table-heading">{{ 'approach.tableTitle' | t }}</h2>
+    <p class="intro">{{ 'approach.tableLead' | t }}</p>
+    <div class="table-wrap">
+      <table [attr.aria-label]="'approach.tableTitle' | t">
+        <thead>
+          <tr>
+            <th scope="col">{{ 'approach.people' | t }}</th>
+            <th scope="col" *ngFor="let plan of plans">{{ plan.shortKey | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let band of bands">
+            <th scope="row">{{ band.labelKey | t }}</th>
+            <td *ngFor="let plan of plans">
+              <strong>{{ fee(band.monthlyCents[plan.id]) }}</strong>
+              <span>{{ 'approach.perMonth' | t }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="limit">{{ 'bill.offerLimit' | t }}</p>
+  </div>
+</section>

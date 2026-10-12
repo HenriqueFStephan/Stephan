@@ -2,7 +2,7 @@
   <div class="hero__copy">
     <h1>{{ 'hero.title' | t }}</h1>
     <p>{{ 'hero.lead' | t }}</p>
-    <a class="button" href="#investigamos">{{ 'hero.cta' | t }}</a>
+    <a class="button" routerLink="/abordagem">{{ 'hero.cta' | t }}</a>
   </div>
   <div class="hero__mark" aria-hidden="true">
     <img src="assets/brand/stephan-mark.png" alt="" />
@@ -37,16 +37,16 @@
       <li class="thread__segment thread__segment--text-first">
         <div class="thread__copy">
           <span class="thread__index">01</span>
-          <h3>{{ 'method.company.title' | t }}</h3>
-          <p>{{ 'method.company.body' | t }}</p>
+          <h3>{{ 'method.hse.title' | t }}</h3>
+          <p>{{ 'method.hse.body' | t }}</p>
         </div>
         <figure class="thread__figure">
-          <img src="assets/method/method-company.svg" alt="" width="640" height="312" loading="lazy" />
+          <img src="assets/method/method-hse.svg" alt="" width="640" height="360" loading="lazy" />
         </figure>
       </li>
       <li class="thread__segment thread__segment--image-first">
         <figure class="thread__figure">
-          <img src="assets/method/method-observe.svg" alt="" width="640" height="312" loading="lazy" />
+          <img src="assets/method/method-observe.svg" alt="" width="640" height="360" loading="lazy" />
         </figure>
         <div class="thread__copy">
           <span class="thread__index">02</span>
@@ -57,103 +57,13 @@
       <li class="thread__segment thread__segment--text-first">
         <div class="thread__copy">
           <span class="thread__index">03</span>
-          <h3>{{ 'method.hse.title' | t }}</h3>
-          <p>{{ 'method.hse.body' | t }}</p>
+          <h3>{{ 'method.follow.title' | t }}</h3>
+          <p>{{ 'method.follow.body' | t }}</p>
         </div>
         <figure class="thread__figure">
-          <img src="assets/method/method-hse.svg" alt="" width="640" height="312" loading="lazy" />
+          <img src="assets/method/method-follow.svg" alt="" width="640" height="360" loading="lazy" />
         </figure>
-      </li>
-      <li class="thread__segment thread__segment--image-first">
-        <figure class="thread__figure">
-          <img src="assets/method/method-groups.svg" alt="" width="640" height="312" loading="lazy" />
-        </figure>
-        <div class="thread__copy">
-          <span class="thread__index">04</span>
-          <h3>{{ 'method.groups.title' | t }}</h3>
-          <p>{{ 'method.groups.body' | t }}</p>
-        </div>
       </li>
     </ol>
-  </div>
-</section>
-
-<section class="band" id="socios">
-  <div class="container">
-    <h2>{{ 'people.title' | t }}</h2>
-    <p class="intro">{{ 'people.lead' | t }}</p>
-    <ul class="people">
-      <li class="people__card">
-        <img
-          class="people__photo"
-          src="assets/people/partner-psych.jpg"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-        />
-        <div class="people__copy">
-          <h3>{{ 'people.psych.title' | t }}</h3>
-          <p>{{ 'people.psych.body' | t }}</p>
-        </div>
-      </li>
-      <li class="people__card">
-        <img
-          class="people__photo"
-          src="assets/people/partner-epi.jpg"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-        />
-        <div class="people__copy">
-          <h3>{{ 'people.epi.title' | t }}</h3>
-          <p>{{ 'people.epi.body' | t }}</p>
-        </div>
-      </li>
-      <li class="people__card">
-        <img
-          class="people__photo"
-          src="assets/people/partner-tech.jpg"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-        />
-        <div class="people__copy">
-          <h3>{{ 'people.tech.title' | t }}</h3>
-          <p>{{ 'people.tech.body' | t }}</p>
-        </div>
-      </li>
-    </ul>
-  </div>
-</section>
-
-<section class="contact" id="contato">
-  <div class="container contact__grid">
-    <div>
-      <h2>{{ 'contact.title' | t }}</h2>
-      <p class="intro">{{ 'contact.lead' | t }}</p>
-    </div>
-    <form (ngSubmit)="submit()" #form="ngForm">
-      <label>
-        <span>{{ 'contact.name' | t }}</span>
-        <input name="name" [(ngModel)]="name" required />
-      </label>
-      <label>
-        <span>{{ 'contact.org' | t }}</span>
-        <input name="organization" [(ngModel)]="organization" />
-      </label>
-      <label>
-        <span>{{ 'contact.email' | t }}</span>
-        <input name="email" type="email" [(ngModel)]="email" required />
-      </label>
-      <label>
-        <span>{{ 'contact.message' | t }}</span>
-        <textarea name="message" rows="4" [(ngModel)]="message" required></textarea>
-      </label>
-      <button class="button" type="submit" [disabled]="sending || form.invalid">
-        {{ sending ? ('contact.sending' | t) : ('contact.send' | t) }}
-      </button>
-      <p class="form-note" *ngIf="sent">{{ 'contact.sent' | t }}</p>
-      <p class="form-note form-note--bad" *ngIf="failed">{{ 'contact.fail' | t }}</p>
-    </form>
   </div>
 </section>

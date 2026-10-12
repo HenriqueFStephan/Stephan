@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { I18nService, TranslatePipe } from '../../core/i18n';
 import { BRAZIL_STATES, maskCep, maskCnpj, maskCpf, maskPhone } from './br-docs';
@@ -15,6 +15,8 @@ import {
   saveDraft,
   validateCadastro,
 } from './draft';
+import { formatBrl } from './offer.config';
+import { bandForHeadcount, isPlanId, monthlyCents, planById } from './plans';
 import { SupplierCardComponent } from './supplier-card.component';
 
 interface ViaCep {
@@ -42,8 +44,30 @@ export class CadastroComponent {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private i18n: I18nService,
-  ) {}
+  ) {
+    const requested = this.route.snapshot.queryParamMap.get('plano') ?? '';
+    if (isPlanId(requested)) {
+      this.draft.plan = requested;
+      saveDraft(this.draft);
+    } else if (!isPlanId(this.draft.plan)) {
+      void this.router.navigate(['/abordagem']);
+    }
+  }
+
+  get chosen() {
+    return planById(this.draft.plan);
+  }
+
+  get preview(): { band: string; price: string } | null {
+    if (!isPlanId(this.draft.plan)) return null;
+    const headcount = Number(this.draft.headcount.trim());
+    const band = bandForHeadcount(headcount);
+    const cents = monthlyCents(this.draft.plan, headcount);
+    if (!band || cents == null) return null;
+    return { band: this.i18n.t(band.labelKey), price: formatBrl(cents) };
+  }
 
   toggleLang(): void {
     this.i18n.setLang(this.i18n.lang() === 'pt-BR' ? 'en' : 'pt-BR');

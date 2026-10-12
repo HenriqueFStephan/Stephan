@@ -5,6 +5,8 @@
     </a>
     <div class="bar__side">
       <p class="steps">
+        <a routerLink="/abordagem">{{ 'bill.stepPlan' | t }}</a>
+        <span aria-hidden="true">/</span>
         <a routerLink="/cadastro" class="on">{{ 'bill.stepCadastro' | t }}</a>
         <span aria-hidden="true">/</span>
         <a routerLink="/pagamento">{{ 'bill.stepPay' | t }}</a>
@@ -13,9 +15,14 @@
     </div>
   </header>
 
-  <div class="main">
+  <div class="main" *ngIf="chosen as plan">
     <h1>{{ 'bill.cadastroTitle' | t }}</h1>
     <p class="lead">{{ 'bill.cadastroLead' | t }}</p>
+    <section class="card plan-banner">
+      <p class="eyebrow">{{ 'bill.chosenPlan' | t }}</p>
+      <p class="plan-name">{{ plan.titleKey | t }}</p>
+      <a routerLink="/abordagem" class="link">{{ 'bill.changePlan' | t }}</a>
+    </section>
     <p class="error" *ngIf="invalid" role="alert">{{ 'bill.err.form' | t }}</p>
 
     <form (ngSubmit)="continue()">
@@ -52,6 +59,7 @@
             <span>{{ 'bill.headcount' | t }}</span>
             <input name="headcount" inputmode="numeric" [ngModel]="draft.headcount" (ngModelChange)="draft.headcount = $event" />
             <small class="hint">{{ 'bill.headcountHint' | t }}</small>
+            <small class="hint" *ngIf="preview as line">{{ 'bill.monthlyPreview' | t:{ band: line.band, price: line.price } }}</small>
             <small class="field-error" *ngIf="errorFor('headcount') as msg">{{ msg | t }}</small>
           </label>
           <label>

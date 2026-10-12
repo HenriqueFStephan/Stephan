@@ -152,7 +152,7 @@ Saving the list sends the link to each new address. The message uses the site co
 
 ## Admin upload
 
-On `/empresa`, after login, “Quem recebe o link” accepts one file. The API is `POST /api/v1/company/invitations` with the company session header and a multipart field named `file`. `GET /api/v1/company/invitations` returns the round label, how many people were invited, and the shares who have finished and who have not. It does not return emails, tokens, or answers. The company page shows those shares as percentages.
+On `/empresa`, after login, “Enviar formulários” accepts one file. The API is `POST /api/v1/company/invitations` with the company session header and a multipart field named `file`. `GET /api/v1/company/rounds` lists every wave for that company: label, the day it opened, the day it closed (empty while open), how many people were invited, the shares who have finished and who have not, and the day of the latest anonymous answer. It does not return emails, tokens, or answers. `GET /api/v1/company/invitations` still returns the open round only, in the same shape as before.
 
 Rules for every format:
 

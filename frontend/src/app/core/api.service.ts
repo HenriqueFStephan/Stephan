@@ -13,10 +13,9 @@ import {
   StudioIssueResponse,
   StudioStatusResponse,
   StudioUnlockResponse,
-  BlockwallStatus,
-  BlockwallUnlockResponse,
   CompanyLoginResponse,
   CompanyOverview,
+  CompanyRoundRow,
   InvitationRoster,
   InvitationUploadResult,
   ToolAccessResult,
@@ -62,18 +61,6 @@ export class ApiService {
     });
   }
 
-  getBlockwall(): Observable<BlockwallStatus> {
-    return this.http.get<BlockwallStatus>(`${this.base}/blockwall/status`);
-  }
-
-  unlockBlockwall(password: string): Observable<BlockwallUnlockResponse> {
-    return this.http.post<BlockwallUnlockResponse>(`${this.base}/blockwall/unlock`, { password });
-  }
-
-  resumeBlockwall(passage: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(`${this.base}/blockwall/resume`, { passage });
-  }
-
   loginCompany(username: string, password: string): Observable<CompanyLoginResponse> {
     return this.http.post<CompanyLoginResponse>(`${this.base}/company/login`, { username, password });
   }
@@ -86,6 +73,12 @@ export class ApiService {
 
   getCompanyInvitations(passage: string): Observable<InvitationRoster> {
     return this.http.get<InvitationRoster>(`${this.base}/company/invitations`, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
+  }
+
+  getCompanyRounds(passage: string): Observable<CompanyRoundRow[]> {
+    return this.http.get<CompanyRoundRow[]>(`${this.base}/company/rounds`, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
     });
   }
