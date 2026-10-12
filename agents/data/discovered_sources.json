@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-05T07:19:52.679965+00:00",
+  "updated_at": "2026-10-12T16:00:22.485985+00:00",
   "notes": "Sources already posted in weekly law-report issues. The weekly report skips these DOIs and URLs.",
   "papers": [
     {
@@ -144,6 +144,127 @@
       "published": "2026-09-24",
       "category": "psychosocial",
       "first_seen": "2026-10-05"
+    },
+    {
+      "title": "Diverging trajectories of job demands, job resources, and psychological distress before long-term mental health-related sick leave among teachers",
+      "url": "https://doi.org/10.5271/sjweh.4337",
+      "doi": "10.5271/sjweh.4337",
+      "journal": "Scandinavian Journal of Work, Environment & Health",
+      "authors": "Fumiko Kobayashi et al.",
+      "year": 2026,
+      "published": "2026-10-12",
+      "category": "methods",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "The impact of cumulative years of biomechanical and psychosocial exposures on competing exit routes from paid employment among older workers in Norway: A life course perspective",
+      "url": "https://doi.org/10.5271/sjweh.4330",
+      "doi": "10.5271/sjweh.4330",
+      "journal": "Scandinavian Journal of Work, Environment & Health",
+      "authors": "Jannicke Ulstein et al.",
+      "year": 2026,
+      "published": "2026-09-24",
+      "category": "methods",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "The Workplace Telepressure Scale: measuring digital psychosocial demands in the workplace",
+      "url": "https://doi.org/10.1093/occmed/kqag115",
+      "doi": "10.1093/occmed/kqag115",
+      "journal": "Occupational Medicine",
+      "authors": "Carlo Aresti",
+      "year": 2026,
+      "published": "2026-10-12",
+      "category": "methods",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Challenge and threat appraisal of job demands and their impact on mental health among vocational education teachers",
+      "url": "https://doi.org/10.1186/s12889-026-29796-7",
+      "doi": "10.1186/s12889-026-29796-7",
+      "journal": "BMC Public Health",
+      "authors": "Nina Marlene Sarochan et al.",
+      "year": 2026,
+      "published": "2026-10-08",
+      "category": "methods",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Multiple discrimination at work and depressive symptoms in young adults",
+      "url": "https://doi.org/10.1186/s40359-026-05765-y",
+      "doi": "10.1186/s40359-026-05765-y",
+      "journal": "BMC Psychology",
+      "authors": "Tobias Weinmann et al.",
+      "year": 2026,
+      "published": "2026-10-11",
+      "category": "anonymity-lgpd",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Psychosocial work experience and salutogenic health among nurses and physicians in a reorganized tertiary care hospital: differences and associations",
+      "url": "https://doi.org/10.3389/fpubh.2026.1974029",
+      "doi": "10.3389/fpubh.2026.1974029",
+      "journal": "Frontiers in Public Health",
+      "authors": "Jurgita Andruškienė et al.",
+      "year": 2026,
+      "published": "2026-09-30",
+      "category": "methods",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Workplace supports resource for nurses’ well-being: development and psychometric evaluation",
+      "url": "https://doi.org/10.1186/s12912-026-05409-x",
+      "doi": "10.1186/s12912-026-05409-x",
+      "journal": "BMC Nursing",
+      "authors": "Claudia Steinke et al.",
+      "year": 2026,
+      "published": "2026-09-24",
+      "category": "methods",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Changes in perceived psychosocial working conditions after psychotherapeutic consultation at work – exploratory post-hoc analyses from a randomized controlled trial",
+      "url": "https://doi.org/10.1186/s12889-026-29388-5",
+      "doi": "10.1186/s12889-026-29388-5",
+      "journal": "BMC Public Health",
+      "authors": "Jeannette Weber et al.",
+      "year": 2026,
+      "published": "2026-09-21",
+      "category": "psychosocial",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Creating healthy organizations: an integrated culture of care in high-demand sectors—a qualitative study of private-sector organizations in Sweden",
+      "url": "https://doi.org/10.3389/fpubh.2026.1888516",
+      "doi": "10.3389/fpubh.2026.1888516",
+      "journal": "Frontiers in Public Health",
+      "authors": "Åsa Stöllman et al.",
+      "year": 2026,
+      "published": "2026-09-16",
+      "category": "psychosocial",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Psychosocial occupational health in military work environments: cross-sectional findings among Spanish enlisted military personnel",
+      "url": "https://doi.org/10.3389/fpubh.2026.1996254",
+      "doi": "10.3389/fpubh.2026.1996254",
+      "journal": "Frontiers in Public Health",
+      "authors": "José Javier Miranda Mayo et al.",
+      "year": 2026,
+      "published": "2026-10-08",
+      "category": "psychosocial",
+      "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Post-traumatic stress disorder: outline and updated insights focusing on occupational factors",
+      "url": "https://doi.org/10.1186/s12995-026-00530-8",
+      "doi": "10.1186/s12995-026-00530-8",
+      "journal": "Journal of Occupational Medicine and Toxicology",
+      "authors": "Lea S. Lewandrowski et al.",
+      "year": 2026,
+      "published": "2026-10-01",
+      "category": "psychosocial",
+      "first_seen": "2026-10-12"
     }
   ]
 }
