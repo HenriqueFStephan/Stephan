@@ -7,7 +7,7 @@ const ptBR = {
   'nav.login': 'Login',
   'nav.lang': 'EN',
 
-  'hero.title': 'meus cabelos peludos',
+  'hero.title': 'Compreender o trabalho para gerenciar os riscos.',
   'hero.lead':
     'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
   'hero.cta': 'Conheça nossa abordagem',

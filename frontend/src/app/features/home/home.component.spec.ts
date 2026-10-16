@@ -25,7 +25,7 @@ describe('HomeComponent', () => {
 
   it('shows the Portuguese hero title', () => {
     const h1 = (fixture.nativeElement as HTMLElement).querySelector('h1');
-    expect(h1?.textContent?.trim()).toBe('meus cabelos peludos');
+    expect(h1?.textContent?.trim()).toBe('Compreender o trabalho para gerenciar os riscos.');
   });
 
   it('renders the investigation as form, report, and follow-up', () => {
