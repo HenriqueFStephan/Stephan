@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-12T16:00:22.485985+00:00",
+  "updated_at": "2026-10-19T13:53:02.805201+00:00",
   "notes": "Sources already posted in weekly law-report issues. The weekly report skips these DOIs and URLs.",
   "papers": [
     {
@@ -265,6 +265,116 @@
       "published": "2026-10-01",
       "category": "psychosocial",
       "first_seen": "2026-10-12"
+    },
+    {
+      "title": "Portaria MTE nº 1.758, de 29 de setembro de 2026 (Altera a NR-28 – Fiscalização e Penalidades)",
+      "url": "https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/inspecao-do-trabalho/seguranca-e-saude-no-trabalho/sst-portarias/2026-1/portaria-mte-no-1-758-altera-a-nr-28.pdf",
+      "doi": "",
+      "journal": "Diário Oficial da União / Normas Regulamentadoras de SST",
+      "authors": "Ministério do Trabalho e Emprego",
+      "year": 2026,
+      "published": "2026-09-30",
+      "category": "inspection",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Burnout and psychosocial working conditions in a multidisciplinary hospital radiology team: a cross-sectional study using the job demands–resources framework",
+      "url": "https://doi.org/10.1186/s13244-026-02433-y",
+      "doi": "10.1186/s13244-026-02433-y",
+      "journal": "Insights into Imaging",
+      "authors": "Thomas Dertnig et al.",
+      "year": 2026,
+      "published": "2026-10-15",
+      "category": "methods",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Development and psychometric validation of the healthcare professionals’ psychosocial subjective well-being scale (HP-PSWB)",
+      "url": "https://doi.org/10.1038/s41598-026-75599-6",
+      "doi": "10.1038/s41598-026-75599-6",
+      "journal": "Scientific Reports",
+      "authors": "Evija Nagle et al.",
+      "year": 2026,
+      "published": "2026-10-12",
+      "category": "methods",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Job satisfaction, organizational culture, and happiness at work among the mental health workforce in the United Arab Emirates: a cross-sectional study",
+      "url": "https://doi.org/10.1186/s40359-026-05355-y",
+      "doi": "10.1186/s40359-026-05355-y",
+      "journal": "BMC Psychology",
+      "authors": "Nariman Ghader et al.",
+      "year": 2026,
+      "published": "2026-10-17",
+      "category": "psychosocial",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Psychosocial Harm as an Inequality Regime at Work: Intersectional Accounts From Portugal",
+      "url": "https://doi.org/10.1111/gwao.70279",
+      "doi": "10.1111/gwao.70279",
+      "journal": "Gender, Work & Organization",
+      "authors": "Iara Teixeira et al.",
+      "year": 2026,
+      "published": "2026-10-14",
+      "category": "psychosocial",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Educators’ Experiences with Bullying Behavior and Their Perceptions of Work-Related Psychosocial Factors: Values at the Workplace and the Meaning of Work",
+      "url": "https://doi.org/10.3390/merits6040028",
+      "doi": "10.3390/merits6040028",
+      "journal": "Merits",
+      "authors": "Minni Aia-Utsal et al.",
+      "year": 2026,
+      "published": "2026-09-28",
+      "category": "psychosocial",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Agenda Regulatória 2025–2026 (andamento atualizado)",
+      "url": "https://www.gov.br/anpd/pt-br/assuntos/regulacao/agenda-regulatoria-1",
+      "doi": "",
+      "journal": "ANPD – Regulação",
+      "authors": "Agência Nacional de Proteção de Dados",
+      "year": 2026,
+      "published": "2026-09-25",
+      "category": "anonymity-lgpd",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Mapping the theoretical evolution of psychosocial work environment research: a global bibliometric review",
+      "url": "https://doi.org/10.23900/ra.v24i122.1802",
+      "doi": "10.23900/ra.v24i122.1802",
+      "journal": "Aposta: Revista de Ciencias Sociales",
+      "authors": "Siti Aisyah binti Panatik et al.",
+      "year": 2026,
+      "published": "2026-10-05",
+      "category": "methods",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Workplace Wearables and Digital Labor Surveillance: Managerial Control, Psychosocial Risk, and Data Governance",
+      "url": "https://doi.org/10.25295/fsecon.1993638",
+      "doi": "10.25295/fsecon.1993638",
+      "journal": "Fiscaoeconomia",
+      "authors": "Mehmed Zahid Çögenli",
+      "year": 2026,
+      "published": "2026-10-06",
+      "category": "anonymity-lgpd",
+      "first_seen": "2026-10-19"
+    },
+    {
+      "title": "Psychosocial Risks and Burnout among Industrial Workers: A Social Work Perspective from Ankara Sugar Factory",
+      "url": "https://doi.org/10.54600/igdirsosbilder.1984744",
+      "doi": "10.54600/igdirsosbilder.1984744",
+      "journal": "Iğdır Üniversitesi Sosyal Bilimler Dergisi",
+      "authors": "Kamil Ateş et al.",
+      "year": 2026,
+      "published": "2026-10-15",
+      "category": "methods",
+      "first_seen": "2026-10-19"
     }
   ]
 }
