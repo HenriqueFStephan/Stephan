@@ -27,13 +27,14 @@ import {
 const PASSAGE_KEY = 'stephan-company-passage';
 const COMPANY_NAME_KEY = 'stephan-company-name';
 
-interface WeekBar {
+interface DayBar {
   x: number;
   y: number;
   width: number;
   height: number;
   count: number;
   label: string;
+  showCount: boolean;
 }
 
 interface BandPart {
@@ -73,6 +74,11 @@ export class CompanyComponent implements OnInit {
   inviteResult: InvitationUploadResult | null = null;
   rounds: CompanyRoundRow[] | null = null;
   roundsError = false;
+  selectedRound = '';
+  statsRound = '';
+  statsLoading = false;
+  statsErrorKey = '';
+  private statsRequest = 0;
   alphaOpen = false;
   reading: (typeof this.readings)[number]['id'] = 'dimensions';
 
@@ -130,6 +136,10 @@ export class CompanyComponent implements OnInit {
     this.inviteUnknownColumns = '';
     this.rounds = null;
     this.roundsError = false;
+    this.selectedRound = '';
+    this.statsRound = '';
+    this.statsLoading = false;
+    this.statsErrorKey = '';
     this.alphaOpen = false;
     this.phase = 'login';
   }
@@ -233,7 +243,10 @@ export class CompanyComponent implements OnInit {
     return this.i18n.lang() === 'pt-BR' ? text.replace('.', ',') : text;
   }
 
-  formatIso(iso: string): string {
+  formatIso(iso: string | null): string {
+    if (!iso) {
+      return '—';
+    }
     const [year, month, day] = iso.split('-');
     if (!year || !month || !day) {
       return iso;
@@ -278,30 +291,34 @@ export class CompanyComponent implements OnInit {
       .filter((part) => part.count > 0);
   }
 
-  weekBars(): WeekBar[] {
-    const weeks = this.overview?.weeks ?? [];
-    if (!weeks.length) {
+  dayBars(): DayBar[] {
+    const days = this.overview?.days ?? [];
+    if (!days.length) {
       return [];
     }
-    const max = Math.max(...weeks.map((week) => week.count), 1);
-    const slot = this.chartWidth / weeks.length;
-    const width = Math.min(36, slot * 0.55);
-    return weeks.map((week, index) => {
-      const height = week.count === 0 ? 0 : Math.max(4, (week.count / max) * 108);
+    const max = Math.max(...days.map((day) => day.count), 1);
+    const inset = 24;
+    const slot = (this.chartWidth - inset * 2) / days.length;
+    const width = Math.min(28, slot * 0.72);
+    const labelEvery = Math.max(1, Math.ceil((days.length * 56) / this.chartWidth));
+    return days.map((day, index) => {
+      const height = day.count === 0 ? 3 : Math.max(4, (day.count / max) * 108);
+      const showLabel = index % labelEvery === 0 || index === days.length - 1;
       return {
-        x: index * slot + (slot - width) / 2,
+        x: inset + index * slot + (slot - width) / 2,
         y: 128 - height,
         width,
         height,
-        count: week.count,
-        label: this.formatIso(week.week).slice(0, 5),
+        count: day.count,
+        label: showLabel ? this.formatIso(day.day).slice(0, 5) : '',
+        showCount: day.count > 0 && slot >= 16,
       };
     });
   }
 
-  weeksLabel(): string {
-    return (this.overview?.weeks ?? [])
-      .map((week) => `${this.formatIso(week.week)}: ${week.count}`)
+  daysLabel(): string {
+    return (this.overview?.days ?? [])
+      .map((day) => `${this.formatIso(day.day)}: ${day.count}`)
       .join(', ');
   }
 
@@ -322,38 +339,121 @@ export class CompanyComponent implements OnInit {
     return value == null ? '—' : `${value}%`;
   }
 
+  onRoundPicked(label: string): void {
+    const showing = this.overview != null || this.statsLoading;
+    if (!showing || label === this.statsRound) {
+      return;
+    }
+    this.selectedRound = label;
+    this.showRoundStats();
+  }
+
+  statsVisible(): boolean {
+    return this.overview != null && this.statsRound === this.selectedRound;
+  }
+
+  roundOpenedOn(): string {
+    const label = this.statsRound || this.selectedRound;
+    return this.rounds?.find((round) => round.label === label)?.opened_on ?? '';
+  }
+
+  toggleRoundStats(): void {
+    if (this.statsVisible() || this.statsLoading) {
+      this.statsRequest += 1;
+      this.statsLoading = false;
+      this.overview = null;
+      this.statsRound = '';
+      this.statsErrorKey = '';
+      this.alphaOpen = false;
+      return;
+    }
+    this.showRoundStats();
+  }
+
+  showRoundStats(): void {
+    const passage = this.readPassage();
+    const label = this.selectedRound;
+    if (!passage || !label) {
+      return;
+    }
+    const request = (this.statsRequest += 1);
+    this.statsLoading = true;
+    this.statsErrorKey = '';
+    this.api.getCompanyOverview(passage, label).subscribe({
+      next: (overview) => {
+        if (request !== this.statsRequest) {
+          return;
+        }
+        this.statsLoading = false;
+        this.overview = overview;
+        this.statsRound = label;
+        this.alphaOpen = false;
+        this.reading = 'dimensions';
+      },
+      error: (err: HttpErrorResponse) => {
+        if (request !== this.statsRequest) {
+          return;
+        }
+        this.statsLoading = false;
+        this.overview = null;
+        this.statsRound = '';
+        if (err.status === 401) {
+          this.logout();
+          return;
+        }
+        this.statsErrorKey = err.status === 404 ? 'company.statsMissing' : 'company.unreachable';
+      },
+    });
+  }
+
   private load(passage: string): void {
     this.phase = 'loading';
-    this.api.getCompanyOverview(passage).subscribe({
-      next: (overview) => {
-        this.overview = overview;
+    this.api.getCompanyRounds(passage).subscribe({
+      next: (rounds) => {
+        this.applyRounds(rounds);
         this.phase = 'ready';
-        this.refreshRounds(passage);
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {
           sessionStorage.removeItem(PASSAGE_KEY);
           sessionStorage.removeItem(COMPANY_NAME_KEY);
           this.companyName = '';
+          this.overview = null;
+          this.phase = 'login';
+          this.errorKey = '';
+          return;
         }
-        this.overview = null;
-        this.phase = 'login';
-        this.errorKey = err.status === 401 ? '' : 'company.unreachable';
+        this.rounds = null;
+        this.roundsError = true;
+        this.phase = 'ready';
       },
     });
   }
 
   private refreshRounds(passage: string): void {
     this.api.getCompanyRounds(passage).subscribe({
-      next: (rounds) => {
-        this.rounds = rounds;
-        this.roundsError = false;
-      },
-      error: () => {
+      next: (rounds) => this.applyRounds(rounds),
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 401) {
+          this.logout();
+          return;
+        }
         this.rounds = null;
         this.roundsError = true;
       },
     });
+  }
+
+  private applyRounds(rounds: CompanyRoundRow[]): void {
+    this.rounds = rounds;
+    this.roundsError = false;
+    const stillThere = rounds.some((round) => round.label === this.selectedRound);
+    if (!stillThere) {
+      this.selectedRound = rounds[0]?.label ?? '';
+      this.overview = null;
+      this.statsRound = '';
+      this.alphaOpen = false;
+    }
   }
 
   private readPassage(): string {

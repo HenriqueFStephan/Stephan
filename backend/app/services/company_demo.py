@@ -200,8 +200,20 @@ def _clamp_score(value: float) -> int:
     return min(5, max(1, int(round(value))))
 
 
-def _week_start(day: date) -> date:
-    return day - timedelta(days=day.weekday())
+def _day_rows(people: list[dict]) -> list[dict]:
+    """One bar per day from the first form received to the last, including zeros."""
+    if not people:
+        return []
+    counts: dict[date, int] = defaultdict(int)
+    for person in people:
+        counts[person["day"]] += 1
+    cursor = min(counts)
+    last = max(counts)
+    rows = []
+    while cursor <= last:
+        rows.append({"day": cursor.isoformat(), "count": counts[cursor]})
+        cursor += timedelta(days=1)
+    return rows
 
 
 def _favourable_rows() -> list[dict]:
@@ -284,29 +296,83 @@ def _alpha_rows(people: list[dict], indexes: dict[str, list[int]]) -> list[dict]
     return payload
 
 
-@lru_cache(maxsize=1)
-def demo_overview() -> dict:
-    """Aggregate reading. Individual forms are not part of the payload."""
-    people = _favourable_rows()
-    indexes = _dimension_indexes()
-    person_means = [_person_means(person["scores"], indexes) for person in people]
+def favourable_scores(raw: list[int]) -> list[int]:
+    """Turn raw marks into favourable scores. A reversed item flips around 3."""
+    return [6 - value if reverse else value for value, (_dimension, reverse) in zip(raw, ITEMS, strict=True)]
 
-    dimensions = []
-    bands = []
+
+def _empty_alpha(indexes: dict[str, list[int]]) -> list[dict]:
+    rows = [
+        {
+            "id": "overall",
+            "alpha": None,
+            "items": len(ITEMS),
+            "n": 0,
+            "reading": "unknown",
+            "mean": None,
+        }
+    ]
     for dimension in DIMENSION_ORDER:
-        values = [row[dimension] for row in person_means]
-        dimensions.append({"id": dimension, "mean": mean(values)})
-        counts = {"urgent": 0, "improve": 0, "good": 0, "maintain": 0}
-        for value in values:
-            counts[band_for(value, dimension)] += 1
-        bands.append({"id": dimension, **counts})
+        rows.append(
+            {
+                "id": dimension,
+                "alpha": None,
+                "items": len(indexes[dimension]),
+                "n": 0,
+                "reading": "unknown",
+                "mean": None,
+            }
+        )
+    return rows
+
+
+def build_overview(
+    people: list[dict],
+    *,
+    source: str,
+    company_id: str,
+    min_sector_size: int = 1,
+) -> dict:
+    """Group reading for one set of forms. Individual answers are not part of the payload.
+
+    The day bars run from the first form received to the last. A sector smaller
+    than min_sector_size is left out.
+    """
+    indexes = _dimension_indexes()
+    person_means = [_person_means(person["scores"], indexes) for person in people] if people else []
+    if people:
+        dimensions = []
+        bands = []
+        for dimension in DIMENSION_ORDER:
+            values = [row[dimension] for row in person_means]
+            dimensions.append({"id": dimension, "mean": mean(values)})
+            counts = {"urgent": 0, "improve": 0, "good": 0, "maintain": 0}
+            for value in values:
+                counts[band_for(value, dimension)] += 1
+            bands.append({"id": dimension, **counts})
+        alpha = _alpha_rows(people, indexes)
+        response_days = [person["day"] for person in people]
+        first_on = min(response_days).isoformat()
+        latest_on = max(response_days).isoformat()
+    else:
+        dimensions = []
+        bands = []
+        alpha = _empty_alpha(indexes)
+        first_on = None
+        latest_on = None
 
     by_sector: dict[str, list[dict[str, float]]] = defaultdict(list)
     for person, scores in zip(people, person_means):
-        by_sector[person["sector"]].append(scores)
+        sector = person.get("sector") or ""
+        if sector:
+            by_sector[sector].append(scores)
+    known = [sector_id for sector_id, _count, _shifts in SECTORS]
+    extra = sorted(sector_id for sector_id in by_sector if sector_id not in known)
     sectors = []
-    for sector_id, _count, _shifts in SECTORS:
-        group = by_sector[sector_id]
+    for sector_id in [*known, *extra]:
+        group = by_sector.get(sector_id) or []
+        if len(group) < min_sector_size:
+            continue
         sectors.append(
             {
                 "id": sector_id,
@@ -318,27 +384,21 @@ def demo_overview() -> dict:
             }
         )
 
-    week_counts: dict[date, int] = defaultdict(int)
-    for person in people:
-        week_counts[_week_start(person["day"])] += 1
-    first_week = _week_start(min(person["day"] for person in people))
-    last_week = _week_start(max(person["day"] for person in people))
-    weeks = []
-    cursor = first_week
-    while cursor <= last_week:
-        weeks.append({"week": cursor.isoformat(), "count": week_counts[cursor]})
-        cursor += timedelta(days=7)
-
-    days = [person["day"] for person in people]
     return {
-        "source": "simulated",
-        "company_id": DEMO_COMPANY_ID,
+        "source": source,
+        "company_id": company_id,
         "respondent_count": len(people),
-        "first_response_on": min(days).isoformat(),
-        "latest_response_on": max(days).isoformat(),
-        "alpha": _alpha_rows(people, indexes),
+        "first_response_on": first_on,
+        "latest_response_on": latest_on,
+        "alpha": alpha,
         "dimensions": dimensions,
         "sectors": sectors,
-        "weeks": weeks,
+        "days": _day_rows(people),
         "bands": bands,
     }
+
+
+@lru_cache(maxsize=1)
+def demo_overview() -> dict:
+    """Aggregate reading of the seeded wave. Individual forms are not part of the payload."""
+    return build_overview(_favourable_rows(), source="simulated", company_id=DEMO_COMPANY_ID)

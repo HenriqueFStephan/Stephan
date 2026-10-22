@@ -125,8 +125,8 @@ export interface CompanySectorRow {
   means: { id: string; mean: number }[];
 }
 
-export interface CompanyWeekRow {
-  week: string;
+export interface CompanyDayRow {
+  day: string;
   count: number;
 }
 
@@ -169,12 +169,12 @@ export interface CompanyOverview {
   source: string;
   company_id: string;
   respondent_count: number;
-  first_response_on: string;
-  latest_response_on: string;
+  first_response_on: string | null;
+  latest_response_on: string | null;
   alpha: CompanyAlphaRow[];
   dimensions: CompanyDimensionRow[];
   sectors: CompanySectorRow[];
-  weeks: CompanyWeekRow[];
+  days: CompanyDayRow[];
   bands: CompanyBandRow[];
 }
 

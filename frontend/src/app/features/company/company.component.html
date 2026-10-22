@@ -38,11 +38,9 @@
     </section>
   </div>
 
-  <div class="main main--wide" *ngIf="phase === 'ready' && overview">
+  <div class="main main--wide" *ngIf="phase === 'ready'">
     <p class="eyebrow">{{ companyLabel() }}</p>
     <h1>{{ 'company.dashboardTitle' | t }}</h1>
-    <p class="count">{{ 'company.respondents' | t:{ count: overview.respondent_count } }}</p>
-    <p class="note" *ngIf="overview.source === 'simulated'">{{ 'company.demoNote' | t }}</p>
 
     <section class="card" aria-labelledby="invite-title">
       <h2 id="invite-title">{{ 'company.inviteTitle' | t }}</h2>
@@ -106,6 +104,28 @@
       <h2 id="rounds-title">{{ 'company.roundsTitle' | t }}</h2>
       <p class="error" *ngIf="roundsError" role="alert">{{ 'company.inviteUnreachable' | t }}</p>
       <p class="note" *ngIf="rounds && !rounds.length">{{ 'company.roundsEmpty' | t }}</p>
+      <div class="round-pick" *ngIf="rounds?.length">
+        <label>
+          <span>{{ 'company.roundSelect' | t }}</span>
+          <select name="company-round" [(ngModel)]="selectedRound" (ngModelChange)="onRoundPicked($event)">
+            <option *ngFor="let round of rounds" [value]="round.label">{{ round.label }}</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          class="button"
+          [disabled]="statsLoading || !selectedRound"
+          [attr.aria-expanded]="statsVisible()"
+          (click)="toggleRoundStats()"
+        >
+          {{
+            statsLoading
+              ? ('company.statsLoading' | t)
+              : ((statsVisible() ? 'company.hideStats' : 'company.showStats') | t)
+          }}
+        </button>
+      </div>
+      <p class="error" *ngIf="statsErrorKey" role="alert">{{ statsErrorKey | t }}</p>
       <div class="table-wrap" *ngIf="rounds?.length">
         <table>
           <thead>
@@ -134,7 +154,8 @@
       </div>
     </section>
 
-    <section class="card" aria-labelledby="alpha-title">
+    <ng-container *ngIf="overview">
+    <section class="card" aria-labelledby="alpha-title" *ngIf="overview.respondent_count">
       <div class="alpha__bar">
         <h2 id="alpha-title">{{ 'company.alphaTitle' | t }}</h2>
         <button
@@ -150,7 +171,7 @@
       <div class="alpha__top" *ngIf="alphaOpen">
         <div>
           <p class="lead">{{ 'company.alphaLead' | t }}</p>
-          <p class="latest" *ngIf="overallAlpha() as overall">
+          <p class="latest" *ngIf="overview.latest_response_on && overallAlpha() as overall">
             {{ 'company.alphaLatest' | t:{ n: overall.n, date: formatIso(overview.latest_response_on) } }}
           </p>
         </div>
@@ -183,7 +204,7 @@
       </div>
     </section>
 
-    <section class="card" [attr.aria-labelledby]="'reading-' + reading">
+    <section class="card" *ngIf="overview.respondent_count" [attr.aria-labelledby]="'reading-' + reading">
       <div class="switch" role="tablist" [attr.aria-label]="'company.readingLabel' | t">
         <button
           type="button"
@@ -239,7 +260,9 @@
               </li>
             </ol>
           </ng-container>
-          <div class="sectors" *ngSwitchCase="'sectors'">
+          <ng-container *ngSwitchCase="'sectors'">
+            <p class="note" *ngIf="!overview.sectors.length">{{ 'company.sectorsEmpty' | t }}</p>
+            <div class="sectors" *ngIf="overview.sectors.length">
             <article *ngFor="let sector of overview.sectors">
               <h3>
                 {{ sectorName(sector.id) }}
@@ -255,28 +278,46 @@
                 </li>
               </ol>
             </article>
-          </div>
+            </div>
+          </ng-container>
         </ng-container>
       </div>
     </section>
 
-    <section class="card" aria-labelledby="weeks-title">
+    <section class="card" *ngIf="!overview.respondent_count" aria-labelledby="stats-pending-title">
+      <h2 id="stats-pending-title">{{ 'company.statsPendingTitle' | t }}</h2>
+      <p class="lead">{{ 'company.statsPending' | t:{ date: formatIso(roundOpenedOn()) } }}</p>
+    </section>
+
+    <section class="card" *ngIf="overview.respondent_count" aria-labelledby="weeks-title">
       <h2 id="weeks-title">{{ 'company.weeksTitle' | t }}</h2>
       <p class="lead">{{ 'company.weeksLead' | t }}</p>
       <svg
         class="weeks"
         [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
         role="img"
-        [attr.aria-label]="weeksLabel()"
+        [attr.aria-label]="daysLabel()"
       >
-        <g *ngFor="let bar of weekBars()">
-          <rect [attr.x]="bar.x" [attr.y]="bar.y" [attr.width]="bar.width" [attr.height]="bar.height" rx="3"></rect>
-          <text [attr.x]="bar.x + bar.width / 2" [attr.y]="bar.y - 6" text-anchor="middle">{{ bar.count }}</text>
-          <text class="weeks__label" [attr.x]="bar.x + bar.width / 2" y="156" text-anchor="middle">{{ bar.label }}</text>
+        <g *ngFor="let bar of dayBars()">
+          <rect
+            [class.is-empty]="bar.count === 0"
+            [attr.x]="bar.x"
+            [attr.y]="bar.y"
+            [attr.width]="bar.width"
+            [attr.height]="bar.height"
+            rx="2"
+          ></rect>
+          <text *ngIf="bar.showCount" [attr.x]="bar.x + bar.width / 2" [attr.y]="bar.y - 6" text-anchor="middle">
+            {{ bar.count }}
+          </text>
+          <text *ngIf="bar.label" class="weeks__label" [attr.x]="bar.x + bar.width / 2" y="156" text-anchor="middle">
+            {{ bar.label }}
+          </text>
         </g>
       </svg>
     </section>
 
-    <p class="reference">{{ 'company.reference' | t }}</p>
+    <p class="reference" *ngIf="overview.respondent_count">{{ 'company.reference' | t }}</p>
+    </ng-container>
   </div>
 </div>

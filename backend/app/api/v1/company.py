@@ -1,13 +1,13 @@
-"""Company portal. Each login is one company. Lists and later answers stay inside it.
+"""Company portal. Each login is one company. Lists and answers stay inside it.
 
-The simulated overview is unchanged. Invitation lists are stored in PostgreSQL.
+Statistics are that company's own round. Invitation lists are stored in PostgreSQL.
 """
 
 from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, UploadFile
 
 from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import (
@@ -25,7 +25,7 @@ from app.services.company_accounts import (
     issue_passage,
     session_from_passage,
 )
-from app.services.company_demo import demo_overview
+from app.services.company_overview import overview_for_round
 from app.services.invitation_file import InvitationFileError, parse_invitation_file
 from app.services.invitation_mail import MailDeliveryError, MailNotConfigured
 
@@ -70,8 +70,20 @@ def company_login(body: CompanyLogin) -> CompanyLoginResponse:
 
 
 @router.get("/overview", response_model=CompanyOverview)
-def company_overview(_session: CompanySession = Depends(require_company_token)) -> CompanyOverview:
-    return CompanyOverview.model_validate(demo_overview())
+def company_overview(
+    round_label: Annotated[str, Query(alias="round", min_length=1, max_length=120)],
+    session: CompanySession = Depends(require_company_token),
+) -> CompanyOverview:
+    """Aggregate for one round of the signed-in company. Another company's round is absent."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            overview = overview_for_round(conn, session.company_id, session.slug, round_label.strip())
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    if overview is None:
+        raise HTTPException(status_code=404, detail={"code": "unknown_round"})
+    return CompanyOverview.model_validate(overview)
 
 
 @router.get("/invitations", response_model=InvitationRoster)

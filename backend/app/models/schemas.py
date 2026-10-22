@@ -284,8 +284,8 @@ class CompanySectorRow(BaseModel):
     means: list[CompanySectorMean]
 
 
-class CompanyWeekRow(BaseModel):
-    week: str
+class CompanyDayRow(BaseModel):
+    day: str
     count: int
 
 
@@ -301,12 +301,12 @@ class CompanyOverview(BaseModel):
     source: str
     company_id: str
     respondent_count: int
-    first_response_on: str
-    latest_response_on: str
+    first_response_on: str | None = None
+    latest_response_on: str | None = None
     alpha: list[CompanyAlphaRow]
     dimensions: list[CompanyDimensionRow]
     sectors: list[CompanySectorRow]
-    weeks: list[CompanyWeekRow]
+    days: list[CompanyDayRow]
     bands: list[CompanyBandRow]
 
 

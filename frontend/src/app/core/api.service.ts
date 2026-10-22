@@ -65,9 +65,10 @@ export class ApiService {
     return this.http.post<CompanyLoginResponse>(`${this.base}/company/login`, { username, password });
   }
 
-  getCompanyOverview(passage: string): Observable<CompanyOverview> {
+  getCompanyOverview(passage: string, round: string): Observable<CompanyOverview> {
     return this.http.get<CompanyOverview>(`${this.base}/company/overview`, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
+      params: { round },
     });
   }
 
