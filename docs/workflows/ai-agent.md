@@ -8,7 +8,7 @@
 
 | Trigger | Fires when | What the agent does |
 |---------|------------|---------------------|
-| `solve` | Issue labeled `solve` | Implements the issue. Skips issues labeled `research` or `law-research`. |
+| `solve` | Issue labeled `solve` | Implements the issue. Skips issues labeled `research` or `law-research`. If the issue changes a public page, its copy, or its layout, the same change updates `/studio`. The prompt points at `.cursor/skills/studio-mode/SKILL.md`. |
 | `correction` | Comment starts with `[CORRECTION]` | Applies that comment only. |
 | `post` | Comment starts with `[POST]` on a `law-research` issue | Writes a Portuguese briefing in `docs/research/` for the named source. |
 

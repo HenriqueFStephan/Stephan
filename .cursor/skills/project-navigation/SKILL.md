@@ -11,4 +11,5 @@ Read `docs/AGENT_NAVIGATION.md` and `docs/ARCHITECTURE.md` before adding modules
 - HTTP calls go through `frontend/src/app/core/api.service.ts`.
 - API routers go in `backend/app/api/v1/` and are included from `backend/app/main.py`.
 - `/studio` is the hidden issue composer. Do not link it in the header.
+- When a change alters a public page, its copy, or its layout, follow `.cursor/skills/studio-mode/SKILL.md` and update studio mode in the same change.
 - Do not put tokens in the frontend. Studio secrets stay in `debt.txt` and Render.

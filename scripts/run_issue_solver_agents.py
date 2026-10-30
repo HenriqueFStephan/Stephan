@@ -463,6 +463,10 @@ def build_prompt(
                     - Keep scope focused and minimal.
                     - Add or update tests when feasible.
                     - Base branch: {base_ref}.
+                    - Read `.cursor/skills/studio-mode/SKILL.md` and follow it.
+                    - If this correction changes a public page, its copy, or its layout,
+                      update studio mode (`/studio`) in the same change, even when the
+                      comment does not mention studio. That file is in scope.
                     """
                 ).strip(),
                 "Triggering comment:\n" + _comment_block(comment, CORRECTION_PREFIX),
@@ -566,6 +570,10 @@ def build_prompt(
                     - Keep scope focused and minimal.
                     - Add or update tests when feasible.
                     - Base branch: {base_ref}.
+                    - Read `.cursor/skills/studio-mode/SKILL.md` and follow it.
+                    - If this issue changes a public page, its copy, or its layout,
+                      update studio mode (`/studio`) in the same change, even when the
+                      issue does not mention studio. That file is in scope.
                     """
                 ).strip(),
                 "Issue (this labeled `solve` issue is the task):\n" + metadata,

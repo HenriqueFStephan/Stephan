@@ -28,6 +28,13 @@ def main() -> int:
 
     for prefix in WATCH_PREFIXES:
         if prefix in normalized:
+            studio = ""
+            if "frontend/src/app/features/" in normalized and "/studio/" not in normalized:
+                studio = (
+                    " If this edit changes a public page, its copy, or its layout, "
+                    "update /studio in the same change. Follow "
+                    ".cursor/skills/studio-mode/SKILL.md."
+                )
             print(
                 json.dumps(
                     {
@@ -35,6 +42,7 @@ def main() -> int:
                             "Stephan: After editing this path, consider updating "
                             "docs/AGENT_NAVIGATION.md if you added a new module. "
                             "See docs/ARCHITECTURE.md for patterns."
+                            + studio
                         )
                     }
                 )

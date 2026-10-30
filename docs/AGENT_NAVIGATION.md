@@ -8,6 +8,7 @@
 | `backend/app/main.py` | App factory, `/health`, `/api/v1/status`. |
 | `backend/app/api/v1/contact.py` | Contact form. Writes `backend/data/messages.jsonl`. |
 | `backend/app/api/v1/studio.py` | Studio gate and issue creation. |
+| `.cursor/skills/studio-mode/SKILL.md` | Required when a public page, its copy, or its layout changes. `/studio` frames the live site and must be updated in that same change. |
 | `frontend/src/app/features/company/` | Company portal at `/empresa`. Header Login. |
 | `frontend/src/app/features/approach/` | Plans page at `/abordagem`. The home CTA and the header register link land here. |
 | `frontend/src/app/features/billing/` | Signup at `/cadastro` and payment at `/pagamento`. Monthly bands live in `plans.ts`. Supplier facts stay in `offer.config.ts`. |
