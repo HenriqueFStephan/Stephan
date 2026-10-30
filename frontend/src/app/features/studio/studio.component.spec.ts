@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
 import { I18nService } from '../../core/i18n';
-import { isLocalStudioHost, StudioComponent } from './studio.component';
+import { deployedBundleChanged, freshSiteUrl, isLocalStudioHost, StudioComponent } from './studio.component';
 
 describe('StudioComponent', () => {
   let fixture: ComponentFixture<StudioComponent>;
@@ -33,6 +33,14 @@ describe('StudioComponent', () => {
     sessionStorage.removeItem('stephan-studio-token');
   });
 
+  it('treats a different main bundle as a new deploy', () => {
+    const html = '<script src="main.abc123.js" type="module"></script>';
+    expect(deployedBundleChanged(html, ['https://stephan.net.br/main.old999.js'])).toBeTrue();
+    expect(deployedBundleChanged(html, ['https://stephan.net.br/main.abc123.js'])).toBeFalse();
+    expect(deployedBundleChanged('<app-root></app-root>', ['main.abc123.js'])).toBeFalse();
+    expect(freshSiteUrl(5)).toBe('/?studio=5');
+  });
+
   it('treats loopback hosts as local studio', () => {
     expect(isLocalStudioHost('localhost')).toBeTrue();
     expect(isLocalStudioHost('127.0.0.1')).toBeTrue();
@@ -45,6 +53,8 @@ describe('StudioComponent', () => {
     expect(fixture.nativeElement.querySelector('.studio-gate')).toBeNull();
     expect(api.unlockStudio).not.toHaveBeenCalled();
     expect(fixture.nativeElement.querySelector('.studio-panel')).toBeTruthy();
+    const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
+    expect(frame.getAttribute('src')).toContain('/?studio=');
     const buttons = Array.from(
       fixture.nativeElement.querySelectorAll('.studio-btn'),
     ) as HTMLButtonElement[];

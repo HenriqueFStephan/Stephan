@@ -27,6 +27,21 @@ import {
 const TOKEN_KEY = 'stephan-studio-token';
 const MIN_SNIP = 8;
 
+/** A new query each time, so the frame does not reuse the page cached with the gate. */
+export function freshSiteUrl(now = Date.now()): string {
+  return `/?studio=${now}`;
+}
+
+/** True when the server index names a main bundle this page is not running. */
+export function deployedBundleChanged(html: string, runningSrcs: readonly string[]): boolean {
+  const fresh = [...html.matchAll(/src="(?:[^"]*\/)?(main\.[^"]+\.js)"/g)].map((match) => match[1]);
+  if (!fresh.length) {
+    return false;
+  }
+  const running = new Set(runningSrcs.map((src) => src.split('/').pop() ?? src));
+  return fresh.some((name) => !running.has(name));
+}
+
 export function isLocalStudioHost(hostname: string): boolean {
   const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
   return host === 'localhost' || host === '127.0.0.1' || host === '::1';
@@ -47,6 +62,7 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
 
   unlocked = false;
   unlocking = false;
+  frameSrc = freshSiteUrl();
   token = '';
   gateError = '';
   status: StudioStatusResponse | null = null;
@@ -86,6 +102,8 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
       window.location.replace('/');
       return;
     }
+    this.frameSrc = freshSiteUrl();
+    void this.reloadShellIfDeployChanged();
     this.api.getStudioStatus().subscribe({
       next: (status) => (this.status = status),
       error: () => (this.status = { configured: false, missing: [] }),
@@ -123,6 +141,7 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
         this.token = value;
         this.unlocked = true;
         this.unlocking = false;
+        this.frameSrc = freshSiteUrl();
       },
       error: (err: HttpErrorResponse) => {
         sessionStorage.removeItem(TOKEN_KEY);
@@ -376,6 +395,30 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
 
   trackPreview(_index: number, block: StudioComposerBlock): string {
     return block.type === 'text' ? `t:${block.text.slice(0, 24)}` : block.dataUrl.slice(-24);
+  }
+
+  private async reloadShellIfDeployChanged(): Promise<void> {
+    if (typeof fetch === 'undefined') {
+      return;
+    }
+    try {
+      const response = await fetch(`/index.html?studio=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) {
+        return;
+      }
+      const html = await response.text();
+      const running = Array.from(document.scripts)
+        .map((script) => script.src)
+        .filter((src) => src.length > 0);
+      if (!deployedBundleChanged(html, running)) {
+        return;
+      }
+      const next = new URL(window.location.href);
+      next.searchParams.set('studio', String(Date.now()));
+      window.location.replace(next.toString());
+    } catch {
+      return;
+    }
   }
 
   private insertImage(dataUrl: string, name: string): void {
