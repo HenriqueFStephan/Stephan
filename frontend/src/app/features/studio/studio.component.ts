@@ -10,6 +10,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { ApiService } from '../../core/api.service';
 import { StudioStatusResponse } from '../../core/models';
@@ -62,7 +63,7 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
 
   unlocked = false;
   unlocking = false;
-  frameSrc = freshSiteUrl();
+  frameSrc: SafeResourceUrl;
   token = '';
   gateError = '';
   status: StudioStatusResponse | null = null;
@@ -88,7 +89,12 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
   snipCount = 0;
   private savedCaret: Range | null = null;
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private sanitizer: DomSanitizer,
+  ) {
+    this.frameSrc = this.trustedSite();
+  }
 
   get needsGithubToken(): boolean {
     return (
@@ -102,7 +108,7 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
       window.location.replace('/');
       return;
     }
-    this.frameSrc = freshSiteUrl();
+    this.frameSrc = this.trustedSite();
     void this.reloadShellIfDeployChanged();
     this.api.getStudioStatus().subscribe({
       next: (status) => (this.status = status),
@@ -141,7 +147,7 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
         this.token = value;
         this.unlocked = true;
         this.unlocking = false;
-        this.frameSrc = freshSiteUrl();
+        this.frameSrc = this.trustedSite();
       },
       error: (err: HttpErrorResponse) => {
         sessionStorage.removeItem(TOKEN_KEY);
@@ -395,6 +401,10 @@ export class StudioComponent implements OnInit, AfterViewInit, OnDestroy {
 
   trackPreview(_index: number, block: StudioComposerBlock): string {
     return block.type === 'text' ? `t:${block.text.slice(0, 24)}` : block.dataUrl.slice(-24);
+  }
+
+  private trustedSite(): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(freshSiteUrl());
   }
 
   private async reloadShellIfDeployChanged(): Promise<void> {

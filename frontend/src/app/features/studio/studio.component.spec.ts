@@ -54,7 +54,7 @@ describe('StudioComponent', () => {
     expect(api.unlockStudio).not.toHaveBeenCalled();
     expect(fixture.nativeElement.querySelector('.studio-panel')).toBeTruthy();
     const frame = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;
-    expect(frame.getAttribute('src')).toContain('/?studio=');
+    expect(frame.src).toContain('/?studio=');
     const buttons = Array.from(
       fixture.nativeElement.querySelectorAll('.studio-btn'),
     ) as HTMLButtonElement[];
