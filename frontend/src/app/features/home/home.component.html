@@ -1,69 +1,143 @@
 <section class="hero" id="topo">
   <div class="hero__copy">
     <h1>{{ 'hero.title' | t }}</h1>
-    <p>{{ 'hero.lead' | t }}</p>
-    <a class="button" routerLink="/abordagem">{{ 'hero.cta' | t }}</a>
+    <p class="hero__subtitle">{{ 'hero.subtitle' | t }}</p>
+    <p class="hero__lead">{{ 'hero.lead' | t }}</p>
+    <div class="hero__actions">
+      <a class="button" href="#metodo">{{ 'hero.ctaMethod' | t }}</a>
+      <a class="button button--ghost" routerLink="/contato">{{ 'hero.ctaContact' | t }}</a>
+    </div>
+    <p class="hero__notice">{{ 'home.nr1Notice' | t }}</p>
   </div>
   <div class="hero__mark" aria-hidden="true">
     <img src="assets/brand/stephan-mark.png" alt="" />
   </div>
 </section>
 
-<section class="band" id="fazemos">
+<section class="section section--deep" id="conceito">
   <div class="container">
-    <h2>{{ 'work.title' | t }}</h2>
-    <ol class="steps">
-      <li>
-        <h3>{{ 'work.assess.title' | t }}</h3>
-        <p>{{ 'work.assess.body' | t }}</p>
-      </li>
-      <li>
-        <h3>{{ 'work.read.title' | t }}</h3>
-        <p>{{ 'work.read.body' | t }}</p>
-      </li>
-      <li>
-        <h3>{{ 'work.manage.title' | t }}</h3>
-        <p>{{ 'work.manage.body' | t }}</p>
+    <p class="eyebrow">{{ 'home.concept.eyebrow' | t }}</p>
+    <h2>{{ 'home.concept.whatTitle' | t }}</h2>
+    <div class="prose">
+      <p>{{ 'home.concept.p1' | t }}</p>
+      <p>{{ 'home.concept.p2' | t }}</p>
+      <p>{{ 'home.concept.p3' | t }}</p>
+    </div>
+
+    <h3 class="subsection">{{ 'home.concept.dimensionsTitle' | t }}</h3>
+    <ol class="dimensions">
+      <li *ngFor="let index of dimensions">
+        <span class="dimensions__index">{{ index | number: '2.0-0' }}</span>
+        <div>
+          <h4>{{ dimensionKey(index, 'title') | t }}</h4>
+          <p>{{ dimensionKey(index, 'body') | t }}</p>
+        </div>
       </li>
     </ol>
   </div>
 </section>
 
-<section class="method" id="investigamos">
+<section class="section" id="custo">
   <div class="container">
-    <h2>{{ 'method.title' | t }}</h2>
-    <p class="intro">{{ 'method.lead' | t }}</p>
+    <p class="eyebrow">{{ 'home.cost.eyebrow' | t }}</p>
+    <h2>{{ 'home.cost.whyTitle' | t }}</h2>
+    <p class="intro">{{ 'home.cost.whyLead' | t }}</p>
+
+    <div class="stats">
+      <article class="stat" *ngFor="let index of stats">
+        <p class="stat__value">{{ statKey(index, 'value') | t }}</p>
+        <p class="stat__label">{{ statKey(index, 'label') | t }}</p>
+        <p>{{ statKey(index, 'body') | t }}</p>
+        <p class="stat__source">{{ statKey(index, 'source') | t }}</p>
+      </article>
+    </div>
+
+    <h3 class="subsection">{{ 'home.gain.title' | t }}</h3>
+    <ul class="gains">
+      <li *ngFor="let index of gains">
+        <h4>{{ gainKey(index, 'title') | t }}</h4>
+        <p>{{ gainKey(index, 'body') | t }}</p>
+      </li>
+    </ul>
+    <p class="closing">{{ 'home.cost.closing' | t }}</p>
+  </div>
+</section>
+
+<section class="section section--deep" id="norma">
+  <div class="container">
+    <p class="eyebrow">{{ 'home.norm.eyebrow' | t }}</p>
+    <h2>{{ 'home.norm.title' | t }}</h2>
+    <p class="intro">{{ 'home.norm.lead' | t }}</p>
+    <ul class="norm">
+      <li *ngFor="let index of normItems">{{ normKey(index) | t }}</li>
+    </ul>
+    <p class="closing">{{ 'home.norm.closing' | t }}</p>
+  </div>
+</section>
+
+<section class="section method" id="metodo">
+  <div class="container">
+    <p class="eyebrow">{{ 'home.method.eyebrow' | t }}</p>
+    <h2>{{ 'home.method.title' | t }}</h2>
+    <p class="intro">{{ 'home.method.lead' | t }}</p>
     <ol class="thread">
-      <li class="thread__segment thread__segment--text-first">
+      <li
+        class="thread__segment"
+        *ngFor="let step of methodSteps"
+        [class.thread__segment--text-first]="step.layout === 'text-first'"
+        [class.thread__segment--image-first]="step.layout === 'image-first'"
+      >
         <div class="thread__copy">
-          <span class="thread__index">01</span>
-          <h3>{{ 'method.hse.title' | t }}</h3>
-          <p>{{ 'method.hse.body' | t }}</p>
+          <span class="thread__index">{{ step.index }}</span>
+          <h3>{{ step.titleKey | t }}</h3>
+          <p>{{ step.bodyKey | t }}</p>
         </div>
         <figure class="thread__figure">
-          <img src="assets/method/method-hse.svg" alt="" width="640" height="360" loading="lazy" />
-        </figure>
-      </li>
-      <li class="thread__segment thread__segment--image-first">
-        <figure class="thread__figure">
-          <img src="assets/method/method-observe.svg" alt="" width="640" height="360" loading="lazy" />
-        </figure>
-        <div class="thread__copy">
-          <span class="thread__index">02</span>
-          <h3>{{ 'method.observe.title' | t }}</h3>
-          <p>{{ 'method.observe.body' | t }}</p>
-        </div>
-      </li>
-      <li class="thread__segment thread__segment--text-first">
-        <div class="thread__copy">
-          <span class="thread__index">03</span>
-          <h3>{{ 'method.follow.title' | t }}</h3>
-          <p>{{ 'method.follow.body' | t }}</p>
-        </div>
-        <figure class="thread__figure">
-          <img src="assets/method/method-follow.svg" alt="" width="640" height="360" loading="lazy" />
+          <img [src]="step.image" alt="" width="640" height="360" loading="lazy" />
         </figure>
       </li>
     </ol>
+
+    <div class="highlight">
+      <h3>{{ 'home.method.diffTitle' | t }}</h3>
+      <div class="prose">
+        <p>{{ 'home.method.diffP1' | t }}</p>
+        <p>{{ 'home.method.diffP2' | t }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--deep" id="entregaveis">
+  <div class="container">
+    <p class="eyebrow">{{ 'home.deliver.eyebrow' | t }}</p>
+    <h2>{{ 'home.deliver.title' | t }}</h2>
+    <p class="intro">{{ 'home.deliver.lead' | t }}</p>
+    <ol class="deliverables">
+      <li *ngFor="let index of deliverables">
+        <span class="deliverables__index">{{ index | number: '2.0-0' }}</span>
+        <p>{{ deliverKey(index) | t }}</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="privacidade">
+  <div class="container">
+    <p class="eyebrow">{{ 'home.privacy.eyebrow' | t }}</p>
+    <h2>{{ 'home.privacy.title' | t }}</h2>
+    <div class="prose">
+      <p>{{ 'home.privacy.p1' | t }}</p>
+      <p>{{ 'home.privacy.p2' | t }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section--cta" id="proximo-passo">
+  <div class="container container--narrow">
+    <p class="eyebrow">{{ 'home.next.eyebrow' | t }}</p>
+    <h2>{{ 'home.next.title' | t }}</h2>
+    <p class="intro">{{ 'home.next.lead' | t }}</p>
+    <a class="button" routerLink="/contato">{{ 'hero.ctaContact' | t }}</a>
   </div>
 </section>

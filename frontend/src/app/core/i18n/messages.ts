@@ -1,16 +1,144 @@
 const ptBR = {
   'meta.title': 'Stephan',
   'meta.description':
-    'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
+    'Avaliação e gestão dos fatores de risco psicossociais na organização do trabalho, com método validado, escuta e evidências para o PGR.',
   'nav.contact': 'Contato',
   'nav.register': 'Cadastro',
   'nav.login': 'Login',
   'nav.lang': 'EN',
 
-  'hero.title': 'Compreender o trabalho para gerenciar os riscos.',
+  'hero.title': 'Avaliação e gestão de riscos psicossociais',
+  'hero.subtitle': 'Riscos psicossociais: compreender o trabalho para gerenciar o risco.',
   'hero.lead':
-    'Avaliação e gestão de riscos psicossociais com método, escuta e evidências.',
-  'hero.cta': 'Conheça nossa abordagem',
+    'Avaliação e gestão dos fatores de risco psicossociais na organização do trabalho, com método validado, escuta de quem faz o trabalho e evidências para o PGR.',
+  'hero.ctaMethod': 'Conhecer o método',
+  'hero.ctaContact': 'Falar com a Stephan',
+
+  'home.nr1Notice': 'Exigência da NR-1 em vigor desde 26 de maio de 2026.',
+
+  'home.concept.eyebrow': '01 — Conceito',
+  'home.concept.whatTitle': 'O que são riscos psicossociais',
+  'home.concept.p1':
+    'A NR-1 define perigo ou fator de risco ocupacional como o elemento ou situação que, isoladamente ou em combinação, tem o potencial de dar origem a lesões ou agravos à saúde. Os fatores de risco psicossociais relacionados ao trabalho são aqueles que decorrem das condições de organização, concepção e gestão do trabalho — não das características individuais de quem trabalha. (NR-1, Ministério do Trabalho e Emprego)',
+  'home.concept.p2':
+    'Na prática, estão na divisão de tarefas, nas metas e prazos, no ritmo, no grau de autonomia, no apoio da chefia e dos colegas, na clareza do papel de cada um e na forma como as mudanças são conduzidas e comunicadas.',
+  'home.concept.p3':
+    'A fonte do risco está na organização do trabalho, não na pessoa. É por isso que a avaliação recai sobre as condições de trabalho, e não sobre a saúde individual de quem trabalha.',
+  'home.concept.dimensionsTitle': 'As sete dimensões avaliadas',
+  'home.dim.1.title': 'Demandas',
+  'home.dim.1.body': 'Quantidade e pressão de trabalho, prazos e ritmo exigido.',
+  'home.dim.2.title': 'Controle',
+  'home.dim.2.body': 'Grau de autonomia sobre a forma, o ritmo e a sequência das tarefas.',
+  'home.dim.3.title': 'Apoio da chefia',
+  'home.dim.3.body': 'Suporte, orientação e reconhecimento recebidos da liderança direta.',
+  'home.dim.4.title': 'Apoio dos colegas',
+  'home.dim.4.body': 'Cooperação e ajuda mútua no dia a dia do trabalho.',
+  'home.dim.5.title': 'Relacionamentos',
+  'home.dim.5.body': 'Qualidade das relações interpessoais e presença de conflitos.',
+  'home.dim.6.title': 'Papel e função',
+  'home.dim.6.body': 'Clareza das atribuições e ausência de exigências contraditórias.',
+  'home.dim.7.title': 'Mudança',
+  'home.dim.7.body': 'Forma como as transformações são comunicadas e conduzidas.',
+
+  'home.cost.eyebrow': '02 — Custo e retorno',
+  'home.cost.whyTitle': 'Por que gerenciar',
+  'home.cost.whyLead':
+    'O custo de não gerenciar aparece nos dados oficiais. Os números abaixo indicam a escala do problema.',
+  'home.stat.1.value': '546.254',
+  'home.stat.1.label': 'benefícios em 2025',
+  'home.stat.1.body':
+    'Em 2025, a Previdência Social concedeu 546.254 benefícios por incapacidade temporária decorrentes de transtornos mentais e comportamentais — crescimento de 15,66% em relação a 2024. Os transtornos ansiosos e os episódios depressivos lideram a lista.',
+  'home.stat.1.source': 'Fonte: Ministério da Previdência Social',
+  'home.stat.2.value': '840 mil',
+  'home.stat.2.label': 'mortes por ano no mundo',
+  'home.stat.2.body':
+    'A OIT estima que fatores de risco psicossociais no trabalho respondem por mais de 840 mil mortes por ano no mundo e por perda equivalente a 1,37% do PIB global.',
+  'home.stat.2.source': 'Fonte: Organização Internacional do Trabalho (OIT)',
+  'home.stat.3.value': 'R$ 954 mi',
+  'home.stat.3.label': 'custo em um ano',
+  'home.stat.3.body':
+    'No Brasil, o custo dos benefícios por transtornos mentais ultrapassou R$ 954 milhões em um ano, segundo levantamento com dados do INSS.',
+  'home.stat.3.source': 'Fonte: ANAMT',
+  'home.gain.title': 'O que a organização ganha',
+  'home.gain.1.title': 'Redução do absenteísmo',
+  'home.gain.1.body': 'Menos afastamentos e menos afastamentos longos.',
+  'home.gain.2.title': 'Produtividade sustentada',
+  'home.gain.2.body': 'Menos presenteísmo, menos retrabalho, menos rotatividade.',
+  'home.gain.3.title': 'Conformidade legal',
+  'home.gain.3.body': 'Inventário de riscos e plano de ação do PGR alimentados com evidência.',
+  'home.gain.4.title': 'Decisão com base em dados',
+  'home.gain.4.body': 'Prioridades de gestão definidas por evidência, não por percepção.',
+  'home.gain.5.title': 'Prevenção de passivo',
+  'home.gain.5.body': 'Documentação técnica que sustenta a defesa da organização.',
+  'home.gain.6.title': 'Cultura e retenção',
+  'home.gain.6.body': 'Condições de trabalho que sustentam permanência e engajamento.',
+  'home.cost.closing':
+    'Gerenciar riscos psicossociais não é uma ação de bem-estar. É gestão de risco ocupacional, com efeito direto sobre custo, produtividade e conformidade.',
+
+  'home.norm.eyebrow': '03 — Norma',
+  'home.norm.title': 'O que diz a legislação',
+  'home.norm.lead':
+    'A NR-1 foi alterada pela Portaria MTE nº 1.419, de 27 de agosto de 2024, e a nova redação do capítulo 1.5 entrou em vigor em 26 de maio de 2026, conforme a Portaria MTE nº 765, de 15 de maio de 2025. Desde então, os fatores de risco psicossociais integram expressamente o Gerenciamento de Riscos Ocupacionais.',
+  'home.norm.item.1':
+    '1.5.3.1.4º GRO deve abranger os riscos ergonômicos, incluindo os fatores de risco psicossociais relacionados ao trabalho.',
+  'home.norm.item.2':
+    '1.5.3.2.1 a organização deve considerar as condições de trabalho nos termos da NR-17, incluindo os fatores psicossociais.',
+  'home.norm.item.3':
+    '1.5.4.4.2.1 e 1.5.4.4.2.2 a organização escolhe o método de avaliação e deve documentar os critérios de severidade, probabilidade, nível e classificação de risco.',
+  'home.norm.item.4':
+    '1.5.7.1 e 1.5.7.3.2º PGR deve conter inventário de riscos e plano de ação, e os dados levantados devem ser registrados nesse inventário.',
+  'home.norm.item.5':
+    '1.5.5.2 as medidas de prevenção vão ao plano de ação com cronograma, responsáveis, forma de acompanhamento e aferição de resultados.',
+  'home.norm.item.6':
+    '1.5.3.3 e 1.5.7.2.1 a organização deve comunicar os riscos aos trabalhadores e manter a documentação disponível a trabalhadores, sindicatos e Inspeção do Trabalho.',
+  'home.norm.closing':
+    'A norma não indica um instrumento obrigatório. Exige método definido, critérios documentados e participação dos trabalhadores. É exatamente isso que a Stephan entrega.',
+
+  'home.method.eyebrow': '04 — Método',
+  'home.method.title': 'Nosso método',
+  'home.method.lead':
+    'O método é o do Health and Safety Executive britânico, em três movimentos: o questionário, a leitura estatística dos resultados e o aprofundamento com quem faz o trabalho.',
+  'home.method.step1.title': 'HSE-IT',
+  'home.method.step1.body':
+    'O HSE Indicator Tool, com 35 itens distribuídos em sete dimensões do trabalho. Cada pessoa responde sobre as condições do próprio trabalho, referentes aos últimos seis meses. A aplicação é online, com convite individual, e leva de 10 a 15 minutos. As respostas são anônimas e o conjunto vira uma leitura do grupo.',
+  'home.method.step2.title': 'Leitura estatística',
+  'home.method.step2.body':
+    'As respostas voltam em relatório: médias por dimensão, distribuição das faixas de resposta, percentual de respostas desfavoráveis por item e comparação entre setores. É essa análise que mostra onde as condições de trabalho pesam e com que intensidade.',
+  'home.method.step3.title': 'Grupo focal',
+  'home.method.step3.body':
+    'A Dra. Renata Stephan conduz grupos focais nas áreas que apresentam risco elevado. Quem faz o trabalho situa os números, explica o trabalho real por trás deles e indica o que precisa mudar. Dessa escuta saem as ações propostas para a organização.',
+  'home.method.diffTitle': 'Diferencial',
+  'home.method.diffP1':
+    'Instrumento validado no Brasil. O HSE-IT foi validado para o português brasileiro por Lucca et al. (2013), com propriedades psicométricas satisfatórias: alfa de Cronbach superior a 0,70 nas sete subescalas e ajuste aceitável no modelo fatorial. A Dra. Renata Sobral aplicou o instrumento e o método misto do HSE — questionário seguido de grupo focal — em 2.284 trabalhadores de call center, hospitais, bancos, unidades básicas de saúde e indústrias, em pesquisa publicada na Revista Brasileira de Medicina do Trabalho.',
+  'home.method.diffP2':
+    'Não usamos questionário traduzido às pressas nem modelo genérico. Usamos o instrumento validado, aplicado por quem o validou e o pesquisou no Brasil.',
+
+  'home.deliver.eyebrow': '05 — Entregáveis',
+  'home.deliver.title': 'O que a organização recebe',
+  'home.deliver.lead':
+    'Todos os documentos seguem o formato exigido pela NR-1 e podem ser anexados diretamente ao PGR.',
+  'home.deliver.item.1':
+    'Relatório de resultados do HSE-IT, com as sete dimensões por grupo e no conjunto.',
+  'home.deliver.item.2':
+    'Documento de critérios de avaliação de risco, com as gradações de severidade e probabilidade.',
+  'home.deliver.item.3': 'Inventário de riscos ocupacionais no formato exigido pela NR-1.',
+  'home.deliver.item.4':
+    'Plano de ação com medidas, prioridade, cronograma, responsáveis e forma de acompanhamento.',
+  'home.deliver.item.5':
+    'Síntese qualitativa dos grupos focais, com leitura comparativa entre gestão e operação.',
+  'home.deliver.item.6': 'Devolutiva para a direção e material de comunicação aos trabalhadores.',
+
+  'home.privacy.eyebrow': '06 — Privacidade',
+  'home.privacy.title': 'Anonimato e limites do trabalho',
+  'home.privacy.p1':
+    'As respostas não são identificadas. Os relatórios são exclusivamente agregados e nenhum resultado individual é entregue à organização. Grupos com menos de cinco respondentes são agregados antes da devolutiva, para preservar o anonimato. O tratamento de dados segue a LGPD.',
+  'home.privacy.p2':
+    'Isto não é atendimento clínico, não substitui exame ocupacional e não produz laudo individual.',
+
+  'home.next.eyebrow': 'Próximo passo',
+  'home.next.title': 'Vamos conversar sobre a realidade da sua organização.',
+  'home.next.lead':
+    'A avaliação começa pela definição dos grupos, do calendário e dos critérios. A partir daí, o processo leva duas semanas até a entrega do inventário de riscos e do plano de ação.',
 
   'approach.title': 'Nossa abordagem',
   'approach.lead':
@@ -48,30 +176,6 @@ const ptBR = {
   'plan.band.s': 'De 50 a 199 pessoas',
   'plan.band.m': 'De 200 a 499 pessoas',
   'plan.band.l': '500 pessoas ou mais',
-
-  'work.title': 'O que fazemos',
-  'work.assess.title': 'Avaliação',
-  'work.assess.body':
-    'Identificamos os fatores psicossociais no trabalho real da organização, não num modelo genérico.',
-  'work.read.title': 'Interpretação dos resultados',
-  'work.read.body':
-    'Lemos os achados com quem vive o trabalho, para que o número não se separe da situação.',
-  'work.manage.title': 'Apoio à gestão dos riscos',
-  'work.manage.body':
-    'Acompanhamos a decisão e o seguimento: o que muda no trabalho, e como isso se sustenta.',
-
-  'method.title': 'Como investigamos',
-  'method.lead':
-    'Três momentos de uma mesma investigação: o formulário HSE-IT, o relatório dos resultados e o follow-up.',
-  'method.hse.title': 'HSE-IT',
-  'method.hse.body':
-    'O primeiro passo é o formulário HSE-IT. Trinta e cinco perguntas sobre os últimos seis meses percorrem as dimensões do trabalho: demandas, controle, apoio, relações, clareza de papel e mudança. Cada pessoa responde sobre as condições do próprio trabalho, e o conjunto anônimo vira uma leitura do grupo.',
-  'method.observe.title': 'Observação',
-  'method.observe.body':
-    'As respostas voltam em relatório. Médias por dimensão, a distribuição das faixas e as comparações no grupo mostram onde as condições de trabalho pesam, e com que intensidade. A observação é essa análise estatística dos resultados.',
-  'method.follow.title': 'Follow-up',
-  'method.follow.body':
-    'A Dra. Renata Stephan analisa os achados em profundidade. Nos grupos focais, quem faz o trabalho situa os números, e dessa escuta saem ações propostas para a organização.',
 
   'contact.title': 'Contato',
   'contact.lead': 'Vamos conversar sobre a realidade da sua organização.',
@@ -433,16 +537,144 @@ export type MsgKey = keyof typeof ptBR;
 export const en: Record<MsgKey, string> = {
   'meta.title': 'Stephan',
   'meta.description':
-    'Psychosocial risk assessment and management, with method, listening, and evidence.',
+    'Assessment and management of psychosocial risk factors in how work is organized, with a validated method, listening, and evidence for the PGR.',
   'nav.contact': 'Contact',
   'nav.register': 'Register',
   'nav.login': 'Login',
   'nav.lang': 'PT',
 
-  'hero.title': 'Understand the work in order to change the risks.',
+  'hero.title': 'Psychosocial risk assessment and management',
+  'hero.subtitle': 'Psychosocial risks: understand the work to manage the risk.',
   'hero.lead':
-    'Psychosocial risk assessment and management, with method, listening, and evidence.',
-  'hero.cta': 'See our approach',
+    'Assessment and management of psychosocial risk factors in how work is organized, with a validated method, listening from the people who do the work, and evidence for the PGR.',
+  'hero.ctaMethod': 'Learn about the method',
+  'hero.ctaContact': 'Talk to Stephan',
+
+  'home.nr1Notice': 'NR-1 requirement in force since 26 May 2026.',
+
+  'home.concept.eyebrow': '01 — Concept',
+  'home.concept.whatTitle': 'What psychosocial risks are',
+  'home.concept.p1':
+    'NR-1 defines a hazard or occupational risk factor as an element or situation that, alone or in combination, can cause injury or harm to health. Psychosocial risk factors related to work are those that arise from how work is organized, designed, and managed—not from individual characteristics of workers. (NR-1, Ministry of Labour and Employment)',
+  'home.concept.p2':
+    'In practice, they show up in how tasks are divided, in goals and deadlines, in pace, in autonomy, in support from managers and colleagues, in role clarity, and in how change is led and communicated.',
+  'home.concept.p3':
+    'The source of the risk is in how work is organized, not in the person. That is why assessment focuses on working conditions, not on individual health.',
+  'home.concept.dimensionsTitle': 'The seven dimensions assessed',
+  'home.dim.1.title': 'Demands',
+  'home.dim.1.body': 'Workload volume and pressure, deadlines, and required pace.',
+  'home.dim.2.title': 'Control',
+  'home.dim.2.body': 'Degree of autonomy over how, when, and in what order tasks are done.',
+  'home.dim.3.title': 'Manager support',
+  'home.dim.3.body': 'Support, guidance, and recognition from direct leadership.',
+  'home.dim.4.title': 'Peer support',
+  'home.dim.4.body': 'Cooperation and mutual help in day-to-day work.',
+  'home.dim.5.title': 'Relationships',
+  'home.dim.5.body': 'Quality of interpersonal relations and presence of conflict.',
+  'home.dim.6.title': 'Role',
+  'home.dim.6.body': 'Clarity of responsibilities and absence of conflicting demands.',
+  'home.dim.7.title': 'Change',
+  'home.dim.7.body': 'How transformations are communicated and managed.',
+
+  'home.cost.eyebrow': '02 — Cost and return',
+  'home.cost.whyTitle': 'Why manage',
+  'home.cost.whyLead':
+    'The cost of not managing shows up in official data. The figures below indicate the scale of the problem.',
+  'home.stat.1.value': '546,254',
+  'home.stat.1.label': 'benefits in 2025',
+  'home.stat.1.body':
+    'In 2025, Social Security granted 546,254 temporary disability benefits due to mental and behavioural disorders—a 15.66% increase over 2024. Anxiety disorders and depressive episodes lead the list.',
+  'home.stat.1.source': 'Source: Ministry of Social Security',
+  'home.stat.2.value': '840 thousand',
+  'home.stat.2.label': 'deaths per year worldwide',
+  'home.stat.2.body':
+    'The ILO estimates that psychosocial risk factors at work account for more than 840 thousand deaths per year worldwide and a loss equivalent to 1.37% of global GDP.',
+  'home.stat.2.source': 'Source: International Labour Organization (ILO)',
+  'home.stat.3.value': 'R$ 954 m',
+  'home.stat.3.label': 'cost in one year',
+  'home.stat.3.body':
+    'In Brazil, the cost of benefits for mental disorders exceeded R$ 954 million in one year, according to a survey using INSS data.',
+  'home.stat.3.source': 'Source: ANAMT',
+  'home.gain.title': 'What the organization gains',
+  'home.gain.1.title': 'Lower absenteeism',
+  'home.gain.1.body': 'Fewer absences and fewer long absences.',
+  'home.gain.2.title': 'Sustained productivity',
+  'home.gain.2.body': 'Less presenteeism, less rework, less turnover.',
+  'home.gain.3.title': 'Legal compliance',
+  'home.gain.3.body': 'Risk inventory and PGR action plan supported by evidence.',
+  'home.gain.4.title': 'Evidence-based decisions',
+  'home.gain.4.body': 'Management priorities set by evidence, not perception.',
+  'home.gain.5.title': 'Liability prevention',
+  'home.gain.5.body': 'Technical documentation that supports the organization’s defence.',
+  'home.gain.6.title': 'Culture and retention',
+  'home.gain.6.body': 'Working conditions that support staying and engagement.',
+  'home.cost.closing':
+    'Managing psychosocial risks is not a wellness initiative. It is occupational risk management, with direct effect on cost, productivity, and compliance.',
+
+  'home.norm.eyebrow': '03 — Regulation',
+  'home.norm.title': 'What the law says',
+  'home.norm.lead':
+    'NR-1 was amended by MTE Ordinance No. 1,419 of 27 August 2024, and the new wording of chapter 1.5 took effect on 26 May 2026 under MTE Ordinance No. 765 of 15 May 2025. Since then, psychosocial risk factors are explicitly part of Occupational Risk Management.',
+  'home.norm.item.1':
+    '1.5.3.1.4 ORM must cover ergonomic risks, including psychosocial risk factors related to work.',
+  'home.norm.item.2':
+    '1.5.3.2.1 the organization must consider working conditions under NR-17, including psychosocial factors.',
+  'home.norm.item.3':
+    '1.5.4.4.2.1 and 1.5.4.4.2.2 the organization chooses the assessment method and must document severity, probability, level, and risk classification criteria.',
+  'home.norm.item.4':
+    '1.5.7.1 and 1.5.7.3.2 the PGR must contain a risk inventory and action plan, and data collected must be recorded in that inventory.',
+  'home.norm.item.5':
+    '1.5.5.2 preventive measures go into the action plan with schedule, owners, follow-up, and results measurement.',
+  'home.norm.item.6':
+    '1.5.3.3 and 1.5.7.2.1 the organization must communicate risks to workers and keep documentation available to workers, unions, and the Labour Inspectorate.',
+  'home.norm.closing':
+    'The standard does not prescribe one mandatory instrument. It requires a defined method, documented criteria, and worker participation. That is exactly what Stephan delivers.',
+
+  'home.method.eyebrow': '04 — Method',
+  'home.method.title': 'Our method',
+  'home.method.lead':
+    'The method is that of the UK Health and Safety Executive, in three moves: the questionnaire, statistical reading of the results, and depth work with the people who do the job.',
+  'home.method.step1.title': 'HSE-IT',
+  'home.method.step1.body':
+    'The HSE Indicator Tool, with 35 items across seven dimensions of work. Each person answers about the conditions of their own work over the last six months. It is delivered online, with individual invitation, and takes 10 to 15 minutes. Answers are anonymous and the set becomes a reading of the group.',
+  'home.method.step2.title': 'Statistical reading',
+  'home.method.step2.body':
+    'Answers return in a report: means by dimension, distribution of response bands, percentage of unfavourable answers per item, and comparison between sectors. That analysis shows where working conditions weigh and how heavily.',
+  'home.method.step3.title': 'Focus group',
+  'home.method.step3.body':
+    'Dr. Renata Stephan leads focus groups in areas with elevated risk. The people who do the work place the numbers, explain the real work behind them, and say what needs to change. From that listening come proposed actions for the organization.',
+  'home.method.diffTitle': 'What sets us apart',
+  'home.method.diffP1':
+    'Instrument validated in Brazil. The HSE-IT was validated for Brazilian Portuguese by Lucca et al. (2013), with satisfactory psychometric properties: Cronbach’s alpha above 0.70 on all seven subscales and acceptable fit in the factor model. Dr. Renata Sobral applied the instrument and the HSE mixed method—questionnaire followed by focus group—in 2,284 workers in call centres, hospitals, banks, primary care units, and industry, in research published in the Revista Brasileira de Medicina do Trabalho.',
+  'home.method.diffP2':
+    'We do not use a hastily translated questionnaire or a generic model. We use the validated instrument, applied by the person who validated and researched it in Brazil.',
+
+  'home.deliver.eyebrow': '05 — Deliverables',
+  'home.deliver.title': 'What the organization receives',
+  'home.deliver.lead':
+    'All documents follow the format required by NR-1 and can be attached directly to the PGR.',
+  'home.deliver.item.1':
+    'HSE-IT results report, with the seven dimensions by group and overall.',
+  'home.deliver.item.2':
+    'Risk assessment criteria document, with severity and probability gradations.',
+  'home.deliver.item.3': 'Occupational risk inventory in the format required by NR-1.',
+  'home.deliver.item.4':
+    'Action plan with measures, priority, schedule, owners, and follow-up.',
+  'home.deliver.item.5':
+    'Qualitative synthesis of focus groups, with comparative reading between management and operations.',
+  'home.deliver.item.6': 'Return session for leadership and communication material for workers.',
+
+  'home.privacy.eyebrow': '06 — Privacy',
+  'home.privacy.title': 'Anonymity and scope of the work',
+  'home.privacy.p1':
+    'Answers are not identified. Reports are aggregated only and no individual result is delivered to the organization. Groups with fewer than five respondents are aggregated before the return, to preserve anonymity. Data processing follows the LGPD.',
+  'home.privacy.p2':
+    'This is not clinical care, does not replace occupational health examination, and does not produce individual medical reports.',
+
+  'home.next.eyebrow': 'Next step',
+  'home.next.title': 'Let’s talk about the reality of your organization.',
+  'home.next.lead':
+    'Assessment starts with defining groups, calendar, and criteria. From there, the process takes two weeks until delivery of the risk inventory and action plan.',
 
   'approach.title': 'Our approach',
   'approach.lead':
@@ -480,30 +712,6 @@ export const en: Record<MsgKey, string> = {
   'plan.band.s': '50 to 199 people',
   'plan.band.m': '200 to 499 people',
   'plan.band.l': '500 people or more',
-
-  'work.title': 'What we do',
-  'work.assess.title': 'Assessment',
-  'work.assess.body':
-    'We identify psychosocial factors in the organization’s actual work, not in a generic model. That assessment is the HSE-IT form: people answer about the conditions of their own work, and the result is a reading of the group, not a verdict on one person.',
-  'work.read.title': 'Reading the results',
-  'work.read.body':
-    'We interpret the findings with the people who do the work, so the number stays tied to the situation.',
-  'work.manage.title': 'Support for managing the risks',
-  'work.manage.body':
-    'We stay with the decision and the follow-up: what changes in the work, and how that holds.',
-
-  'method.title': 'How we investigate',
-  'method.lead':
-    'Three moments of one investigation: the HSE-IT form, a report of the results, and follow-up.',
-  'method.hse.title': 'HSE-IT',
-  'method.hse.body':
-    'The first step is the HSE-IT form. Thirty-five questions about the last six months move through the dimensions of work: demands, control, support, relationships, role clarity, and change. Each person answers about the conditions of their own work, and the anonymous set becomes a reading of the group.',
-  'method.observe.title': 'Observation',
-  'method.observe.body':
-    'The answers come back as a report. Means by dimension, how the bands are distributed, and comparisons within the group show where working conditions weigh, and how heavily. Observation is that statistical analysis of the results.',
-  'method.follow.title': 'Follow-up',
-  'method.follow.body':
-    'Dr. Renata Stephan analyzes the findings in depth. In focus groups, the people who do the work place the numbers in context, and from that listening come proposed actions for the organization.',
 
   'contact.title': 'Contact',
   'contact.lead': 'Let’s talk about the reality of your organization.',

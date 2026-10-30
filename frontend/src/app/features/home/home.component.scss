@@ -16,17 +16,36 @@
   padding-right: 1.5rem;
 
   h1 {
-    margin: 0 0 1.25rem;
-    font-size: clamp(2.4rem, 4.6vw, 4.1rem);
+    margin: 0 0 0.85rem;
+    font-size: clamp(2.1rem, 4vw, 3.4rem);
     letter-spacing: -0.03em;
   }
+}
 
-  p {
-    margin: 0 0 2rem;
-    max-width: 32rem;
-    font-size: 1.2rem;
-    color: $color-text;
-  }
+.hero__subtitle {
+  margin: 0 0 1rem;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  color: $color-text;
+}
+
+.hero__lead {
+  margin: 0 0 1.75rem;
+  max-width: 32rem;
+  font-size: 1.08rem;
+  color: $color-text-muted;
+}
+
+.hero__notice {
+  margin: 1.5rem 0 0;
+  max-width: 28rem;
+  font-size: 0.92rem;
+  color: $color-text-muted;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
 }
 
 .button {
@@ -51,6 +70,16 @@
   }
 }
 
+.button--ghost {
+  border: 1px solid $color-border;
+  background: transparent;
+  color: $color-primary;
+
+  &:hover {
+    background: rgba($color-primary, 0.06);
+  }
+}
+
 .hero__mark {
   justify-self: end;
   width: min(58vw, 640px);
@@ -64,14 +93,40 @@
   display: block;
 }
 
-.band,
-.method {
+.section {
   padding: $section-y 0;
   scroll-margin-top: 88px;
 }
 
-.band {
+.section--deep {
   background: $color-bg-deep;
+}
+
+.section--cta {
+  padding-bottom: calc($section-y + 1rem);
+}
+
+.container {
+  width: min(72rem, calc(100% - 3rem));
+  margin: 0 auto;
+}
+
+.container--narrow {
+  width: min(42rem, calc(100% - 3rem));
+  text-align: center;
+
+  .intro {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.eyebrow {
+  margin: 0 0 0.65rem;
+  color: $color-primary;
+  font-family: $font-heading;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
 }
 
 h2 {
@@ -80,32 +135,191 @@ h2 {
   letter-spacing: -0.03em;
 }
 
-.intro {
-  max-width: 40rem;
-  margin: 0 0 2.25rem;
-  color: $color-text-muted;
-  font-size: 1.15rem;
+.subsection {
+  margin: 2.5rem 0 1rem;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  letter-spacing: -0.02em;
 }
 
-.steps {
-  list-style: none;
+.intro {
+  max-width: 44rem;
+  margin: 0 0 2rem;
+  color: $color-text-muted;
+  font-size: 1.08rem;
+}
+
+.prose p {
+  margin: 0 0 1rem;
+  max-width: 44rem;
+  color: $color-text-muted;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.closing {
   margin: 2rem 0 0;
+  max-width: 44rem;
+  color: $color-text;
+  font-size: 1.05rem;
+}
+
+.dimensions {
+  list-style: none;
+  margin: 1.5rem 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 2rem;
 }
 
-.steps h3,
-.thread h3 {
-  margin: 0 0 0.45rem;
-  font-size: 1.25rem;
+.dimensions li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem 1rem;
+  align-items: start;
 }
 
-.steps p,
-.thread p {
+.dimensions__index {
+  font-family: $font-heading;
+  color: $color-primary;
+  letter-spacing: 0.08em;
+}
+
+.dimensions h4 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.dimensions p {
   margin: 0;
   color: $color-text-muted;
+  font-size: 0.98rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat {
+  margin: 0;
+  padding: 1.35rem 1.25rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-surface;
+
+  p {
+    margin: 0 0 0.65rem;
+    color: $color-text-muted;
+    font-size: 0.95rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.stat__value {
+  margin: 0 0 0.25rem !important;
+  font-family: $font-heading;
+  font-size: clamp(1.65rem, 3vw, 2.2rem) !important;
+  color: $color-primary !important;
+  letter-spacing: -0.02em;
+}
+
+.stat__label {
+  margin: 0 0 0.85rem !important;
+  color: $color-text !important;
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.stat__source {
+  margin-top: 0.85rem !important;
+  font-size: 0.82rem !important;
+  color: $color-text-muted !important;
+}
+
+.gains {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 2rem;
+}
+
+.gains h4 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.gains p {
+  margin: 0;
+  color: $color-text-muted;
+  font-size: 0.98rem;
+}
+
+.norm {
+  margin: 0;
+  padding-left: 1.25rem;
+  max-width: 48rem;
+  color: $color-text-muted;
+
+  li + li {
+    margin-top: 0.85rem;
+  }
+}
+
+.highlight {
+  margin-top: 2.5rem;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-bg-deep;
+
+  h3 {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+  }
+}
+
+.deliverables {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  max-width: 48rem;
+}
+
+.deliverables li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: baseline;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  p {
+    margin: 0;
+    color: $color-text-muted;
+  }
+}
+
+.deliverables__index {
+  font-family: $font-heading;
+  color: $color-primary;
+  letter-spacing: 0.08em;
 }
 
 .thread {
@@ -136,6 +350,16 @@ h2 {
   font-family: $font-heading;
   color: $color-primary;
   letter-spacing: 0.08em;
+}
+
+.thread h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.25rem;
+}
+
+.thread p {
+  margin: 0;
+  color: $color-text-muted;
 }
 
 .thread__figure {
@@ -178,7 +402,9 @@ h2 {
     justify-self: center;
   }
 
-  .steps {
+  .dimensions,
+  .gains,
+  .stats {
     grid-template-columns: 1fr;
   }
 
