@@ -65,12 +65,12 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 0.65rem 0.75rem 0.75rem;
-  border: 1px solid color-mix(in srgb, $color-border 70%, transparent);
+  padding: 0.75rem 0.85rem 0.85rem;
+  border: 1px solid $color-border;
   border-radius: $radius-lg;
-  background: color-mix(in srgb, $color-surface 72%, transparent);
+  background: rgba(247, 244, 236, 0.92);
   color: $color-text;
-  box-shadow: 0 12px 40px color-mix(in srgb, $color-bg-dark 28%, transparent);
+  box-shadow: 0 12px 40px color-mix(in srgb, $color-bg-dark 18%, transparent);
   backdrop-filter: blur(10px);
   cursor: grab;
 
@@ -116,6 +116,8 @@
   flex: 1 1 auto;
   font-family: $font-heading;
   font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   color: $color-primary;
 }
 
@@ -128,33 +130,44 @@
 .studio-btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.65rem;
-  border: 1.5px solid $color-primary;
-  border-radius: 6px;
-  background: color-mix(in srgb, $color-surface 55%, transparent);
+  justify-content: center;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid $color-border;
+  border-radius: 999px;
+  background: transparent;
   color: $color-primary;
   font-family: $font-body;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
   cursor: pointer;
 
   &:hover {
-    background: color-mix(in srgb, $color-primary 10%, transparent);
+    background: rgba($color-primary, 0.06);
   }
 
   &:focus-visible {
-    outline: 3px solid $color-secondary;
+    outline: 2px solid rgba($color-primary, 0.35);
     outline-offset: 2px;
   }
 
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
   &--primary {
+    border-color: transparent;
     background: $color-primary;
-    color: #fff;
-    border-color: $color-primary;
+    color: #f7f4ec;
 
     &:hover {
       background: $color-primary-mid;
     }
+  }
+
+  &--lg {
+    padding: 0.85rem 1.35rem;
+    font-size: 1rem;
   }
 }
 
@@ -163,9 +176,9 @@
   max-height: min(40vh, 18rem);
   overflow: auto;
   padding: 0.65rem 0.75rem;
-  border: 1px solid color-mix(in srgb, $color-border 85%, $color-primary);
+  border: 1px solid $color-border;
   border-radius: $radius-md;
-  background: color-mix(in srgb, $color-surface 88%, transparent);
+  background: $color-surface;
   color: $color-text;
   font-family: $font-body;
   font-size: 0.9375rem;
@@ -174,7 +187,7 @@
   opacity: 1;
 
   &:focus-visible {
-    outline: 3px solid $color-secondary;
+    outline: 2px solid rgba($color-primary, 0.35);
     outline-offset: 2px;
   }
 }
@@ -231,6 +244,8 @@
   h2 {
     margin: 0 0 0.5rem;
     color: $color-primary;
+    font-weight: 500;
+    letter-spacing: -0.03em;
   }
 
   > p {
@@ -263,7 +278,7 @@
     background: $color-surface;
 
     &:focus {
-      outline: 2px solid rgba($color-primary, 0.3);
+      outline: 2px solid rgba($color-primary, 0.35);
       border-color: $color-primary;
     }
   }

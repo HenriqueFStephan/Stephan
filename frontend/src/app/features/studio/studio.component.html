@@ -104,7 +104,7 @@
           [(ngModel)]="token"
         />
       </label>
-      <button type="submit" class="btn btn--primary" [disabled]="unlocking || !token.trim()">
+      <button type="submit" class="studio-btn studio-btn--primary studio-btn--lg" [disabled]="unlocking || !token.trim()">
         {{ unlocking ? ('studio.unlocking' | t) : ('studio.unlock' | t) }}
       </button>
       <p class="studio-panel__error" *ngIf="gateError">{{ gateError | t }}</p>
@@ -135,12 +135,12 @@
       </p>
       <p class="studio-modal__ok" *ngIf="sent && !issueUrl">{{ 'studio.localDryRun' | t }}</p>
       <div class="studio-modal__actions">
-        <button type="button" class="btn btn--outline" (click)="closePreview()" [disabled]="submitting">
+        <button type="button" class="studio-btn studio-btn--lg" (click)="closePreview()" [disabled]="submitting">
           {{ sent ? ('studio.close' | t) : ('studio.cancel' | t) }}
         </button>
         <button
           type="button"
-          class="btn btn--primary"
+          class="studio-btn studio-btn--primary studio-btn--lg"
           (click)="sendIssue()"
           [disabled]="submitting || !issueTitle.trim() || sent"
         >
