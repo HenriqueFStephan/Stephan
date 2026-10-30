@@ -77,20 +77,22 @@ const ptBR = {
 
   'home.norm.eyebrow': '03 — Norma',
   'home.norm.title': 'O que diz a legislação',
-  'home.norm.lead':
-    'A NR-1 foi alterada pela Portaria MTE nº 1.419, de 27 de agosto de 2024, e a nova redação do capítulo 1.5 entrou em vigor em 26 de maio de 2026, conforme a Portaria MTE nº 765, de 15 de maio de 2025. Desde então, os fatores de risco psicossociais integram expressamente o Gerenciamento de Riscos Ocupacionais.',
-  'home.norm.item.1':
-    '1.5.3.1.4º GRO deve abranger os riscos ergonômicos, incluindo os fatores de risco psicossociais relacionados ao trabalho.',
-  'home.norm.item.2':
-    '1.5.3.2.1 a organização deve considerar as condições de trabalho nos termos da NR-17, incluindo os fatores psicossociais.',
-  'home.norm.item.3':
-    '1.5.4.4.2.1 e 1.5.4.4.2.2 a organização escolhe o método de avaliação e deve documentar os critérios de severidade, probabilidade, nível e classificação de risco.',
-  'home.norm.item.4':
-    '1.5.7.1 e 1.5.7.3.2º PGR deve conter inventário de riscos e plano de ação, e os dados levantados devem ser registrados nesse inventário.',
-  'home.norm.item.5':
-    '1.5.5.2 as medidas de prevenção vão ao plano de ação com cronograma, responsáveis, forma de acompanhamento e aferição de resultados.',
-  'home.norm.item.6':
-    '1.5.3.3 e 1.5.7.2.1 a organização deve comunicar os riscos aos trabalhadores e manter a documentação disponível a trabalhadores, sindicatos e Inspeção do Trabalho.',
+  'home.norm.citeSep': ' e ',
+  'home.norm.leadPrefix': 'A ',
+  'home.norm.leadSuffix':
+    ' foi alterada pela Portaria MTE nº 1.419, de 27 de agosto de 2024, e a nova redação do capítulo 1.5 entrou em vigor em 26 de maio de 2026, conforme a Portaria MTE nº 765, de 15 de maio de 2025. Desde então, os fatores de risco psicossociais integram expressamente o Gerenciamento de Riscos Ocupacionais.',
+  'home.norm.item.1.body':
+    'GRO deve abranger os riscos ergonômicos, incluindo os fatores de risco psicossociais relacionados ao trabalho.',
+  'home.norm.item.2.body':
+    'A organização deve considerar as condições de trabalho nos termos da NR-17, incluindo os fatores psicossociais.',
+  'home.norm.item.3.body':
+    'A organização escolhe o método de avaliação e deve documentar os critérios de severidade, probabilidade, nível e classificação de risco.',
+  'home.norm.item.4.body':
+    'PGR deve conter inventário de riscos e plano de ação, e os dados levantados devem ser registrados nesse inventário.',
+  'home.norm.item.5.body':
+    'As medidas de prevenção vão ao plano de ação com cronograma, responsáveis, forma de acompanhamento e aferição de resultados.',
+  'home.norm.item.6.body':
+    'A organização deve comunicar os riscos aos trabalhadores e manter a documentação disponível a trabalhadores, sindicatos e Inspeção do Trabalho.',
   'home.norm.closing':
     'A norma não indica um instrumento obrigatório. Exige método definido, critérios documentados e participação dos trabalhadores. É exatamente isso que a Stephan entrega.',
 
@@ -613,20 +615,22 @@ export const en: Record<MsgKey, string> = {
 
   'home.norm.eyebrow': '03 — Regulation',
   'home.norm.title': 'What the law says',
-  'home.norm.lead':
-    'NR-1 was amended by MTE Ordinance No. 1,419 of 27 August 2024, and the new wording of chapter 1.5 took effect on 26 May 2026 under MTE Ordinance No. 765 of 15 May 2025. Since then, psychosocial risk factors are explicitly part of Occupational Risk Management.',
-  'home.norm.item.1':
-    '1.5.3.1.4 ORM must cover ergonomic risks, including psychosocial risk factors related to work.',
-  'home.norm.item.2':
-    '1.5.3.2.1 the organization must consider working conditions under NR-17, including psychosocial factors.',
-  'home.norm.item.3':
-    '1.5.4.4.2.1 and 1.5.4.4.2.2 the organization chooses the assessment method and must document severity, probability, level, and risk classification criteria.',
-  'home.norm.item.4':
-    '1.5.7.1 and 1.5.7.3.2 the PGR must contain a risk inventory and action plan, and data collected must be recorded in that inventory.',
-  'home.norm.item.5':
-    '1.5.5.2 preventive measures go into the action plan with schedule, owners, follow-up, and results measurement.',
-  'home.norm.item.6':
-    '1.5.3.3 and 1.5.7.2.1 the organization must communicate risks to workers and keep documentation available to workers, unions, and the Labour Inspectorate.',
+  'home.norm.citeSep': ' and ',
+  'home.norm.leadPrefix': '',
+  'home.norm.leadSuffix':
+    ' was amended by MTE Ordinance No. 1,419 of 27 August 2024, and the new wording of chapter 1.5 took effect on 26 May 2026 under MTE Ordinance No. 765 of 15 May 2025. Since then, psychosocial risk factors are explicitly part of Occupational Risk Management.',
+  'home.norm.item.1.body':
+    'ORM must cover ergonomic risks, including psychosocial risk factors related to work.',
+  'home.norm.item.2.body':
+    'The organization must consider working conditions under NR-17, including psychosocial factors.',
+  'home.norm.item.3.body':
+    'The organization chooses the assessment method and must document severity, probability, level, and risk classification criteria.',
+  'home.norm.item.4.body':
+    'The PGR must contain a risk inventory and action plan, and data collected must be recorded in that inventory.',
+  'home.norm.item.5.body':
+    'Preventive measures go into the action plan with schedule, owners, follow-up, and results measurement.',
+  'home.norm.item.6.body':
+    'The organization must communicate risks to workers and keep documentation available to workers, unions, and the Labour Inspectorate.',
   'home.norm.closing':
     'The standard does not prescribe one mandatory instrument. It requires a defined method, documented criteria, and worker participation. That is exactly what Stephan delivers.',
 

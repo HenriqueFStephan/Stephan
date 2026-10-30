@@ -275,6 +275,16 @@ h2 {
   }
 }
 
+.norm-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+
 .highlight {
   margin-top: 2.5rem;
   padding: 1.75rem 1.5rem;
