@@ -16,6 +16,7 @@ from uuid import UUID, uuid4
 
 from psycopg.types.json import Json
 
+from app.services.form_pricing import quote_forms, require_method
 from app.services.invitation_file import ParsedInvitations, present_address
 from app.services.invitation_mail import (
     MailDeliveryError,
@@ -175,6 +176,26 @@ def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) 
             ),
         )
         pending.append((address, token, channel))
+    quote = quote_forms(len(send_fresh))
+    charge_id = uuid4()
+    conn.execute(
+        """
+        INSERT INTO form_charges (
+            id, company_id, round_id, upload_id, forms, unit_cents, total_cents, provisional
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, true)
+        """,
+        (
+            charge_id,
+            company_id,
+            round_id,
+            upload_id,
+            quote["forms"],
+            quote["unit_cents"],
+            quote["total_cents"],
+        ),
+    )
+    quote["charge_id"] = str(charge_id)
     conn.commit()
 
     sent, not_sent = _deliver_pending(conn, pending)
@@ -188,7 +209,33 @@ def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) 
         "invalid": parsed.invalid,
         "not_sent": _show(not_sent),
         "not_configured": _show([address for _channel, address in blocked_fresh]),
+        "quote": quote,
     }
+
+
+class ChargeNotFound(Exception):
+    """This company has no charge with that id."""
+
+
+def choose_form_charge(conn, company_id, charge_id, method: str) -> dict:
+    """Record the method. Does not debit and does not read a recipient account."""
+    chosen = require_method(method)
+    row = conn.execute(
+        """
+        UPDATE form_charges
+        SET method = %s, status = 'method_chosen'
+        WHERE id = %s
+          AND company_id = %s
+        RETURNING forms
+        """,
+        (chosen, charge_id, company_id),
+    ).fetchone()
+    if row is None:
+        raise ChargeNotFound()
+    conn.commit()
+    quote = quote_forms(row["forms"], chosen)
+    quote["charge_id"] = str(charge_id)
+    return quote
 
 
 def retry_unsent(conn, company_id) -> dict[str, Any]:

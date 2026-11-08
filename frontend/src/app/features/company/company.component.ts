@@ -72,6 +72,8 @@ export class CompanyComponent implements OnInit {
   inviteErrorKey = '';
   inviteUnknownColumns = '';
   inviteResult: InvitationUploadResult | null = null;
+  payChoosing = false;
+  payErrorKey = '';
   unsent: string[] = [];
   retrying = false;
   rounds: CompanyRoundRow[] | null = null;
@@ -169,6 +171,7 @@ export class CompanyComponent implements OnInit {
       next: (result) => {
         this.inviteSubmitting = false;
         this.inviteResult = result;
+        this.payErrorKey = '';
         this.inviteFile = null;
         input.value = '';
         this.refreshRounds(passage);
@@ -177,6 +180,7 @@ export class CompanyComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.inviteSubmitting = false;
         this.inviteResult = null;
+        this.payErrorKey = '';
         const detail = err.error && err.error.detail;
         const code = detail && typeof detail === 'object' ? detail.code : '';
         if (code === 'unknown_columns') {
@@ -198,6 +202,31 @@ export class CompanyComponent implements OnInit {
         } else {
           this.inviteErrorKey = 'company.inviteBadFile';
         }
+      },
+    });
+  }
+
+  money(cents: number): string {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
+  }
+
+  choosePay(method: string): void {
+    const passage = this.readPassage();
+    const quote = this.inviteResult?.quote;
+    if (!passage || !quote || this.payChoosing || quote.method === method) {
+      return;
+    }
+    this.payChoosing = true;
+    this.payErrorKey = '';
+    this.api.chooseFormCharge(passage, quote.charge_id, method).subscribe({
+      next: (next) => {
+        this.payChoosing = false;
+        if (this.inviteResult) this.inviteResult = { ...this.inviteResult, quote: next };
+      },
+      error: () => {
+        this.payChoosing = false;
+        this.payErrorKey = 'company.payFail';
+        if (this.inviteResult) this.inviteResult = { ...this.inviteResult };
       },
     });
   }

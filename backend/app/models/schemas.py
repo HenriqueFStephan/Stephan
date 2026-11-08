@@ -332,6 +332,23 @@ class CompanyOverview(BaseModel):
     bands: list[CompanyBandRow]
 
 
+class FormQuote(BaseModel):
+    """Provisional amount for the forms this list created. charged stays false."""
+
+    charge_id: str
+    forms: int
+    unit_cents: int
+    total_cents: int
+    provisional: bool
+    methods: list[str]
+    method: str | None = None
+    charged: bool = False
+
+
+class ChargeMethodChoice(BaseModel):
+    method: str = Field(..., min_length=1, max_length=40)
+
+
 class InvitationUploadResult(BaseModel):
     round_label: str
     accepted: int
@@ -341,6 +358,7 @@ class InvitationUploadResult(BaseModel):
     invalid: list[str]
     not_sent: list[str] = []
     not_configured: list[str] = []
+    quote: FormQuote
 
 
 class InvitationRetryResult(BaseModel):

@@ -77,7 +77,7 @@ Public facts of the offer go in `frontend/src/app/features/billing/offer.config.
 
 Do not put a gateway token in that file.
 
-When you choose an institution authorized by the Central Bank (Pix participant, and a card checkout that keeps the card number off this server), add `PAYMENT_PROVIDER` and `PAYMENT_ACCESS_TOKEN` to `debt.txt` and to Render. The API does not read them yet: wiring the charge is a later change. Until then the button says the order is only recorded.
+A sent list records a provisional charge of R$ 10 per new form. That amount is not the final price. The company page lists every method still under consideration: Pix, Pix Automático, boleto, credit card in full, credit card in installments, debit card, a payment link, and TED. Choosing one stores the choice and does not debit. Do not add `PAYMENT_PROVIDER` or `PAYMENT_ACCESS_TOKEN` until the methods to display are chosen and the recipient account is known. The API does not read those keys.
 
 Also still outside the page, with the accountant and whoever reviews the contract: issuing the NFS-e, and confirming the cancellation sentence before a real charge.
 

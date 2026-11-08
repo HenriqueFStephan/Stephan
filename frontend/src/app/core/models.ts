@@ -146,6 +146,17 @@ export interface CompanyBandRow {
   maintain: number;
 }
 
+export interface FormQuote {
+  charge_id: string;
+  forms: number;
+  unit_cents: number;
+  total_cents: number;
+  provisional: boolean;
+  methods: string[];
+  method: string | null;
+  charged: boolean;
+}
+
 export interface InvitationUploadResult {
   round_label: string;
   accepted: number;
@@ -155,6 +166,7 @@ export interface InvitationUploadResult {
   invalid: string[];
   not_sent: string[];
   not_configured: string[];
+  quote: FormQuote;
 }
 
 export interface InvitationRoster {

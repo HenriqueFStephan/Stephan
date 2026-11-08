@@ -71,6 +71,30 @@
       </form>
       <div class="invite-result" *ngIf="inviteResult">
         <p>{{ 'company.inviteAccepted' | t:{ count: inviteResult.accepted } }}</p>
+        <div class="pay" *ngIf="inviteResult.quote as quote">
+          <h3>{{ 'company.payTitle' | t }}</h3>
+          <p>
+            {{ 'company.payCount' | t:{ forms: quote.forms, unit: money(quote.unit_cents), total: money(quote.total_cents) } }}
+          </p>
+          <p class="note">{{ 'company.payProvisional' | t }}</p>
+          <p class="note">{{ 'company.payNotCharged' | t }}</p>
+          <p class="pay__legend">{{ 'company.payChoose' | t }}</p>
+          <label class="choice" *ngFor="let method of quote.methods">
+            <input
+              type="radio"
+              name="pay-method"
+              [value]="method"
+              [checked]="quote.method === method"
+              [disabled]="payChoosing"
+              (change)="choosePay(method)"
+            />
+            <span>
+              <strong>{{ ('company.pay.' + method) | t }}</strong>
+              <small>{{ ('company.payNote.' + method) | t }}</small>
+            </span>
+          </label>
+          <p class="error" *ngIf="payErrorKey" role="alert">{{ payErrorKey | t }}</p>
+        </div>
         <p *ngIf="inviteResult.ignored_empty">
           {{ 'company.inviteEmpty' | t:{ count: inviteResult.ignored_empty } }}
         </p>

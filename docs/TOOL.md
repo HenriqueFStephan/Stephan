@@ -215,9 +215,20 @@ A successful response looks like this. Tokens are not included.
   "already_invited": [],
   "invalid": [],
   "not_sent": [],
-  "not_configured": []
+  "not_configured": [],
+  "quote": {
+    "charge_id": "…",
+    "forms": 2,
+    "unit_cents": 1000,
+    "total_cents": 2000,
+    "provisional": true,
+    "method": null,
+    "charged": false
+  }
 }
 ```
+
+`forms` is the number of new links this file created. An address already invited, a duplicate, or an invalid cell does not count. The placeholder is R$ 10 per form (`unit_cents` 1000). That amount is not the final price. `charged` stays false. The company can record one of `pix`, `pix_automatic`, `boleto`, `credit`, `credit_installments`, `debit`, `payment_link`, or `ted`. Recording a method does not debit, and the API has no recipient account yet.
 
 ## Tables
 

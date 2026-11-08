@@ -423,3 +423,20 @@ ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS tenure_profession text CONSTR
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS work_shift text CONSTRAINT hse_responses_work_shift CHECK (work_shift IS NULL OR work_shift IN ('day_fixed', 'night_fixed', 'rotating', 'flexible'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS leadership text CONSTRAINT hse_responses_leadership CHECK (leadership IS NULL OR leadership IN ('yes', 'no'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS region text CONSTRAINT hse_responses_region CHECK (region IS NULL OR region IN ('north', 'northeast', 'center_west', 'southeast', 'south'));
+
+-- One quote per uploaded list. forms is the number of new links this file
+-- created. The price is provisional. method stays empty until the company picks
+-- one. Nothing here is a bank account or a gateway token.
+CREATE TABLE IF NOT EXISTS form_charges (
+    id uuid PRIMARY KEY,
+    company_id uuid NOT NULL REFERENCES companies (id),
+    round_id uuid NOT NULL REFERENCES company_rounds (id),
+    upload_id uuid NOT NULL UNIQUE REFERENCES invitation_uploads (id),
+    forms integer NOT NULL CHECK (forms >= 0),
+    unit_cents integer NOT NULL CHECK (unit_cents >= 0),
+    total_cents integer NOT NULL CHECK (total_cents >= 0),
+    provisional boolean NOT NULL DEFAULT true,
+    method text,
+    status text NOT NULL DEFAULT 'quoted',
+    created_at timestamptz NOT NULL DEFAULT now()
+);

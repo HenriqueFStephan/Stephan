@@ -17,6 +17,7 @@ import {
   CompanyLoginResponse,
   CompanyOverview,
   CompanyRoundRow,
+  FormQuote,
   InvitationRoster,
   InvitationRetryResult,
   InvitationUploadResult,
@@ -117,6 +118,14 @@ export class ApiService {
     return this.http.post<InvitationUploadResult>(`${this.base}/company/invitations`, body, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
     });
+  }
+
+  chooseFormCharge(passage: string, chargeId: string, method: string): Observable<FormQuote> {
+    return this.http.post<FormQuote>(
+      `${this.base}/company/charges/${chargeId}`,
+      { method },
+      { headers: new HttpHeaders({ 'X-Company-Token': passage }) },
+    );
   }
 
   retryCompanyInvitations(passage: string): Observable<InvitationRetryResult> {

@@ -6,26 +6,32 @@ Statistics are that company's own round. Invitation lists are stored in PostgreS
 from __future__ import annotations
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, UploadFile
 
 from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import (
+    ChargeMethodChoice,
     CompanyLogin,
     CompanyLoginResponse,
     CompanyOverview,
     CompanyRoundRow,
+    FormQuote,
     InvitationRetryResult,
     InvitationRoster,
     InvitationUploadResult,
 )
 from app.services.campaign_store import (
+    ChargeNotFound,
     NoOpenRound,
     add_invitations,
+    choose_form_charge,
     list_invitations,
     list_rounds,
     retry_unsent,
 )
+from app.services.form_pricing import UnknownPaymentMethod
 from app.services.company_accounts import (
     CompanySession,
     authenticate,
@@ -156,6 +162,30 @@ def upload_company_invitations(
     except WhatsAppDeliveryError as exc:
         raise HTTPException(status_code=502, detail={"code": "whatsapp_failed"}) from exc
     return InvitationUploadResult.model_validate(stored)
+
+
+@router.post("/charges/{charge_id}", response_model=FormQuote)
+def choose_company_charge(
+    charge_id: str,
+    payload: ChargeMethodChoice,
+    session: CompanySession = Depends(require_company_token),
+) -> FormQuote:
+    """Store the chosen method for this list. Does not debit."""
+    try:
+        UUID(charge_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail={"code": "charge_not_found"}) from exc
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            quote = choose_form_charge(conn, session.company_id, charge_id, payload.method)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except UnknownPaymentMethod as exc:
+        raise HTTPException(status_code=422, detail={"code": "unknown_method"}) from exc
+    except ChargeNotFound as exc:
+        raise HTTPException(status_code=404, detail={"code": "charge_not_found"}) from exc
+    return FormQuote.model_validate(quote)
 
 
 @router.post("/invitations/retry", response_model=InvitationRetryResult)
