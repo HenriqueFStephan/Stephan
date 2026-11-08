@@ -1,6 +1,7 @@
 #!/bin/bash
 # Install PostgreSQL on the existing Lightsail instance.
 # Listens on 127.0.0.1 only. Does not create a Lightsail managed database.
+# A running local cluster is left alone: this script does not upgrade or restart it.
 # Run on the server as root: sudo bash postgres_on_lightsail.sh
 set -euo pipefail
 
@@ -10,11 +11,24 @@ if [[ "$(id -u)" -ne 0 ]]; then
 fi
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y postgresql postgresql-contrib
 
-conf=$(sudo -u postgres psql -tAc "SHOW config_file")
-python3 - "$conf" << 'PY'
+healthy=0
+if systemctl is-active --quiet postgresql 2>/dev/null; then
+  map=$(ss -ltnH 'sport = :5432' || true)
+  if printf '%s\n' "$map" | grep -E '127\.0\.0\.1:5432|\[::1\]:5432' >/dev/null \
+    && ! printf '%s\n' "$map" | grep -E '0\.0\.0\.0:5432|\[::\]:5432|\*:5432' >/dev/null; then
+    healthy=1
+  fi
+fi
+
+if [[ "$healthy" -eq 0 ]]; then
+  if ! dpkg -s postgresql >/dev/null 2>&1; then
+    apt-get update
+    apt-get install -y postgresql postgresql-contrib
+  fi
+
+  conf=$(sudo -u postgres psql -tAc "SHOW config_file")
+  python3 - "$conf" << 'PY'
 import re
 import sys
 from pathlib import Path
@@ -35,13 +49,14 @@ if not written:
 path.write_text("\n".join(out) + "\n", encoding="utf-8")
 PY
 
-hba=$(sudo -u postgres psql -tAc "SHOW hba_file")
-if grep -E '^[^#]*0\.0\.0\.0/0|^[^#]*::/0' "$hba" >/dev/null; then
-  echo "pg_hba.conf allows a non-local client. Refusing to continue." >&2
-  exit 1
-fi
+  hba=$(sudo -u postgres psql -tAc "SHOW hba_file")
+  if grep -E '^[^#]*0\.0\.0\.0/0|^[^#]*::/0' "$hba" >/dev/null; then
+    echo "pg_hba.conf allows a non-local client. Refusing to continue." >&2
+    exit 1
+  fi
 
-systemctl restart postgresql
+  systemctl restart postgresql
+fi
 
 map=$(ss -ltnH 'sport = :5432' || true)
 printf '%s\n' "$map"

@@ -4,31 +4,33 @@
       <img src="assets/brand/stephan-lockup.png" alt="Stephan" />
     </a>
     <div class="bar__side">
-      <p class="steps">
-        <a routerLink="/abordagem">{{ 'bill.stepPlan' | t }}</a>
-        <span aria-hidden="true">/</span>
-        <a routerLink="/cadastro" class="on">{{ 'bill.stepCadastro' | t }}</a>
-        <span aria-hidden="true">/</span>
-        <a routerLink="/pagamento">{{ 'bill.stepPay' | t }}</a>
-      </p>
       <button type="button" class="text" (click)="toggleLang()">{{ 'nav.lang' | t }}</button>
     </div>
   </header>
 
-  <div class="main" *ngIf="chosen as plan">
-    <h1>{{ 'bill.cadastroTitle' | t }}</h1>
-    <p class="lead">{{ 'bill.cadastroLead' | t }}</p>
-    <section class="card plan-banner">
-      <p class="eyebrow">{{ 'bill.chosenPlan' | t }}</p>
-      <p class="plan-name">{{ plan.titleKey | t }}</p>
-      <a routerLink="/abordagem" class="link">{{ 'bill.changePlan' | t }}</a>
+  <div class="main" *ngIf="receipt as done">
+    <section class="card">
+      <h1>{{ 'bill.doneTitle' | t }}</h1>
+      <p class="lead">{{ 'bill.doneBody' | t:{ reference: done.reference, company: done.company } }}</p>
+      <p class="note">{{ 'bill.notCharged' | t }}</p>
+      <p class="note" *ngIf="offer.supplier.sacEmail">{{ 'bill.withdrawNow' | t:{ email: offer.supplier.sacEmail } }}</p>
+      <p class="note" *ngIf="!offer.supplier.sacEmail">{{ 'bill.withdrawNoMail' | t }}</p>
     </section>
+  </div>
+
+  <div class="main" *ngIf="!receipt">
+    <h1>{{ 'bill.cadastroTitle' | t }}</h1>
     <p class="error" *ngIf="invalid" role="alert">{{ 'bill.err.form' | t }}</p>
 
-    <form (ngSubmit)="continue()">
+    <form (ngSubmit)="register()">
       <section class="card">
         <h2>{{ 'bill.sectionCompany' | t }}</h2>
         <div class="grid-2">
+          <label class="span-2">
+            <span>{{ 'bill.cnpj' | t }}</span>
+            <input name="cnpj" inputmode="numeric" autocomplete="off" [ngModel]="draft.cnpj" (ngModelChange)="onCnpj($event)" (blur)="lookupCnpj()" />
+            <small class="field-error" *ngIf="errorFor('cnpj') as msg">{{ msg | t }}</small>
+          </label>
           <label class="span-2">
             <span>{{ 'bill.legalName' | t }}</span>
             <input name="legal-name" autocomplete="organization" [ngModel]="draft.legalName" (ngModelChange)="draft.legalName = $event" />
@@ -37,46 +39,34 @@
           <label>
             <span>{{ 'bill.tradeName' | t }} <em>{{ 'bill.optional' | t }}</em></span>
             <input name="trade-name" [ngModel]="draft.tradeName" (ngModelChange)="draft.tradeName = $event" />
-            <small class="hint">{{ 'bill.tradeHint' | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.cnpj' | t }}</span>
-            <input name="cnpj" inputmode="numeric" autocomplete="off" [ngModel]="draft.cnpj" (ngModelChange)="onCnpj($event)" />
-            <small class="field-error" *ngIf="errorFor('cnpj') as msg">{{ msg | t }}</small>
           </label>
           <label>
             <span>{{ 'bill.municipal' | t }} <em>{{ 'bill.optional' | t }}</em></span>
             <input name="municipal" [ngModel]="draft.municipalRegistration" (ngModelChange)="draft.municipalRegistration = $event" />
-            <small class="hint">{{ 'bill.municipalHint' | t }}</small>
+          </label>
+          <label>
+            <span>{{ 'bill.cnae' | t }}</span>
+            <input name="cnae" [ngModel]="draft.cnae" (ngModelChange)="draft.cnae = $event" />
           </label>
           <label>
             <span>{{ 'bill.activity' | t }}</span>
             <input name="activity" [ngModel]="draft.activity" (ngModelChange)="draft.activity = $event" />
-            <small class="hint">{{ 'bill.activityHint' | t }}</small>
             <small class="field-error" *ngIf="errorFor('activity') as msg">{{ msg | t }}</small>
           </label>
           <label>
-            <span>{{ 'bill.headcount' | t }}</span>
-            <input name="headcount" inputmode="numeric" [ngModel]="draft.headcount" (ngModelChange)="draft.headcount = $event" />
-            <small class="hint">{{ 'bill.headcountHint' | t }}</small>
-            <small class="hint" *ngIf="preview as line">{{ 'bill.monthlyPreview' | t:{ band: line.band, price: line.price } }}</small>
-            <small class="field-error" *ngIf="errorFor('headcount') as msg">{{ msg | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.sites' | t }}</span>
-            <input name="sites" inputmode="numeric" [ngModel]="draft.sites" (ngModelChange)="draft.sites = $event" />
-            <small class="hint">{{ 'bill.sitesHint' | t }}</small>
-            <small class="field-error" *ngIf="errorFor('sites') as msg">{{ msg | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.nfeEmail' | t }}</span>
+            <span class="with-ask">
+              {{ 'bill.nfeEmail' | t }} <em>{{ 'bill.optional' | t }}</em>
+              <button type="button" class="ask" [attr.aria-label]="'bill.nfeFallback' | t">
+                ?
+                <span class="ask__tip" role="tooltip">{{ 'bill.nfeFallback' | t }}</span>
+              </button>
+            </span>
             <input name="nfe-email" type="email" autocomplete="email" [ngModel]="draft.nfeEmail" (ngModelChange)="draft.nfeEmail = $event" />
-            <small class="hint">{{ 'bill.nfeHint' | t }}</small>
             <small class="field-error" *ngIf="errorFor('nfeEmail') as msg">{{ msg | t }}</small>
           </label>
           <label>
-            <span>{{ 'bill.phone' | t }}</span>
-            <input name="phone" type="tel" autocomplete="tel" [ngModel]="draft.phone" (ngModelChange)="onPhone('phone', $event)" />
+            <span>{{ 'bill.phone' | t }} <em>{{ 'bill.optional' | t }}</em></span>
+            <input name="phone" type="tel" autocomplete="tel" [ngModel]="draft.phone" (ngModelChange)="onPhone($event)" />
             <small class="field-error" *ngIf="errorFor('phone') as msg">{{ msg | t }}</small>
           </label>
         </div>
@@ -88,8 +78,6 @@
           <label>
             <span>{{ 'bill.cep' | t }}</span>
             <input name="cep" inputmode="numeric" autocomplete="postal-code" [ngModel]="draft.postalCode" (ngModelChange)="onCep($event)" (blur)="lookupCep()" />
-            <small class="hint" *ngIf="cepState === 'loading'">{{ 'bill.cepLoading' | t }}</small>
-            <small class="hint" *ngIf="cepState === 'miss'">{{ 'bill.cepMiss' | t }}</small>
             <small class="field-error" *ngIf="errorFor('postalCode') as msg">{{ msg | t }}</small>
           </label>
           <label>
@@ -128,70 +116,36 @@
       </section>
 
       <section class="card">
-        <h2>{{ 'bill.sectionRep' | t }}</h2>
+        <h2>{{ 'bill.sectionAccess' | t }}</h2>
+        <p class="note">{{ 'bill.accessLead' | t }}</p>
         <div class="grid-2">
-          <label>
-            <span>{{ 'bill.repName' | t }}</span>
-            <input name="rep-name" autocomplete="name" [ngModel]="draft.repName" (ngModelChange)="draft.repName = $event" />
-            <small class="field-error" *ngIf="errorFor('repName') as msg">{{ msg | t }}</small>
+          <label class="span-2">
+            <span>{{ 'bill.accessEmail' | t }}</span>
+            <input name="access-email" type="email" autocomplete="username" [ngModel]="draft.accessEmail" (ngModelChange)="draft.accessEmail = $event" />
+            <small class="field-error" *ngIf="errorFor('accessEmail') as msg">{{ msg | t }}</small>
+          </label>
+          <label class="span-2">
+            <span>{{ 'bill.accessEmailAgain' | t }}</span>
+            <input name="access-email-again" type="email" autocomplete="off" [ngModel]="draft.accessEmailConfirm" (ngModelChange)="draft.accessEmailConfirm = $event" />
+            <small class="field-error" *ngIf="errorFor('accessEmailConfirm') as msg">{{ msg | t }}</small>
           </label>
           <label>
-            <span>{{ 'bill.repCpf' | t }}</span>
-            <input name="rep-cpf" inputmode="numeric" autocomplete="off" [ngModel]="draft.repCpf" (ngModelChange)="onCpf($event)" />
-            <small class="field-error" *ngIf="errorFor('repCpf') as msg">{{ msg | t }}</small>
+            <span>{{ 'bill.password' | t }}</span>
+            <input name="password" type="password" autocomplete="new-password" [ngModel]="draft.password" (ngModelChange)="draft.password = $event" />
+            <small class="field-error" *ngIf="errorFor('password') as msg">{{ msg | t }}</small>
           </label>
           <label>
-            <span>{{ 'bill.repRole' | t }}</span>
-            <input name="rep-role" [ngModel]="draft.repRole" (ngModelChange)="draft.repRole = $event" />
-            <small class="field-error" *ngIf="errorFor('repRole') as msg">{{ msg | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.repEmail' | t }}</span>
-            <input name="rep-email" type="email" [ngModel]="draft.repEmail" (ngModelChange)="draft.repEmail = $event" />
-            <small class="field-error" *ngIf="errorFor('repEmail') as msg">{{ msg | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.repPhone' | t }}</span>
-            <input name="rep-phone" type="tel" [ngModel]="draft.repPhone" (ngModelChange)="onPhone('repPhone', $event)" />
-            <small class="field-error" *ngIf="errorFor('repPhone') as msg">{{ msg | t }}</small>
+            <span>{{ 'bill.passwordAgain' | t }}</span>
+            <input name="password-again" type="password" autocomplete="new-password" [ngModel]="draft.passwordConfirm" (ngModelChange)="draft.passwordConfirm = $event" />
+            <small class="field-error" *ngIf="errorFor('passwordConfirm') as msg">{{ msg | t }}</small>
           </label>
         </div>
       </section>
 
-      <section class="card">
-        <h2>{{ 'bill.sectionContact' | t }}</h2>
-        <p class="note">{{ 'bill.contactLead' | t }}</p>
-        <label class="check">
-          <input type="checkbox" name="same-contact" [(ngModel)]="draft.sameContact" />
-          <span>{{ 'bill.sameContact' | t }}</span>
-        </label>
-        <div class="grid-2" *ngIf="!draft.sameContact">
-          <label>
-            <span>{{ 'bill.contactName' | t }}</span>
-            <input name="contact-name" [ngModel]="draft.contactName" (ngModelChange)="draft.contactName = $event" />
-            <small class="field-error" *ngIf="errorFor('contactName') as msg">{{ msg | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.contactRole' | t }}</span>
-            <input name="contact-role" [ngModel]="draft.contactRole" (ngModelChange)="draft.contactRole = $event" />
-            <small class="field-error" *ngIf="errorFor('contactRole') as msg">{{ msg | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.contactEmail' | t }}</span>
-            <input name="contact-email" type="email" [ngModel]="draft.contactEmail" (ngModelChange)="draft.contactEmail = $event" />
-            <small class="field-error" *ngIf="errorFor('contactEmail') as msg">{{ msg | t }}</small>
-          </label>
-          <label>
-            <span>{{ 'bill.contactPhone' | t }}</span>
-            <input name="contact-phone" type="tel" [ngModel]="draft.contactPhone" (ngModelChange)="onPhone('contactPhone', $event)" />
-            <small class="field-error" *ngIf="errorFor('contactPhone') as msg">{{ msg | t }}</small>
-          </label>
-        </div>
-      </section>
-
-      <p class="note">{{ 'bill.privacyNote' | t }}</p>
-      <button type="submit" class="button">{{ 'bill.continue' | t }}</button>
+      <button type="submit" class="button" [disabled]="submitting">
+        {{ submitting ? ('bill.confirming' | t) : ('bill.register' | t) }}
+      </button>
+      <p class="error" *ngIf="failed" role="alert">{{ failKey | t }}</p>
     </form>
-    <app-supplier-card />
   </div>
 </div>

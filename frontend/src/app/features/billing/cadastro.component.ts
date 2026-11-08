@@ -1,23 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import { I18nService, TranslatePipe } from '../../core/i18n';
-import { BRAZIL_STATES, maskCep, maskCnpj, maskCpf, maskPhone } from './br-docs';
+import { ApiService } from '../../core/api.service';
+import { I18nService, MsgKey, TranslatePipe } from '../../core/i18n';
+import { CnpjCard } from '../../core/models';
+import { BRAZIL_STATES, isCnpj, maskCep, maskCnpj, maskPhone, onlyDigits } from './br-docs';
 import {
   BillingDraft,
+  BillingReceipt,
   DraftErrors,
-  applySameContact,
-  clearReceipt,
+  clearDraft,
   emptyDraft,
   loadDraft,
   saveDraft,
+  toOrderPayload,
   validateCadastro,
 } from './draft';
-import { formatBrl } from './offer.config';
-import { bandForHeadcount, isPlanId, monthlyCents, planById } from './plans';
-import { SupplierCardComponent } from './supplier-card.component';
+import { offer } from './offer.config';
 
 interface ViaCep {
   erro?: boolean;
@@ -30,44 +31,32 @@ interface ViaCep {
 @Component({
   selector: 'app-cadastro',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, TranslatePipe, SupplierCardComponent],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './cadastro.component.html',
   styleUrls: ['./billing.scss'],
 })
-export class CadastroComponent {
+export class CadastroComponent implements OnDestroy {
   readonly states = BRAZIL_STATES;
+  readonly offer = offer;
   draft: BillingDraft = loadDraft() ?? emptyDraft();
+  receipt: BillingReceipt | null = null;
   errors: DraftErrors = {};
   attempted = false;
+  submitting = false;
+  failed = false;
+  failKey: MsgKey = 'bill.fail';
   cepState: 'idle' | 'loading' | 'miss' = 'idle';
+  cnpjState: 'idle' | 'loading' | 'filled' | 'inactive' | 'miss' = 'idle';
   private cepTicket = 0;
+  private cnpjTicket = 0;
+  private cnpjApplied = '';
+  private cnpjPending = '';
+  private gone = false;
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute,
     private i18n: I18nService,
-  ) {
-    const requested = this.route.snapshot.queryParamMap.get('plano') ?? '';
-    if (isPlanId(requested)) {
-      this.draft.plan = requested;
-      saveDraft(this.draft);
-    } else if (!isPlanId(this.draft.plan)) {
-      void this.router.navigate(['/abordagem']);
-    }
-  }
-
-  get chosen() {
-    return planById(this.draft.plan);
-  }
-
-  get preview(): { band: string; price: string } | null {
-    if (!isPlanId(this.draft.plan)) return null;
-    const headcount = Number(this.draft.headcount.trim());
-    const band = bandForHeadcount(headcount);
-    const cents = monthlyCents(this.draft.plan, headcount);
-    if (!band || cents == null) return null;
-    return { band: this.i18n.t(band.labelKey), price: formatBrl(cents) };
-  }
+    private api: ApiService,
+  ) {}
 
   toggleLang(): void {
     this.i18n.setLang(this.i18n.lang() === 'pt-BR' ? 'en' : 'pt-BR');
@@ -81,16 +70,70 @@ export class CadastroComponent {
     return this.attempted && Object.keys(this.errors).length > 0;
   }
 
+  ngOnDestroy(): void {
+    this.gone = true;
+    this.cnpjTicket += 1;
+  }
+
   onCnpj(value: string): void {
     this.draft.cnpj = maskCnpj(value);
+    const digits = onlyDigits(this.draft.cnpj);
+    if (digits.length === 14 && isCnpj(digits)) {
+      this.lookupCnpj();
+      return;
+    }
+    this.cnpjTicket += 1;
+    this.cnpjPending = '';
+    this.cnpjState = 'idle';
   }
 
-  onCpf(value: string): void {
-    this.draft.repCpf = maskCpf(value);
+  lookupCnpj(): void {
+    const digits = onlyDigits(this.draft.cnpj);
+    if (!isCnpj(digits)) return;
+    if (digits === this.cnpjApplied || digits === this.cnpjPending) return;
+    const ticket = ++this.cnpjTicket;
+    this.cnpjPending = digits;
+    this.cnpjState = 'loading';
+    this.api.lookupCnpj(digits).subscribe({
+      next: (card) => {
+        if (this.gone || ticket !== this.cnpjTicket) return;
+        this.cnpjPending = '';
+        this.applyCard(card);
+        this.cnpjApplied = digits;
+        this.cnpjState = card.active ? 'filled' : 'inactive';
+      },
+      error: () => {
+        if (this.gone || ticket !== this.cnpjTicket) return;
+        this.cnpjPending = '';
+        this.cnpjState = 'miss';
+      },
+    });
   }
 
-  onPhone(field: 'phone' | 'repPhone' | 'contactPhone', value: string): void {
-    this.draft[field] = maskPhone(value);
+  private applyCard(card: CnpjCard): void {
+    const put = (value: string, assign: (next: string) => void) => {
+      const next = value.trim();
+      if (next) assign(next);
+    };
+    put(card.legal_name, (next) => (this.draft.legalName = next));
+    this.draft.tradeName = card.trade_name.trim();
+    put(card.cnae, (next) => (this.draft.cnae = next));
+    put(card.activity, (next) => (this.draft.activity = next));
+    const phone = onlyDigits(card.phone);
+    if (phone.length === 10 || phone.length === 11) this.draft.phone = maskPhone(phone);
+    const cep = onlyDigits(card.postal_code);
+    if (cep.length === 8) this.draft.postalCode = maskCep(cep);
+    put(card.street, (next) => (this.draft.street = next));
+    put(card.number, (next) => (this.draft.number = next));
+    this.draft.complement = card.complement.trim();
+    put(card.district, (next) => (this.draft.district = next));
+    put(card.city, (next) => (this.draft.city = next));
+    if ((BRAZIL_STATES as readonly string[]).includes(card.state)) this.draft.state = card.state;
+    if (cep.length === 8) this.lookupCep();
+  }
+
+  onPhone(value: string): void {
+    this.draft.phone = maskPhone(value);
   }
 
   onCep(value: string): void {
@@ -111,7 +154,7 @@ export class CadastroComponent {
           this.cepState = 'miss';
           return;
         }
-        this.draft.street = data.logradouro || this.draft.street;
+        if (data.logradouro) this.draft.street = data.logradouro;
         this.draft.district = data.bairro || this.draft.district;
         this.draft.city = data.localidade || this.draft.city;
         this.draft.state = data.uf || this.draft.state;
@@ -122,13 +165,37 @@ export class CadastroComponent {
       });
   }
 
-  continue(): void {
+  register(): void {
+    if (this.submitting) return;
     this.attempted = true;
-    applySameContact(this.draft);
+    this.failed = false;
+    this.failKey = 'bill.fail';
     this.errors = validateCadastro(this.draft);
     if (Object.keys(this.errors).length) return;
-    clearReceipt();
     saveDraft(this.draft);
-    void this.router.navigate(['/pagamento']);
+    this.submitting = true;
+    this.api.submitOrder(toOrderPayload(this.draft)).subscribe({
+      next: (response) => {
+        this.receipt = {
+          reference: response.reference,
+          company: this.draft.legalName.trim(),
+          quotedCents: null,
+          plan: '',
+        };
+        clearDraft();
+        this.submitting = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        const detail = err.error?.detail;
+        const code = detail && typeof detail === 'object' ? String(detail.code ?? '') : '';
+        this.failKey = code === 'email_taken'
+          ? 'bill.err.emailTaken'
+          : code === 'cnpj_taken'
+            ? 'bill.err.cnpjTaken'
+            : 'bill.fail';
+        this.failed = true;
+        this.submitting = false;
+      },
+    });
   }
 }

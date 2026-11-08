@@ -1,5 +1,5 @@
 import { OrderPayload } from '../../core/models';
-import { BRAZIL_STATES, isCnpj, isCpf, isEmail, isPhone, onlyDigits } from './br-docs';
+import { BRAZIL_STATES, isCnpj, isEmail, isPhone, onlyDigits } from './br-docs';
 import { isPlanId } from './plans';
 
 const DRAFT_KEY = 'stephan-billing-draft';
@@ -19,19 +19,12 @@ export interface BillingDraft {
   district: string;
   city: string;
   state: string;
-  headcount: string;
-  sites: string;
+  cnae: string;
   activity: string;
-  repName: string;
-  repCpf: string;
-  repRole: string;
-  repEmail: string;
-  repPhone: string;
-  sameContact: boolean;
-  contactName: string;
-  contactRole: string;
-  contactEmail: string;
-  contactPhone: string;
+  accessEmail: string;
+  accessEmailConfirm: string;
+  password: string;
+  passwordConfirm: string;
   acceptContract: boolean;
   privacyAck: boolean;
   marketing: boolean;
@@ -65,19 +58,12 @@ export function emptyDraft(): BillingDraft {
     district: '',
     city: '',
     state: '',
-    headcount: '',
-    sites: '',
+    cnae: '',
     activity: '',
-    repName: '',
-    repCpf: '',
-    repRole: '',
-    repEmail: '',
-    repPhone: '',
-    sameContact: true,
-    contactName: '',
-    contactRole: '',
-    contactEmail: '',
-    contactPhone: '',
+    accessEmail: '',
+    accessEmailConfirm: '',
+    password: '',
+    passwordConfirm: '',
     acceptContract: false,
     privacyAck: false,
     marketing: false,
@@ -104,11 +90,14 @@ export function loadDraft(): BillingDraft | null {
   if (!stored) return null;
   const merged = { ...emptyDraft(), ...stored, marketing: stored.marketing === true };
   if (!isPlanId(merged.plan)) merged.plan = '';
+  merged.password = '';
+  merged.passwordConfirm = '';
   return merged;
 }
 
 export function saveDraft(draft: BillingDraft): void {
-  sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  const stored = { ...draft, password: '', passwordConfirm: '' };
+  sessionStorage.setItem(DRAFT_KEY, JSON.stringify(stored));
 }
 
 export function clearDraft(): void {
@@ -127,78 +116,45 @@ export function clearReceipt(): void {
   sessionStorage.removeItem(RECEIPT_KEY);
 }
 
-function countOk(value: string, max: number): boolean {
-  if (!/^\d+$/.test(value.trim())) return false;
-  const parsed = Number(value);
-  return parsed >= 1 && parsed <= max;
-}
-
-/** Copies the signer onto the operational contact when they are the same person. */
-export function applySameContact(draft: BillingDraft): void {
-  if (!draft.sameContact) return;
-  draft.contactName = draft.repName;
-  draft.contactRole = draft.repRole;
-  draft.contactEmail = draft.repEmail;
-  draft.contactPhone = draft.repPhone;
-}
-
 export function validateCadastro(draft: BillingDraft): DraftErrors {
   const errors: DraftErrors = {};
   const required: (keyof BillingDraft)[] = [
-    'legalName', 'cnpj', 'nfeEmail', 'phone', 'postalCode', 'street', 'number',
-    'district', 'city', 'state', 'headcount', 'sites', 'activity', 'repName',
-    'repCpf', 'repRole', 'repEmail', 'repPhone',
+    'legalName', 'cnpj', 'postalCode', 'street', 'number',
+    'district', 'city', 'state', 'activity', 'accessEmail', 'accessEmailConfirm',
+    'password', 'passwordConfirm',
   ];
   for (const key of required) {
     if (!String(draft[key]).trim()) errors[key] = 'bill.err.required';
   }
   if (!errors.cnpj && !isCnpj(draft.cnpj)) errors.cnpj = 'bill.err.cnpj';
-  if (!errors.nfeEmail && !isEmail(draft.nfeEmail)) errors.nfeEmail = 'bill.err.email';
-  if (!errors.phone && !isPhone(draft.phone)) errors.phone = 'bill.err.phone';
+  if (draft.nfeEmail.trim() && !isEmail(draft.nfeEmail)) errors.nfeEmail = 'bill.err.email';
+  if (!errors.accessEmail && !isEmail(draft.accessEmail)) errors.accessEmail = 'bill.err.email';
+  if (
+    !errors.accessEmail &&
+    !errors.accessEmailConfirm &&
+    draft.accessEmail.trim().toLowerCase() !== draft.accessEmailConfirm.trim().toLowerCase()
+  ) {
+    errors.accessEmailConfirm = 'bill.err.emailMatch';
+  }
+  if (draft.phone.trim() && !isPhone(draft.phone)) errors.phone = 'bill.err.phone';
   if (!errors.postalCode && onlyDigits(draft.postalCode).length !== 8) errors.postalCode = 'bill.err.cep';
   if (!errors.state && !BRAZIL_STATES.includes(draft.state as (typeof BRAZIL_STATES)[number])) {
     errors.state = 'bill.err.required';
   }
-  if (!errors.headcount && !countOk(draft.headcount, 1_000_000)) errors.headcount = 'bill.err.count';
-  if (!errors.sites && !countOk(draft.sites, 10_000)) errors.sites = 'bill.err.count';
-  if (!errors.repCpf && !isCpf(draft.repCpf)) errors.repCpf = 'bill.err.cpf';
-  if (!errors.repEmail && !isEmail(draft.repEmail)) errors.repEmail = 'bill.err.email';
-  if (!errors.repPhone && !isPhone(draft.repPhone)) errors.repPhone = 'bill.err.phone';
-  if (!isPlanId(draft.plan)) errors.plan = 'bill.err.required';
-  if (!draft.sameContact) {
-    if (!draft.contactName.trim()) errors.contactName = 'bill.err.required';
-    if (!draft.contactRole.trim()) errors.contactRole = 'bill.err.required';
-    if (!draft.contactEmail.trim()) errors.contactEmail = 'bill.err.required';
-    else if (!isEmail(draft.contactEmail)) errors.contactEmail = 'bill.err.email';
-    if (!draft.contactPhone.trim()) errors.contactPhone = 'bill.err.required';
-    else if (!isPhone(draft.contactPhone)) errors.contactPhone = 'bill.err.phone';
+  if (!errors.password && draft.password.length < 8) errors.password = 'bill.err.password';
+  if (!errors.passwordConfirm && draft.password !== draft.passwordConfirm) {
+    errors.passwordConfirm = 'bill.err.passwordMatch';
   }
   return errors;
 }
 
-export function validatePayment(draft: BillingDraft, plans: number[]): DraftErrors {
-  const errors: DraftErrors = {};
-  if (!draft.method) errors.method = 'bill.err.required';
-  if (!draft.summaryAck) errors.summaryAck = 'bill.err.consent';
-  if (!draft.acceptContract) errors.acceptContract = 'bill.err.consent';
-  if (!draft.privacyAck) errors.privacyAck = 'bill.err.consent';
-  if (draft.method === 'card' && plans.length > 1 && !plans.includes(draft.installments)) {
-    errors.installments = 'bill.err.required';
-  }
-  return errors;
-}
-
-export function toOrderPayload(draft: BillingDraft, quotedCents: number): OrderPayload {
-  applySameContact(draft);
-  if (!isPlanId(draft.plan)) {
-    throw new Error('plan required');
-  }
+export function toOrderPayload(draft: BillingDraft): OrderPayload {
   return {
     legal_name: draft.legalName.trim(),
     trade_name: draft.tradeName.trim(),
     cnpj: draft.cnpj.trim(),
     municipal_registration: draft.municipalRegistration.trim(),
-    nfe_email: draft.nfeEmail.trim(),
+    nfe_email: draft.nfeEmail.trim() || draft.accessEmail.trim(),
     phone: draft.phone.trim(),
     postal_code: draft.postalCode.trim(),
     street: draft.street.trim(),
@@ -207,25 +163,17 @@ export function toOrderPayload(draft: BillingDraft, quotedCents: number): OrderP
     district: draft.district.trim(),
     city: draft.city.trim(),
     state: draft.state.trim(),
-    headcount: Number(draft.headcount),
-    sites: Number(draft.sites),
+    cnae: draft.cnae.trim(),
     activity: draft.activity.trim(),
-    rep_name: draft.repName.trim(),
-    rep_cpf: draft.repCpf.trim(),
-    rep_role: draft.repRole.trim(),
-    rep_email: draft.repEmail.trim(),
-    rep_phone: draft.repPhone.trim(),
-    contact_name: draft.contactName.trim(),
-    contact_role: draft.contactRole.trim(),
-    contact_email: draft.contactEmail.trim(),
-    contact_phone: draft.contactPhone.trim(),
-    accept_contract: draft.acceptContract,
-    privacy_ack: draft.privacyAck,
-    marketing: draft.marketing,
-    method: draft.method as 'pix' | 'boleto' | 'card',
+    access_email: draft.accessEmail.trim(),
+    password: draft.password,
+    accept_contract: false,
+    privacy_ack: false,
+    marketing: false,
+    method: null,
     installments: 1,
-    summary_ack: draft.summaryAck,
-    plan: draft.plan,
-    quoted_price_cents: quotedCents,
+    summary_ack: false,
+    plan: null,
+    quoted_price_cents: null,
   };
 }

@@ -51,11 +51,11 @@ Also confirm after the first Netlify deploy:
 - [ ] Cursor GitHub App installed on this repo
 - [ ] `GITHUB_STUDIO_TOKEN` and `STUDIO_ACCESS_TOKEN` in `debt.txt` and on Render
 
-## Cadastro and payment
+## Cadastro
 
-The pages are `/cadastro` and `/pagamento`. The header register link starts signup. The API stores the order in `backend/data/orders.jsonl` (gitignored, and it contains the signer CPF). It does not charge.
+The page is `/cadastro`. The header register link opens it. Signup does not choose a plan or a payment method: the monthly fee follows how many forms the cycle covers. The API stores the order in `backend/data/orders.jsonl` (gitignored, and it contains the signer CPF). It does not charge.
 
-Public facts of the offer go in `frontend/src/app/features/billing/offer.config.ts`. Leave a field empty until it is real. The payment page lists whatever is still blank. Rebuild the site after editing the file.
+Public facts of the offer go in `frontend/src/app/features/billing/offer.config.ts`. Leave a field empty until it is real. The signup page lists whatever is still blank. Rebuild the site after editing the file.
 
 | Field in `offer.config.ts` | What to put |
 |----------------------------|-------------|

@@ -6,11 +6,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/home/home.component').then((m) => m.HomeComponent),
   },
-  {
-    path: 'abordagem',
-    loadComponent: () =>
-      import('./features/approach/approach.component').then((m) => m.ApproachComponent),
-  },
+  { path: 'abordagem', redirectTo: 'cadastro', pathMatch: 'full' },
   {
     path: 'studio',
     loadComponent: () =>
@@ -36,10 +32,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/billing/cadastro.component').then((m) => m.CadastroComponent),
   },
-  {
-    path: 'pagamento',
-    loadComponent: () =>
-      import('./features/billing/pagamento.component').then((m) => m.PagamentoComponent),
-  },
+  { path: 'pagamento', redirectTo: 'cadastro', pathMatch: 'full' },
   { path: '**', redirectTo: '' },
 ];

@@ -72,21 +72,46 @@ class ContactAck(BaseModel):
     message: str = ""
 
 
+def _email_shape(value: str) -> str:
+    domain = value.split("@")[-1] if "@" in value else ""
+    if value.count("@") != 1 or "." not in domain:
+        raise ValueError("invalid email")
+    return value
+
+
 _STATES = {
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG",
     "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO",
 }
 
 
+class CnpjCard(BaseModel):
+    """Public federal registry fields used to prefill signup. Partner names are not included."""
+
+    legal_name: str
+    trade_name: str = ""
+    cnae: str = ""
+    activity: str = ""
+    phone: str = ""
+    postal_code: str = ""
+    street: str = ""
+    number: str = ""
+    complement: str = ""
+    district: str = ""
+    city: str = ""
+    state: str = ""
+    active: bool
+
+
 class OrderCreate(BaseModel):
-    """Company signup for a monthly plan. Card numbers are not a field: the API never stores them."""
+    """Company signup. The fee follows how many forms the cycle covers, so this record does not choose a plan or a payment method. Card numbers are not a field: the API never stores them."""
 
     legal_name: str = Field(..., min_length=2, max_length=160)
     trade_name: str = Field(default="", max_length=160)
     cnpj: str = Field(..., min_length=14, max_length=18)
     municipal_registration: str = Field(default="", max_length=40)
-    nfe_email: str = Field(..., min_length=3, max_length=200)
-    phone: str = Field(..., min_length=10, max_length=20)
+    nfe_email: str = Field(default="", max_length=200)
+    phone: str = Field(default="", max_length=20)
     postal_code: str = Field(..., min_length=8, max_length=9)
     street: str = Field(..., min_length=1, max_length=160)
     number: str = Field(..., min_length=1, max_length=20)
@@ -94,44 +119,46 @@ class OrderCreate(BaseModel):
     district: str = Field(..., min_length=1, max_length=80)
     city: str = Field(..., min_length=1, max_length=80)
     state: str = Field(..., min_length=2, max_length=2)
-    headcount: int = Field(..., ge=1, le=1_000_000)
-    sites: int = Field(..., ge=1, le=10_000)
+    cnae: str = Field(default="", max_length=12)
+    headcount: int | None = Field(default=None, ge=1, le=1_000_000)
+    sites: int | None = Field(default=None, ge=1, le=10_000)
     activity: str = Field(..., min_length=2, max_length=160)
-    rep_name: str = Field(..., min_length=2, max_length=120)
-    rep_cpf: str = Field(..., min_length=11, max_length=14)
-    rep_role: str = Field(..., min_length=2, max_length=80)
-    rep_email: str = Field(..., min_length=3, max_length=200)
-    rep_phone: str = Field(..., min_length=10, max_length=20)
-    contact_name: str = Field(..., min_length=2, max_length=120)
-    contact_role: str = Field(..., min_length=2, max_length=80)
-    contact_email: str = Field(..., min_length=3, max_length=200)
-    contact_phone: str = Field(..., min_length=10, max_length=20)
-    accept_contract: bool
-    privacy_ack: bool
+    access_email: str = Field(..., min_length=3, max_length=200)
+    password: str = Field(..., min_length=8, max_length=200)
+    accept_contract: bool = False
+    privacy_ack: bool = False
     marketing: bool = False
-    method: Literal["pix", "boleto", "card"]
+    method: Literal["pix", "boleto", "card"] | None = None
     installments: int = Field(default=1, ge=1, le=12)
-    summary_ack: bool
-    plan: Literal["hse", "analise"]
-    quoted_price_cents: int = Field(..., ge=0, le=100_000_000_00)
+    summary_ack: bool = False
+    plan: Literal["hse", "analise"] | None = None
+    quoted_price_cents: int | None = Field(default=None, ge=0, le=100_000_000_00)
 
     @field_validator(
         "legal_name", "trade_name", "cnpj", "municipal_registration", "nfe_email",
         "phone", "postal_code", "street", "number", "complement", "district", "city",
-        "state", "activity", "rep_name", "rep_cpf", "rep_role", "rep_email", "rep_phone",
-        "contact_name", "contact_role", "contact_email", "contact_phone",
+        "state", "cnae", "activity", "access_email",
     )
     @classmethod
     def strip_text(cls, value: str) -> str:
         return value.strip() if isinstance(value, str) else value
 
-    @field_validator("nfe_email", "rep_email", "contact_email")
+    @field_validator("access_email")
     @classmethod
     def email_shape(cls, value: str) -> str:
-        domain = value.split("@")[-1] if "@" in value else ""
-        if value.count("@") != 1 or "." not in domain:
-            raise ValueError("invalid email")
-        return value
+        return _email_shape(value)
+
+    @field_validator("nfe_email")
+    @classmethod
+    def nfe_email_shape(cls, value: str) -> str:
+        if not value:
+            return ""
+        return _email_shape(value)
+
+    @field_validator("access_email")
+    @classmethod
+    def access_email_key(cls, value: str) -> str:
+        return value.casefold()
 
     @field_validator("cnpj")
     @classmethod
@@ -142,21 +169,13 @@ class OrderCreate(BaseModel):
             raise ValueError("invalid cnpj")
         return value
 
-    @field_validator("rep_cpf")
-    @classmethod
-    def cpf_digits(cls, value: str) -> str:
-        from app.services.br_docs import is_cpf
-
-        if not is_cpf(value):
-            raise ValueError("invalid cpf")
-        return value
-
-    @field_validator("phone", "rep_phone", "contact_phone")
+    @field_validator("phone")
     @classmethod
     def phone_digits(cls, value: str) -> str:
         from app.services.br_docs import only_digits
 
-        if len(only_digits(value)) not in (10, 11):
+        digits = only_digits(value)
+        if digits and len(digits) not in (10, 11):
             raise ValueError("invalid phone")
         return value
 
@@ -177,12 +196,11 @@ class OrderCreate(BaseModel):
             raise ValueError("invalid state")
         return code
 
-    @field_validator("accept_contract", "privacy_ack", "summary_ack")
-    @classmethod
-    def must_accept(cls, value: bool) -> bool:
-        if value is not True:
-            raise ValueError("acceptance required")
-        return value
+    @model_validator(mode="after")
+    def invoice_email_follows_access(self) -> "OrderCreate":
+        if not self.nfe_email:
+            self.nfe_email = self.access_email
+        return self
 
     @model_validator(mode="after")
     def installments_follow_method(self) -> "OrderCreate":
@@ -194,7 +212,11 @@ class OrderCreate(BaseModel):
     def quote_matches_band(self) -> "OrderCreate":
         from app.services.plans import monthly_cents
 
-        if self.quoted_price_cents != monthly_cents(self.plan, self.headcount):
+        if self.plan is None and self.quoted_price_cents is None:
+            return self
+        if self.plan is None or self.quoted_price_cents is None:
+            raise ValueError("quoted price does not match the monthly band")
+        if self.headcount is None or self.quoted_price_cents != monthly_cents(self.plan, self.headcount):
             raise ValueError("quoted price does not match the monthly band")
         return self
 
@@ -318,6 +340,12 @@ class InvitationUploadResult(BaseModel):
     already_invited: list[str]
     invalid: list[str]
     not_sent: list[str] = []
+    not_configured: list[str] = []
+
+
+class InvitationRetryResult(BaseModel):
+    sent: int
+    not_sent: list[str] = []
 
 
 class InvitationRoster(BaseModel):
@@ -325,6 +353,7 @@ class InvitationRoster(BaseModel):
     invited: int
     responded_percent: int | None
     waiting_percent: int | None
+    unsent: list[str] = []
 
 
 class CompanyRoundRow(BaseModel):

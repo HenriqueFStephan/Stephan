@@ -2,6 +2,17 @@
 # Runs on the Lightsail instance. Uploads land in /tmp first.
 set -euxo pipefail
 
+install -d -m 755 /opt/stephan/scripts
+if [[ -f /tmp/backup_stephan.sh ]]; then
+  install -m 700 /tmp/backup_stephan.sh /opt/stephan/scripts/backup_stephan.sh
+  cat > /etc/cron.d/stephan-backup << 'EOF'
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 3 * * * root /opt/stephan/scripts/backup_stephan.sh >> /var/log/stephan-backup.log 2>&1
+EOF
+  chmod 644 /etc/cron.d/stephan-backup
+fi
+
 find /var/www/stephan -mindepth 1 -delete
 tar -xzf /tmp/site.tgz -C /var/www/stephan
 tar -xzf /tmp/api.tgz -C /opt/stephan
@@ -19,4 +30,4 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
   sleep 1
 done
 curl -sf http://127.0.0.1:8000/health
-rm -f /tmp/site.tgz /tmp/api.tgz /tmp/deploy_lightsail_remote.sh /tmp/postgres_on_lightsail.sh
+rm -f /tmp/site.tgz /tmp/api.tgz /tmp/deploy_lightsail_remote.sh /tmp/postgres_on_lightsail.sh /tmp/backup_stephan.sh

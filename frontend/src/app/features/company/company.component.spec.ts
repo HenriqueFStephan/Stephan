@@ -35,7 +35,18 @@ describe('CompanyComponent', () => {
       'loginCompany',
       'getCompanyOverview',
       'getCompanyRounds',
+      'getCompanyInvitations',
+      'retryCompanyInvitations',
     ]);
+    api.getCompanyInvitations.and.returnValue(
+      of({
+        round_label: 'rodada-1',
+        invited: 10,
+        responded_percent: 40,
+        waiting_percent: 60,
+        unsent: [],
+      }),
+    );
     api.getCompanyRounds.and.returnValue(
       of([
         {

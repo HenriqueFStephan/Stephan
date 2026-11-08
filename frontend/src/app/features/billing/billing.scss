@@ -151,18 +151,16 @@ label {
   color: $color-primary;
 }
 
-input[type='text'],
-input[type='email'],
-input[type='tel'],
+input,
 select {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
+  padding: 1px 2px;
+  border: 1.6px inset #767676;
+  border-radius: 0;
   font: inherit;
-  font-weight: 400;
+  font-weight: 600;
   color: $color-text;
-  background: $color-surface;
+  background: #fff;
 
   &:focus {
     outline: 2px solid rgba($color-primary, 0.3);
@@ -179,6 +177,53 @@ em {
   font-style: normal;
   font-weight: 500;
   color: $color-text-muted;
+}
+
+.with-ask {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ask {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  padding: 0;
+  border: 1px solid $color-primary;
+  border-radius: 50%;
+  background: transparent;
+  color: $color-primary;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+
+  .ask__tip {
+    display: none;
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 0.45rem);
+    width: 16rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: $radius-md;
+    background: $color-primary;
+    color: #f7f4ec;
+    font-weight: 400;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    text-align: left;
+    z-index: 2;
+  }
+
+  &:hover .ask__tip,
+  &:focus .ask__tip,
+  &:focus-visible .ask__tip {
+    display: block;
+  }
 }
 
 .check {

@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from openpyxl import Workbook
 
-from app.services.invitation_file import InvitationFileError, parse_invitation_file
+from app.services.invitation_file import InvitationFileError, parse_invitation_file, present_address
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "docs" / "tool"
 
@@ -61,9 +61,9 @@ def test_csv_rejects_unknown_columns_and_ignores_empty_rows():
     assert named.value.code == "unknown_columns"
     assert named.value.columns == ["name"]
 
-    with pytest.raises(InvitationFileError) as nome:
-        parse_invitation_file("people.csv", "nome\nada@example.com\n".encode())
-    assert nome.value.code == "unknown_columns"
+    named_only = parse_invitation_file("people.csv", "nome\nada@example.com\n".encode())
+    assert named_only.emails == ["ada@example.com"]
+    assert named_only.invalid == ["nome"]
 
     parsed = parse_invitation_file(
         "people.csv",
@@ -73,6 +73,22 @@ def test_csv_rejects_unknown_columns_and_ignores_empty_rows():
     assert parsed.duplicates_in_file == ["pessoa.um@example.com"]
     assert parsed.invalid == ["not-an-email"]
     assert parsed.ignored_empty == 2
+
+
+def test_csv_and_xlsx_without_a_header_keep_the_first_address():
+    parsed = parse_invitation_file(
+        "people.csv",
+        b"pessoa.um@example.com\npessoa.dois@example.com\n",
+    )
+    assert parsed.emails == ["pessoa.um@example.com", "pessoa.dois@example.com"]
+    assert parsed.invalid == []
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.append(["pessoa.um@example.com"])
+    sheet.append(["pessoa.dois@example.com"])
+    opened = parse_invitation_file("lista.xlsx", _workbook_bytes(workbook))
+    assert opened.emails == ["pessoa.um@example.com", "pessoa.dois@example.com"]
 
 
 def test_csv_rejects_bytes_that_are_not_utf8():
@@ -112,6 +128,61 @@ def test_xlsx_reads_the_first_sheet_only_and_rejects_a_second_column():
         parse_invitation_file("lista.xlsx", _workbook_bytes(workbook))
     assert error.value.code == "unknown_columns"
     assert "cargo" in error.value.columns
+
+
+def test_one_column_keeps_an_email_and_a_phone_together():
+    parsed = parse_invitation_file(
+        "people.csv",
+        (
+            "email\n"
+            "pessoa.um@example.com\n"
+            "+55 19 99877-2525\n"
+            "(19) 99877-2525\n"
+            "019998772525\n"
+            "998772525\n"
+            "not-an-email\n"
+        ).encode(),
+    )
+    assert parsed.emails == ["pessoa.um@example.com"]
+    assert parsed.phones == ["5519998772525"]
+    assert parsed.duplicates_in_file == ["5519998772525", "5519998772525"]
+    assert parsed.invalid == ["998772525", "not-an-email"]
+    assert present_address("5519998772525") == "+55 19 99877-2525"
+    assert present_address("551133334444") == "+55 11 3333-4444"
+
+
+def test_contato_header_and_json_accept_either_key():
+    parsed = parse_invitation_file(
+        "people.csv",
+        "contato\npessoa.um@example.com\n".encode(),
+    )
+    assert parsed.emails == ["pessoa.um@example.com"]
+    assert parsed.phones == []
+
+    mixed = parse_invitation_file(
+        "list.json",
+        b'{"invitations":[{"email":"pessoa.um@example.com"},{"contato":"(19) 99877-2525"}]}',
+    )
+    assert mixed.emails == ["pessoa.um@example.com"]
+    assert mixed.phones == ["5519998772525"]
+
+    with pytest.raises(InvitationFileError) as both:
+        parse_invitation_file(
+            "list.json",
+            b'{"invitations":[{"email":"pessoa.um@example.com","contato":"19998772525"}]}',
+        )
+    assert both.value.code == "bad_file"
+
+
+def test_xlsx_reads_a_phone_stored_as_a_number():
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.append(["contato"])
+    sheet.append([11998772525])
+    sheet.append([11988887777.0])
+    parsed = parse_invitation_file("lista.xlsx", _workbook_bytes(workbook))
+    assert parsed.phones == ["5511998772525", "5511988887777"]
+    assert parsed.emails == []
 
 
 def _workbook_bytes(workbook: Workbook) -> bytes:

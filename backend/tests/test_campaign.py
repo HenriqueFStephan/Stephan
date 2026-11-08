@@ -195,6 +195,8 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
     email = f"pytest-{uuid4().hex}@example.com"
     sent: list[tuple[str, str]] = []
 
+    monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
+
     def fake_deliver(pairs: list[tuple[str, str]]):
         sent.extend(pairs)
         return list(pairs), []
@@ -247,7 +249,18 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
                 (email,),
             ).fetchone()
             others = conn.execute(
-                "SELECT count(*) AS n FROM invitations WHERE email <> %s",
+                """
+                SELECT count(*) AS n
+                FROM invitations
+                WHERE email <> %s
+                  AND round_id = (
+                    SELECT id FROM company_rounds
+                    WHERE company_id = (
+                      SELECT id FROM companies WHERE slug = 'internal'
+                    )
+                      AND closed_on IS NULL
+                  )
+                """,
                 (email,),
             ).fetchone()
         assert stored_status["status"] == "pending"
@@ -387,9 +400,72 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             conn.commit()
 
 
+def test_a_refused_send_keeps_the_address_and_the_same_link(postgres, monkeypatch):
+    email = f"pytest-{uuid4().hex}@example.com"
+    calls: list[list[tuple[str, str]]] = []
+
+    monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
+
+    def fake_deliver(pairs: list[tuple[str, str]]):
+        calls.append(list(pairs))
+        if len(calls) == 1:
+            return [], [pair[0] for pair in pairs]
+        return list(pairs), []
+
+    monkeypatch.setattr("app.services.campaign_store.deliver_invitations", fake_deliver)
+    client = TestClient(app)
+    logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    headers = {"X-Company-Token": logged.json()["passage"]}
+    with connect() as conn:
+        before_invites = _ids(conn, "invitations")
+        before_uploads = _ids(conn, "invitation_uploads")
+    try:
+        first = client.post(
+            "/api/v1/company/invitations",
+            headers=headers,
+            files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
+        )
+        assert first.status_code == 200
+        assert first.json()["accepted"] == 0
+        assert first.json()["not_sent"] == [email]
+        with connect() as conn:
+            stored = conn.execute(
+                "SELECT link_token, sent_at FROM invitations WHERE email = %s",
+                (email,),
+            ).fetchone()
+        assert stored["sent_at"] is None
+        roster = client.get("/api/v1/company/invitations", headers=headers)
+        assert email in roster.json()["unsent"]
+        again = client.post("/api/v1/company/invitations/retry", headers=headers)
+        assert again.status_code == 200
+        assert again.json()["sent"] == 1
+        assert again.json()["not_sent"] == []
+        assert calls[1][0][1] == stored["link_token"]
+        assert stored["link_token"] not in again.text
+        with connect() as conn:
+            marked = conn.execute(
+                "SELECT sent_at FROM invitations WHERE email = %s",
+                (email,),
+            ).fetchone()
+        assert marked["sent_at"] is not None
+        quiet = client.get("/api/v1/company/invitations", headers=headers)
+        assert email not in quiet.json()["unsent"]
+    finally:
+        with connect() as conn:
+            new_invites = _ids(conn, "invitations") - before_invites
+            new_uploads = _ids(conn, "invitation_uploads") - before_uploads
+            if new_invites:
+                conn.execute("DELETE FROM invitations WHERE id = ANY(%s)", (list(new_invites),))
+            if new_uploads:
+                conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
+            conn.commit()
+
+
 def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch):
     email = f"pytest-{uuid4().hex}@example.com"
     sent: list[tuple[str, str]] = []
+
+    monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
 
     def fake_deliver(pairs: list[tuple[str, str]]):
         sent.extend(pairs)
@@ -538,6 +614,204 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
             if new_uploads:
                 conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
             conn.commit()
+
+
+def test_a_phone_without_whatsapp_is_not_stored(postgres, monkeypatch):
+    monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: False)
+    _digits, typed, _pretty = _test_phone()
+    client = TestClient(app)
+    logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    response = client.post(
+        "/api/v1/company/invitations",
+        headers={"X-Company-Token": logged.json()["passage"]},
+        files={"file": ("pytest.csv", f"contato\n{typed}\n".encode(), "text/csv")},
+    )
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "whatsapp_not_configured"
+    with connect() as conn:
+        found = conn.execute("SELECT 1 FROM invitations WHERE phone = %s", (_digits,)).fetchone()
+    assert found is None
+
+
+def test_a_mixed_list_sends_each_channel_and_keeps_answers_anonymous(postgres, monkeypatch):
+    email = f"pytest-{uuid4().hex}@example.com"
+    digits, typed, pretty = _test_phone()
+    sent_mail: list[tuple[str, str]] = []
+    sent_phone: list[tuple[str, str]] = []
+    monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
+    monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: True)
+
+    def fake_mail(pairs):
+        sent_mail.extend(pairs)
+        return list(pairs), []
+
+    def fake_phone(pairs):
+        sent_phone.extend(pairs)
+        return list(pairs), []
+
+    monkeypatch.setattr("app.services.campaign_store.deliver_invitations", fake_mail)
+    monkeypatch.setattr("app.services.campaign_store.deliver_whatsapp", fake_phone)
+    client = TestClient(app)
+    logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    headers = {"X-Company-Token": logged.json()["passage"]}
+    body = f"contato\n{email}\n{typed}\n{pretty}\n".encode()
+    with connect() as conn:
+        before_invites = _ids(conn, "invitations")
+        before_uploads = _ids(conn, "invitation_uploads")
+    try:
+        response = client.post(
+            "/api/v1/company/invitations",
+            headers=headers,
+            files={"file": ("pytest.csv", body, "text/csv")},
+        )
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["accepted"] == 2
+        assert payload["duplicates_in_file"] == [pretty]
+        assert payload["not_configured"] == []
+        assert payload["not_sent"] == []
+        assert sent_mail[0][0] == email
+        assert sent_phone[0][0] == digits
+        assert sent_mail[0][1] not in response.text
+        assert sent_phone[0][1] not in response.text
+        with connect() as conn:
+            mail_row = conn.execute(
+                "SELECT channel, phone FROM invitations WHERE email = %s",
+                (email,),
+            ).fetchone()
+            phone_row = conn.execute(
+                "SELECT channel, email, link_token FROM invitations WHERE phone = %s",
+                (digits,),
+            ).fetchone()
+        assert mail_row["channel"] == "email"
+        assert mail_row["phone"] is None
+        assert phone_row["channel"] == "whatsapp"
+        assert phone_row["email"] is None
+        assert phone_row["link_token"] == sent_phone[0][1]
+    finally:
+        _drop_new(before_invites, before_uploads)
+
+
+def test_a_mixed_list_keeps_email_when_whatsapp_is_not_configured(postgres, monkeypatch):
+    email = f"pytest-{uuid4().hex}@example.com"
+    digits, typed, pretty = _test_phone()
+    monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
+    monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: False)
+    monkeypatch.setattr(
+        "app.services.campaign_store.deliver_invitations",
+        lambda pairs: (list(pairs), []),
+    )
+    client = TestClient(app)
+    logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    with connect() as conn:
+        before_invites = _ids(conn, "invitations")
+        before_uploads = _ids(conn, "invitation_uploads")
+    try:
+        response = client.post(
+            "/api/v1/company/invitations",
+            headers={"X-Company-Token": logged.json()["passage"]},
+            files={"file": ("pytest.csv", f"email\n{email}\n{typed}\n".encode(), "text/csv")},
+        )
+        assert response.status_code == 200
+        assert response.json()["accepted"] == 1
+        assert response.json()["not_configured"] == [pretty]
+        with connect() as conn:
+            kept = conn.execute("SELECT 1 FROM invitations WHERE email = %s", (email,)).fetchone()
+            phone = conn.execute("SELECT 1 FROM invitations WHERE phone = %s", (digits,)).fetchone()
+        assert kept is not None
+        assert phone is None
+    finally:
+        _drop_new(before_invites, before_uploads)
+
+
+def test_neither_channel_stores_a_mixed_list(postgres, monkeypatch):
+    email = f"pytest-{uuid4().hex}@example.com"
+    digits, typed, _pretty = _test_phone()
+    monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: False)
+    monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: False)
+    client = TestClient(app)
+    logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    response = client.post(
+        "/api/v1/company/invitations",
+        headers={"X-Company-Token": logged.json()["passage"]},
+        files={"file": ("pytest.csv", f"contato\n{email}\n{typed}\n".encode(), "text/csv")},
+    )
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "channels_not_configured"
+    with connect() as conn:
+        mail = conn.execute("SELECT 1 FROM invitations WHERE email = %s", (email,)).fetchone()
+        phone = conn.execute("SELECT 1 FROM invitations WHERE phone = %s", (digits,)).fetchone()
+    assert mail is None
+    assert phone is None
+
+
+def test_a_refused_whatsapp_keeps_the_phone_when_mail_is_down(postgres, monkeypatch):
+    from app.services.campaign_store import dispatch_unsent
+
+    digits, typed, pretty = _test_phone()
+    calls: list[list[tuple[str, str]]] = []
+    monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: False)
+    monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: True)
+
+    def fake_phone(pairs):
+        calls.append(list(pairs))
+        if len(calls) == 1:
+            return [], [pair[0] for pair in pairs]
+        sent = [pair for pair in pairs if pair[0] == digits]
+        failed = [pair[0] for pair in pairs if pair[0] != digits]
+        return sent, failed
+
+    monkeypatch.setattr("app.services.campaign_store.deliver_whatsapp", fake_phone)
+    client = TestClient(app)
+    logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    headers = {"X-Company-Token": logged.json()["passage"]}
+    with connect() as conn:
+        before_invites = _ids(conn, "invitations")
+        before_uploads = _ids(conn, "invitation_uploads")
+    try:
+        first = client.post(
+            "/api/v1/company/invitations",
+            headers=headers,
+            files={"file": ("pytest.csv", f"contato\n{typed}\n".encode(), "text/csv")},
+        )
+        assert first.status_code == 200
+        assert first.json()["accepted"] == 0
+        assert first.json()["not_sent"] == [pretty]
+        roster = client.get("/api/v1/company/invitations", headers=headers)
+        assert pretty in roster.json()["unsent"]
+        with connect() as conn:
+            sent_count = dispatch_unsent(conn)
+        assert sent_count == 1
+        retried = [pair for pair in calls[1] if pair[0] == digits][0]
+        assert retried[1] == calls[0][0][1]
+        assert retried[1] not in first.text
+        with connect() as conn:
+            marked = conn.execute(
+                "SELECT sent_at FROM invitations WHERE phone = %s",
+                (digits,),
+            ).fetchone()
+        assert marked["sent_at"] is not None
+    finally:
+        _drop_new(before_invites, before_uploads)
+
+
+def _test_phone() -> tuple[str, str, str]:
+    national = "119" + f"{uuid4().int % 100_000_000:08d}"
+    digits = "55" + national
+    typed = f"(11) {national[2:7]}-{national[7:]}"
+    pretty = f"+55 11 {national[2:7]}-{national[7:]}"
+    return digits, typed, pretty
+
+
+def _drop_new(before_invites: set, before_uploads: set) -> None:
+    with connect() as conn:
+        new_invites = _ids(conn, "invitations") - before_invites
+        new_uploads = _ids(conn, "invitation_uploads") - before_uploads
+        if new_invites:
+            conn.execute("DELETE FROM invitations WHERE id = ANY(%s)", (list(new_invites),))
+        if new_uploads:
+            conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
+        conn.commit()
 
 
 def _ids(conn, table: str) -> set:

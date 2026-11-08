@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   ApiStatus,
+  CnpjCard,
   ContactPayload,
   ContactResponse,
   OrderPayload,
@@ -17,6 +18,7 @@ import {
   CompanyOverview,
   CompanyRoundRow,
   InvitationRoster,
+  InvitationRetryResult,
   InvitationUploadResult,
   ToolAccessResult,
   ToolDraft,
@@ -39,6 +41,11 @@ export class ApiService {
 
   submitOrder(payload: OrderPayload): Observable<OrderResponse> {
     return this.http.post<OrderResponse>(`${this.base}/orders`, payload);
+  }
+
+  lookupCnpj(cnpj: string): Observable<CnpjCard> {
+    const digits = cnpj.replace(/\D/g, '');
+    return this.http.get<CnpjCard>(`${this.base}/cnpj/${digits}`);
   }
 
   getStatus(): Observable<ApiStatus> {
@@ -108,6 +115,12 @@ export class ApiService {
     const body = new FormData();
     body.append('file', file, file.name);
     return this.http.post<InvitationUploadResult>(`${this.base}/company/invitations`, body, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
+  }
+
+  retryCompanyInvitations(passage: string): Observable<InvitationRetryResult> {
+    return this.http.post<InvitationRetryResult>(`${this.base}/company/invitations/retry`, null, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
     });
   }

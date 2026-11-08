@@ -1,5 +1,9 @@
 """Company logins. Each account belongs to one company, and that company only.
 
+A company can have many accounts. Each row is one email that can sign in, with
+its own password. Signup creates the first row and marks it owner. The company
+page can add further emails as more rows on the same company.
+
 Passwords are stored as a hash. The passage is a signature over the company id
 and the username. It is not the password.
 """
@@ -22,6 +26,14 @@ ACCOUNTS = (
 
 _PASSAGE = b"stephan-company-v1"
 _DUMMY_HASH = ""
+
+
+class AccessEmailTaken(Exception):
+    """This email already signs in somewhere."""
+
+
+class CompanyAlreadyRegistered(Exception):
+    """This CNPJ already has a company row."""
 
 
 class CompanySession:
@@ -65,15 +77,62 @@ def seed_company_accounts(conn) -> None:
         )
 
 
+def provision_company_access(
+    conn,
+    *,
+    legal_name: str,
+    cnpj_digits: str,
+    email: str,
+    password: str,
+) -> None:
+    """Open a company and its first access email. The password is stored only as a hash."""
+    email_norm = email.strip().casefold()
+    taken = conn.execute(
+        """
+        SELECT 1
+        FROM company_users
+        WHERE lower(username) = %s
+           OR (email IS NOT NULL AND lower(email) = %s)
+        """,
+        (email_norm, email_norm),
+    ).fetchone()
+    if taken is not None:
+        raise AccessEmailTaken()
+    slug = f"cnpj-{cnpj_digits}"
+    existing = conn.execute(
+        "SELECT id FROM companies WHERE cnpj = %s OR slug = %s",
+        (cnpj_digits, slug),
+    ).fetchone()
+    if existing is not None:
+        raise CompanyAlreadyRegistered()
+    company_id = uuid4()
+    conn.execute(
+        """
+        INSERT INTO companies (id, slug, name, cnpj)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (company_id, slug, legal_name, cnpj_digits),
+    )
+    conn.execute(
+        """
+        INSERT INTO company_users (id, company_id, username, email, role, password_hash)
+        VALUES (%s, %s, %s, %s, 'owner', %s)
+        """,
+        (uuid4(), company_id, email_norm, email_norm, hash_password(password)),
+    )
+
+
 def authenticate(conn, username: str, password: str) -> CompanySession | None:
+    key = username.strip().casefold()
     row = conn.execute(
         """
         SELECT u.username, u.password_hash, c.id AS company_id, c.slug, c.name
         FROM company_users AS u
         JOIN companies AS c ON c.id = u.company_id
-        WHERE u.username = %s
+        WHERE lower(u.username) = %s
+           OR (u.email IS NOT NULL AND lower(u.email) = %s)
         """,
-        (username.casefold(),),
+        (key, key),
     ).fetchone()
     if row is None:
         password_matches(password, _dummy_hash())

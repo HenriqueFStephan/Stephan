@@ -16,8 +16,20 @@ from uuid import UUID, uuid4
 
 from psycopg.types.json import Json
 
-from app.services.invitation_file import ParsedInvitations
-from app.services.invitation_mail import MailDeliveryError, MailNotConfigured, deliver_invitations
+from app.services.invitation_file import ParsedInvitations, present_address
+from app.services.invitation_mail import (
+    MailDeliveryError,
+    MailNotConfigured,
+    deliver_invitations,
+    smtp_ready,
+)
+from app.services.invitation_whatsapp import (
+    ChannelsNotConfigured,
+    WhatsAppDeliveryError,
+    WhatsAppNotConfigured,
+    deliver_whatsapp,
+    whatsapp_ready,
+)
 
 # Anexo B codes stored on hse_responses. The Portuguese sentences live in the form.
 # Keep this aligned with frontend/src/app/features/tool/profile.ts.
@@ -92,43 +104,63 @@ class DemographicRejected(Exception):
 
 
 def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) -> dict[str, Any]:
+    """Store new addresses whose channel is ready, commit them, and only then send.
+
+    A phone number goes out on WhatsApp. An email goes by email. A crash after
+    the commit leaves the row in place with the same token. An address whose
+    message already left is not sent again. A channel that is not configured
+    does not get a new row.
+    """
     company_id, round_id, round_label = _open_round(conn, company_id)
-    existing = {
-        row["email"]
-        for row in conn.execute(
-            "SELECT email FROM invitations WHERE round_id = %s",
-            (round_id,),
-        ).fetchall()
-    }
-    already = [email for email in parsed.emails if email in existing]
-    accepted = [email for email in parsed.emails if email not in existing]
-    not_sent: list[str] = []
-    sent: list[tuple[str, str]] = []
-    if accepted:
-        pending = [(email, secrets.token_urlsafe(32)) for email in accepted]
-        sent, not_sent = deliver_invitations(pending)
-        if not sent:
-            raise MailDeliveryError()
+    existing: dict[str, Any] = {}
+    for row in conn.execute(
+        "SELECT channel, email, phone, link_token, sent_at FROM invitations WHERE round_id = %s",
+        (round_id,),
+    ).fetchall():
+        address = _row_address(row)
+        if address:
+            existing[address] = row
+    contacts = [("email", address) for address in parsed.emails] + [
+        ("whatsapp", address) for address in parsed.phones
+    ]
+    already: list[str] = []
+    waiting: list[tuple[str, str, str]] = []
+    fresh: list[tuple[str, str]] = []
+    for channel, address in contacts:
+        row = existing.get(address)
+        if row is None:
+            fresh.append((channel, address))
+        elif row["sent_at"] is not None:
+            already.append(address)
+        else:
+            waiting.append((channel, address, row["link_token"]))
+    send_fresh = [(channel, address) for channel, address in fresh if _channel_ready(channel)]
+    blocked_fresh = [(channel, address) for channel, address in fresh if not _channel_ready(channel)]
+    send_waiting = [item for item in waiting if _channel_ready(item[0])]
+    blocked_waiting = [item for item in waiting if not _channel_ready(item[0])]
+    if (fresh or waiting) and not send_fresh and not send_waiting:
+        _raise_unconfigured({channel for channel, _address in fresh} | {channel for channel, _address, _token in waiting})
 
-    upload_id = None
-    if sent or not accepted:
-        upload_id = conn.execute(
-            """
-            INSERT INTO invitation_uploads (id, company_id, round_id, source_name, format)
-            VALUES (%s, %s, %s, %s, %s)
-            RETURNING id
-            """,
-            (uuid4(), company_id, round_id, _source_name(filename), parsed.format),
-        ).fetchone()["id"]
-
-    for email, token in sent:
+    upload_id = conn.execute(
+        """
+        INSERT INTO invitation_uploads (id, company_id, round_id, source_name, format)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING id
+        """,
+        (uuid4(), company_id, round_id, _source_name(filename), parsed.format),
+    ).fetchone()["id"]
+    pending = [(address, token, channel) for channel, address, token in send_waiting]
+    for channel, address in send_fresh:
+        token = secrets.token_urlsafe(32)
+        email = address if channel == "email" else None
+        phone = address if channel == "whatsapp" else None
         conn.execute(
             """
             INSERT INTO invitations (
-                id, company_id, round_id, upload_id, email,
-                link_token, link_token_hash, status, sent_at
+                id, company_id, round_id, upload_id, email, phone, channel,
+                link_token, link_token_hash, status
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 'pending', now())
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending')
             """,
             (
                 uuid4(),
@@ -136,24 +168,155 @@ def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) 
                 round_id,
                 upload_id,
                 email,
+                phone,
+                channel,
                 token,
                 hashlib.sha256(token.encode("utf-8")).hexdigest(),
             ),
         )
+        pending.append((address, token, channel))
+    conn.commit()
 
+    sent, not_sent = _deliver_pending(conn, pending)
+    not_sent = not_sent + [address for _channel, address, _token in blocked_waiting]
     return {
         "round_label": round_label,
         "accepted": len(sent),
         "ignored_empty": parsed.ignored_empty,
-        "duplicates_in_file": parsed.duplicates_in_file,
-        "already_invited": already,
+        "duplicates_in_file": _show(parsed.duplicates_in_file),
+        "already_invited": _show(already),
         "invalid": parsed.invalid,
-        "not_sent": not_sent,
+        "not_sent": _show(not_sent),
+        "not_configured": _show([address for _channel, address in blocked_fresh]),
     }
 
 
+def retry_unsent(conn, company_id) -> dict[str, Any]:
+    """Send the stored link again for addresses in the open round that never left."""
+    _company_id, round_id, _label = _open_round(conn, company_id)
+    rows = conn.execute(
+        """
+        SELECT channel, email, phone, link_token
+        FROM invitations
+        WHERE round_id = %s
+          AND sent_at IS NULL
+        ORDER BY created_at
+        """,
+        (round_id,),
+    ).fetchall()
+    pending: list[tuple[str, str, str]] = []
+    held: list[str] = []
+    held_channels: set[str] = set()
+    for row in rows:
+        channel = row.get("channel") or "email"
+        address = _row_address(row)
+        if not address:
+            continue
+        if _channel_ready(channel):
+            pending.append((address, row["link_token"], channel))
+        else:
+            held.append(address)
+            held_channels.add(channel)
+    if not pending and held_channels:
+        _raise_unconfigured(held_channels)
+    sent, not_sent = _deliver_pending(conn, pending)
+    return {"sent": len(sent), "not_sent": _show(not_sent + held)}
+
+
+def dispatch_unsent(conn) -> int:
+    """Send every stored link whose channel is ready. Used when the API process starts."""
+    rows = conn.execute(
+        """
+        SELECT channel, email, phone, link_token
+        FROM invitations
+        WHERE sent_at IS NULL
+        ORDER BY created_at
+        """
+    ).fetchall()
+    pending: list[tuple[str, str, str]] = []
+    for row in rows:
+        channel = row.get("channel") or "email"
+        address = _row_address(row)
+        if address and _channel_ready(channel):
+            pending.append((address, row["link_token"], channel))
+    if not pending:
+        return 0
+    sent, _failed = _deliver_pending(conn, pending)
+    return len(sent)
+
+
+def _deliver_pending(conn, pairs: list[tuple[str, str, str]]) -> tuple[list[tuple[str, str]], list[str]]:
+    """Send pairs that are already stored. Mark the ones that left, then commit that mark."""
+    if not pairs:
+        return [], []
+    email_pairs = [(address, token) for address, token, channel in pairs if channel == "email"]
+    phone_pairs = [(address, token) for address, token, channel in pairs if channel == "whatsapp"]
+    sent: list[tuple[str, str]] = []
+    failed: list[str] = []
+    if email_pairs:
+        try:
+            email_sent, email_failed = deliver_invitations(email_pairs)
+        except (MailDeliveryError, MailNotConfigured):
+            email_sent, email_failed = [], [address for address, _token in email_pairs]
+        sent.extend(email_sent)
+        failed.extend(email_failed)
+    if phone_pairs:
+        try:
+            phone_sent, phone_failed = deliver_whatsapp(phone_pairs)
+        except (WhatsAppDeliveryError, WhatsAppNotConfigured):
+            phone_sent, phone_failed = [], [address for address, _token in phone_pairs]
+        sent.extend(phone_sent)
+        failed.extend(phone_failed)
+    mark_sent(conn, sent)
+    return sent, failed
+
+
+def _channel_ready(channel: str) -> bool:
+    if channel == "whatsapp":
+        return whatsapp_ready()
+    return smtp_ready()
+
+
+def _row_address(row: dict) -> str | None:
+    channel = row.get("channel") or "email"
+    if channel == "whatsapp":
+        return row.get("phone") or None
+    return row.get("email") or None
+
+
+def _raise_unconfigured(channels: set[str]) -> None:
+    if channels == {"email"}:
+        raise MailNotConfigured()
+    if channels == {"whatsapp"}:
+        raise WhatsAppNotConfigured()
+    raise ChannelsNotConfigured()
+
+
+def _show(addresses: list[str]) -> list[str]:
+    return [present_address(address) for address in addresses]
+
+
+def mark_sent(conn, sent: list[tuple[str, str]]) -> None:
+    for _email, token in sent:
+        conn.execute(
+            """
+            UPDATE invitations
+            SET sent_at = now()
+            WHERE link_token = %s
+              AND sent_at IS NULL
+            """,
+            (token,),
+        )
+    if sent:
+        conn.commit()
+
+
 def list_invitations(conn, company_id) -> dict[str, Any]:
-    """Participation for this company's open round. Counts and shares only: no addresses."""
+    """Participation for this company's open round.
+
+    Counts stay aggregate. The only addresses returned are the ones whose
+    message has not left, so the company can retry that same link.
+    """
     _company_id, round_id, round_label = _open_round(conn, company_id)
     row = conn.execute(
         """
@@ -165,6 +328,25 @@ def list_invitations(conn, company_id) -> dict[str, Any]:
         """,
         (round_id,),
     ).fetchone()
+    unsent = _show(
+        [
+            item["address"]
+            for item in conn.execute(
+                """
+                SELECT CASE
+                    WHEN COALESCE(channel, 'email') = 'whatsapp' THEN phone
+                    ELSE email
+                END AS address
+                FROM invitations
+                WHERE round_id = %s
+                  AND sent_at IS NULL
+                ORDER BY address
+                """,
+                (round_id,),
+            ).fetchall()
+            if item["address"]
+        ]
+    )
     waiting = int(row["waiting"])
     responded = int(row["responded"])
     invited = waiting + responded
@@ -175,6 +357,7 @@ def list_invitations(conn, company_id) -> dict[str, Any]:
         "invited": invited,
         "responded_percent": responded_percent,
         "waiting_percent": waiting_percent,
+        "unsent": unsent,
     }
 
 

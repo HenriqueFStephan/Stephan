@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     smtp_from: str = ""
     consulting_notify_to: str = ""
 
+    # WhatsApp Cloud API. The sender number is +55 19 99877-2525 once that
+    # number is registered. The phone number id is Meta's id, not the display number.
+    whatsapp_token: str = ""
+    whatsapp_phone_number_id: str = ""
+
     # On-site /studio overlay — files GitHub issues with the solve label.
     # GITHUB_STUDIO_TOKEN is preferred so Actions' GITHUB_TOKEN is not reused locally.
     github_studio_token: str = ""

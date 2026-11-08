@@ -2,12 +2,29 @@
 
 import json
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.core.config import DATA_DIR
 from app.main import app
 
 client = TestClient(app)
+
+
+class _QuietConnection:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+@pytest.fixture(autouse=True)
+def skip_account(monkeypatch):
+    """Order tests record the file. Account rows are covered in test_signup_access."""
+    monkeypatch.setattr("app.api.v1.orders.connect", lambda: _QuietConnection())
+    monkeypatch.setattr("app.api.v1.orders.ensure_schema", lambda conn: None)
+    monkeypatch.setattr("app.api.v1.orders.provision_company_access", lambda *args, **kwargs: None)
 
 
 def payload(**overrides):
@@ -28,15 +45,8 @@ def payload(**overrides):
         "headcount": 40,
         "sites": 1,
         "activity": "Metalurgia",
-        "rep_name": "Ana Lima",
-        "rep_cpf": "529.982.247-25",
-        "rep_role": "Diretora",
-        "rep_email": "ana@oficina.example",
-        "rep_phone": "(11) 98888-7777",
-        "contact_name": "Ana Lima",
-        "contact_role": "Diretora",
-        "contact_email": "ana@oficina.example",
-        "contact_phone": "(11) 98888-7777",
+        "access_email": "ana@oficina.example",
+        "password": "senha-segura",
         "accept_contract": True,
         "privacy_ack": True,
         "marketing": False,
@@ -68,14 +78,67 @@ def test_order_is_stored_and_not_charged():
     assert stored["marketing"] is False
     assert stored["plan"] == "hse"
     assert stored["quoted_price_cents"] == 69_000
-    assert "52998224725" in stored["rep_cpf"].replace(".", "").replace("-", "")
+    assert stored["access_email"] == "ana@oficina.example"
+    assert "password" not in stored
+    assert "senha-segura" not in json.dumps(stored)
 
 
-def test_order_rejects_a_bad_cnpj_and_a_missing_acceptance():
+def test_order_notice_names_the_company_and_skips_the_cpf(monkeypatch):
+    notices: list[tuple[str, str]] = []
+
+    def capture(subject: str, body: str) -> bool:
+        notices.append((subject, body))
+        return True
+
+    monkeypatch.setattr("app.api.v1.orders.notify_consulting", capture)
+    response = client.post("/api/v1/orders", json=payload())
+    assert response.status_code == 200
+    assert "Oficina Ltda" in notices[0][1]
+    assert response.json()["reference"] in notices[0][1]
+    assert "senha-segura" not in notices[0][1]
+    assert "ana@oficina.example" in notices[0][1]
+
+
+def test_order_uses_the_access_email_when_the_invoice_email_is_blank():
+    response = client.post("/api/v1/orders", json=payload(nfe_email="", phone=""))
+    assert response.status_code == 200
+    path = DATA_DIR / "orders.jsonl"
+    stored = json.loads(path.read_text(encoding="utf-8").splitlines()[-1])
+    assert stored["nfe_email"] == "ana@oficina.example"
+    assert stored["phone"] == ""
+
+
+def test_order_rejects_a_short_password():
+    short = client.post("/api/v1/orders", json=payload(password="curta"))
+    assert short.status_code == 422
+
+
+def test_order_rejects_a_bad_cnpj():
     bad_cnpj = client.post("/api/v1/orders", json=payload(cnpj="11.111.111/1111-11"))
     assert bad_cnpj.status_code == 422
-    declined = client.post("/api/v1/orders", json=payload(accept_contract=False))
-    assert declined.status_code == 422
+
+
+def test_order_stores_signup_without_a_chosen_plan(monkeypatch):
+    notices: list[tuple[str, str]] = []
+
+    def capture(subject: str, body: str) -> bool:
+        notices.append((subject, body))
+        return True
+
+    monkeypatch.setattr("app.api.v1.orders.notify_consulting", capture)
+    body = payload()
+    for key in ("accept_contract", "privacy_ack", "summary_ack", "method", "plan", "quoted_price_cents"):
+        body.pop(key)
+    response = client.post("/api/v1/orders", json=body)
+    assert response.status_code == 200
+    assert response.json()["charged"] is False
+    path = DATA_DIR / "orders.jsonl"
+    stored = json.loads(path.read_text(encoding="utf-8").splitlines()[-1])
+    assert stored["plan"] is None
+    assert stored["method"] is None
+    assert stored["quoted_price_cents"] is None
+    assert stored["accept_contract"] is False
+    assert "Plano:" not in notices[0][1]
 
 
 def test_order_rejects_a_quote_outside_the_band():

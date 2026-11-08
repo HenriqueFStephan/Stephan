@@ -72,6 +72,8 @@ export class CompanyComponent implements OnInit {
   inviteErrorKey = '';
   inviteUnknownColumns = '';
   inviteResult: InvitationUploadResult | null = null;
+  unsent: string[] = [];
+  retrying = false;
   rounds: CompanyRoundRow[] | null = null;
   roundsError = false;
   selectedRound = '';
@@ -132,6 +134,8 @@ export class CompanyComponent implements OnInit {
     this.errorKey = '';
     this.inviteFile = null;
     this.inviteResult = null;
+    this.unsent = [];
+    this.retrying = false;
     this.inviteErrorKey = '';
     this.inviteUnknownColumns = '';
     this.rounds = null;
@@ -168,6 +172,7 @@ export class CompanyComponent implements OnInit {
         this.inviteFile = null;
         input.value = '';
         this.refreshRounds(passage);
+        this.refreshUnsent(passage);
       },
       error: (err: HttpErrorResponse) => {
         this.inviteSubmitting = false;
@@ -180,12 +185,47 @@ export class CompanyComponent implements OnInit {
           this.inviteUnknownColumns = columns.join(', ');
         } else if (code === 'mail_not_configured') {
           this.inviteErrorKey = 'company.inviteMail';
+        } else if (code === 'whatsapp_not_configured') {
+          this.inviteErrorKey = 'company.inviteWhatsapp';
+        } else if (code === 'channels_not_configured') {
+          this.inviteErrorKey = 'company.inviteChannels';
         } else if (code === 'mail_failed') {
           this.inviteErrorKey = 'company.inviteMailFailed';
+        } else if (code === 'whatsapp_failed') {
+          this.inviteErrorKey = 'company.inviteWhatsappFailed';
         } else if (code === 'database_unavailable' || err.status === 0 || err.status === 503) {
           this.inviteErrorKey = 'company.inviteUnreachable';
         } else {
           this.inviteErrorKey = 'company.inviteBadFile';
+        }
+      },
+    });
+  }
+
+  retryUnsent(): void {
+    const passage = this.readPassage();
+    if (!passage || this.retrying || !this.unsent.length) {
+      return;
+    }
+    this.retrying = true;
+    this.inviteErrorKey = '';
+    this.api.retryCompanyInvitations(passage).subscribe({
+      next: () => {
+        this.retrying = false;
+        this.refreshUnsent(passage);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.retrying = false;
+        const detail = err.error && err.error.detail;
+        const code = detail && typeof detail === 'object' ? detail.code : '';
+        if (code === 'mail_not_configured') {
+          this.inviteErrorKey = 'company.inviteMail';
+        } else if (code === 'whatsapp_not_configured') {
+          this.inviteErrorKey = 'company.inviteWhatsapp';
+        } else if (code === 'channels_not_configured') {
+          this.inviteErrorKey = 'company.inviteChannels';
+        } else {
+          this.inviteErrorKey = 'company.inviteUnreachable';
         }
       },
     });
@@ -411,6 +451,7 @@ export class CompanyComponent implements OnInit {
     this.api.getCompanyRounds(passage).subscribe({
       next: (rounds) => {
         this.applyRounds(rounds);
+        this.refreshUnsent(passage);
         this.phase = 'ready';
       },
       error: (err: HttpErrorResponse) => {
@@ -440,6 +481,19 @@ export class CompanyComponent implements OnInit {
         }
         this.rounds = null;
         this.roundsError = true;
+      },
+    });
+  }
+
+  private refreshUnsent(passage: string): void {
+    this.api.getCompanyInvitations(passage).subscribe({
+      next: (roster) => {
+        this.unsent = roster.unsent || [];
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 401) {
+          this.logout();
+        }
       },
     });
   }

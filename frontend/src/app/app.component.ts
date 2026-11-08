@@ -39,7 +39,7 @@ export class AppComponent {
         typeof location !== 'undefined'
           ? location.pathname.split('?')[0].replace(/\/+$/, '')
           : '';
-      const barePaths = ['/studio', '/tool', '/empresa', '/cadastro', '/pagamento'];
+      const barePaths = ['/studio', '/tool', '/empresa', '/cadastro'];
       this.bare = barePaths.includes(routed) || barePaths.includes(here);
     };
     router.events

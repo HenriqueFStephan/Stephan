@@ -4,14 +4,33 @@ Stephan FastAPI application entry point.
 Run: uvicorn app.main:app --reload --port 8000
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
-from app.api.v1 import company, contact, orders, studio, tool
+from app.api.v1 import cnpj, company, contact, orders, studio, tool
 from app.core.config import get_settings
 from app.core.cors import configure_cors
+from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import HealthResponse
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """On the server, send any invitation that was stored and never mailed."""
+    if get_settings().app_env == "production":
+        try:
+            with connect() as conn:
+                ensure_schema(conn)
+                from app.services.campaign_store import dispatch_unsent
+
+                dispatch_unsent(conn)
+        except DatabaseUnavailable:
+            pass
+    yield
+
 
 app = FastAPI(
     title="Stephan API",
@@ -19,6 +38,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 configure_cors(app)
@@ -27,6 +47,7 @@ API_PREFIX = "/api/v1"
 
 app.include_router(contact.router, prefix=API_PREFIX)
 app.include_router(orders.router, prefix=API_PREFIX)
+app.include_router(cnpj.router, prefix=API_PREFIX)
 app.include_router(studio.router, prefix=API_PREFIX)
 app.include_router(company.router, prefix=API_PREFIX)
 app.include_router(tool.router, prefix=API_PREFIX)

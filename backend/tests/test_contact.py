@@ -27,6 +27,29 @@ def test_contact_appends_a_message():
     assert after.startswith(before)
 
 
+def test_contact_notice_carries_the_message(monkeypatch):
+    notices: list[tuple[str, str]] = []
+
+    def capture(subject: str, body: str) -> bool:
+        notices.append((subject, body))
+        return True
+
+    monkeypatch.setattr("app.api.v1.contact.notify_consulting", capture)
+    response = client.post(
+        "/api/v1/contact",
+        json={
+            "name": "Ana",
+            "organization": "Oficina",
+            "email": "ana@example.com",
+            "message": "Quero conversar sobre o trabalho.",
+        },
+    )
+    assert response.status_code == 200
+    assert notices[0][0] == "Stephan — mensagem de contato"
+    assert "Quero conversar sobre o trabalho." in notices[0][1]
+    assert "ana@example.com" in notices[0][1]
+
+
 def test_contact_rejects_a_bad_email():
     response = client.post(
         "/api/v1/contact",

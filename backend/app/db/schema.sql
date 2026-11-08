@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS companies (
     id uuid PRIMARY KEY,
     slug text NOT NULL UNIQUE,
     name text NOT NULL,
+    cnpj text,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -47,7 +48,9 @@ CREATE TABLE IF NOT EXISTS invitations (
     company_id uuid NOT NULL REFERENCES companies (id),
     round_id uuid NOT NULL REFERENCES company_rounds (id),
     upload_id uuid NOT NULL REFERENCES invitation_uploads (id),
-    email text NOT NULL,
+    email text,
+    phone text,
+    channel text NOT NULL DEFAULT 'email',
     link_token text NOT NULL,
     link_token_hash text NOT NULL UNIQUE,
     status text NOT NULL CHECK (status IN ('pending', 'submitted')),
@@ -58,6 +61,10 @@ CREATE TABLE IF NOT EXISTS invitations (
     CONSTRAINT invitations_submitted_pair CHECK (
         (status = 'pending' AND submitted_at IS NULL)
         OR (status = 'submitted' AND submitted_at IS NOT NULL)
+    ),
+    CONSTRAINT invitations_channel_pair CHECK (
+        (channel = 'email' AND email IS NOT NULL AND phone IS NULL)
+        OR (channel = 'whatsapp' AND phone IS NOT NULL AND email IS NULL)
     )
 );
 
@@ -325,13 +332,33 @@ CREATE TABLE IF NOT EXISTS hse_drafts (
     )
 );
 
+-- One row is one person who can sign in. A company has many rows.
+-- Signup creates the first row, with role owner. Further emails are more rows
+-- on the same company_id, each with its own password. username is the login key:
+-- an email for a registered company, a short name for the seeded accounts.
 CREATE TABLE IF NOT EXISTS company_users (
     id uuid PRIMARY KEY,
     company_id uuid NOT NULL REFERENCES companies (id),
     username text NOT NULL UNIQUE,
+    email text,
+    role text NOT NULL DEFAULT 'member',
     password_hash text NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS cnpj text;
+
+CREATE UNIQUE INDEX IF NOT EXISTS companies_cnpj
+    ON companies (cnpj)
+    WHERE cnpj IS NOT NULL;
+
+ALTER TABLE company_users ADD COLUMN IF NOT EXISTS email text;
+
+ALTER TABLE company_users ADD COLUMN IF NOT EXISTS role text NOT NULL DEFAULT 'member';
+
+CREATE UNIQUE INDEX IF NOT EXISTS company_users_email
+    ON company_users (lower(email))
+    WHERE email IS NOT NULL;
 
 -- Existing local lists were stored on slug pilot. They belong to the internal account.
 UPDATE companies
@@ -369,6 +396,19 @@ WHERE c.slug = 'hse-it'
   );
 
 ALTER TABLE invitations ADD COLUMN IF NOT EXISTS sent_at timestamptz;
+ALTER TABLE invitations ADD COLUMN IF NOT EXISTS phone text;
+ALTER TABLE invitations ADD COLUMN IF NOT EXISTS channel text DEFAULT 'email';
+UPDATE invitations SET channel = 'email' WHERE channel IS NULL;
+ALTER TABLE invitations ALTER COLUMN channel SET NOT NULL;
+ALTER TABLE invitations ALTER COLUMN email DROP NOT NULL;
+ALTER TABLE invitations DROP CONSTRAINT IF EXISTS invitations_channel_pair;
+ALTER TABLE invitations ADD CONSTRAINT invitations_channel_pair CHECK (
+    (channel = 'email' AND email IS NOT NULL AND phone IS NULL)
+    OR (channel = 'whatsapp' AND phone IS NOT NULL AND email IS NULL)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS invitations_round_phone
+    ON invitations (round_id, phone)
+    WHERE phone IS NOT NULL;
 
 -- Existing databases already have hse_responses. New installs get these columns
 -- from CREATE TABLE, so each ADD is skipped once the column is there.

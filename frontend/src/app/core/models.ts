@@ -40,6 +40,22 @@ export interface ContactResponse {
   message: string;
 }
 
+export interface CnpjCard {
+  legal_name: string;
+  trade_name: string;
+  cnae: string;
+  activity: string;
+  phone: string;
+  postal_code: string;
+  street: string;
+  number: string;
+  complement: string;
+  district: string;
+  city: string;
+  state: string;
+  active: boolean;
+}
+
 export interface OrderPayload {
   legal_name: string;
   trade_name: string;
@@ -54,26 +70,18 @@ export interface OrderPayload {
   district: string;
   city: string;
   state: string;
-  headcount: number;
-  sites: number;
+  cnae: string;
   activity: string;
-  rep_name: string;
-  rep_cpf: string;
-  rep_role: string;
-  rep_email: string;
-  rep_phone: string;
-  contact_name: string;
-  contact_role: string;
-  contact_email: string;
-  contact_phone: string;
+  access_email: string;
+  password: string;
   accept_contract: boolean;
   privacy_ack: boolean;
   marketing: boolean;
-  method: 'pix' | 'boleto' | 'card';
+  method: 'pix' | 'boleto' | 'card' | null;
   installments: number;
   summary_ack: boolean;
-  plan: 'hse' | 'analise';
-  quoted_price_cents: number;
+  plan: 'hse' | 'analise' | null;
+  quoted_price_cents: number | null;
 }
 
 export interface OrderResponse {
@@ -146,6 +154,7 @@ export interface InvitationUploadResult {
   already_invited: string[];
   invalid: string[];
   not_sent: string[];
+  not_configured: string[];
 }
 
 export interface InvitationRoster {
@@ -153,6 +162,12 @@ export interface InvitationRoster {
   invited: number;
   responded_percent: number | null;
   waiting_percent: number | null;
+  unsent: string[];
+}
+
+export interface InvitationRetryResult {
+  sent: number;
+  not_sent: string[];
 }
 
 export interface CompanyRoundRow {

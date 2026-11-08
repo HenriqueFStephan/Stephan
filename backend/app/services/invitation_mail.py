@@ -94,6 +94,31 @@ def deliver_invitations(pairs: list[tuple[str, str]]) -> tuple[list[tuple[str, s
     return sent, failed
 
 
+def notify_consulting(subject: str, body: str) -> bool:
+    """Mail the practice. A missing address or a refused send leaves the caller’s record in place."""
+    current = get_settings()
+    recipient = (current.consulting_notify_to or "").strip()
+    if not recipient or not smtp_ready(current):
+        return False
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = (current.smtp_from or current.smtp_username).strip()
+    message["To"] = recipient
+    message.set_content(body)
+    try:
+        smtp = smtplib.SMTP(current.smtp_host, current.smtp_port, timeout=30)
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
+        smtp.login(current.smtp_username, _password(current))
+        smtp.send_message(message)
+        smtp.quit()
+    except Exception as exc:
+        log.warning("consulting notice was not sent: %s", type(exc).__name__)
+        return False
+    return True
+
+
 def _password(settings: Settings) -> str:
     return (settings.smtp_password or "").replace(" ", "")
 

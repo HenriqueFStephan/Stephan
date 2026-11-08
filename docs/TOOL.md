@@ -76,7 +76,7 @@ Marking an invitation `submitted` is what blocks a second response. The future f
 
 The link token stays on the invitation so the same link keeps working after the message is sent. `sent_at` records that the message left. The upload response does not return tokens. `link_token_hash` is the lookup key for the later form. Neither value is written on the answer.
 
-The original file is not kept. A rejected file is not stored at all.
+The original file is not kept. A rejected file is not stored at all. An address whose message did not leave stays on `invitations` with `sent_at` empty. The company page lists those addresses and can send the same link again. It does not list addresses whose message already left.
 
 ## Anexo B on the form
 
@@ -148,19 +148,20 @@ The host is `PUBLIC_APP_URL` (default `https://stephan.net.br`), not `FRONTEND_U
 
 The company page does not list drafts. A saved draft still counts as not finished.
 
-Saving the list sends the link to each new address. The message uses the site colors and the Stephan lockup: a short note, a button, and the same link in plain text. It does not name the person. SMTP settings (`SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`) live in `debt.txt`. If they are missing, a new address is not stored. An address already invited in this round does not get a second message.
+Saving the list writes each new address whose channel is ready, commits it, and only then sends the link. The cell decides the channel. An email goes through SMTP. The message uses the site colors and the Stephan lockup: a short note, a button, and the same link in plain text. It does not name the person. A Brazilian phone number goes through the WhatsApp Cloud API as the template `stephan_questionario` (Portuguese BR). `{{1}}` is the full link. The sender is +55 19 99877-2525. SMTP settings (`SMTP_HOST`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`) and the WhatsApp settings (`WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`) live in `debt.txt`. If a file uses only a channel that is missing, nothing is stored. A mixed file still sends the channel that is ready and lists the other addresses under `not_configured` without storing them. If the send fails after the commit, the address stays, `sent_at` stays empty, and the same link is tried again. An address whose message already left does not get a second message. Steps that stay outside the repo are in [MANUAL_STEPS.md](MANUAL_STEPS.md).
 
 ## Admin upload
 
-On `/empresa`, after login, “Enviar formulários” accepts one file. The API is `POST /api/v1/company/invitations` with the company session header and a multipart field named `file`. `GET /api/v1/company/rounds` lists every wave for that company: label, the day it opened, the day it closed (empty while open), how many people were invited, the shares who have finished and who have not, and the day of the latest anonymous answer. It does not return emails, tokens, or answers. `GET /api/v1/company/invitations` still returns the open round only, in the same shape as before.
+On `/empresa`, after login, “Enviar formulários” accepts one file. The API is `POST /api/v1/company/invitations` with the company session header and a multipart field named `file`. `GET /api/v1/company/rounds` lists every wave for that company: label, the day it opened, the day it closed (empty while open), how many people were invited, the shares who have finished and who have not, and the day of the latest anonymous answer. It does not return emails, tokens, or answers. `GET /api/v1/company/invitations` still returns the open round only. The counts are the same as before. `unsent` is the only address list, and it holds the addresses whose message has not left. `POST /api/v1/company/invitations/retry` sends those stored links again.
 
 Rules for every format:
 
-- The only field is `email`. A name column is rejected. Any other column is rejected. Nothing from a rejected file is stored.
+- One column. The header `email` or `contato` is optional. When the first cell is one of those words, that row is the header and is not an address. When the first cell is already an email or a phone, every row is an address. A name column is rejected. Any other column is rejected. Nothing from a rejected file is stored.
+- Each cell is an email or a Brazilian phone number. A value with `@` that is a valid email is sent by email. A phone number is sent on WhatsApp. The person uploading the file does not choose. The same list can contain both.
 - Empty rows are ignored.
-- The same email twice in the file: the first is kept, the later ones are reported under `duplicates_in_file` and do not get a second link.
-- An email already invited in this round is reported under `already_invited` and does not get a second link.
-- Addresses are matched case-insensitively and stored in the normalized form.
+- The same address twice in the file, including the same phone written in different formats, is reported under `duplicates_in_file` and does not get a second link.
+- An address already invited in this round is reported under `already_invited` and does not get a second link.
+- Emails are matched case-insensitively and stored in the normalized form. Phones are stored as digits with country code `55` (for example `5519998772525`). The company page shows `+55 19 99877-2525`. A number without the area code is invalid.
 - UTF-8. A CSV that is not UTF-8 is rejected.
 - At most 1 MB and 5 000 data rows. The wave is about 300 people.
 - Other worksheets in an Excel file are not read and are not stored.
@@ -178,9 +179,9 @@ The JSON shape is one object, not a list of accepted variants:
 
 Example: [`docs/tool/invitations.json`](tool/invitations.json).
 
-A bare array, a second root key, or a second key on an invitation (including `name`) is rejected.
+A bare array or a second root key is rejected. Each invitation has `email` or `contato`, not both, and no other key (including `name`).
 
-CSV: header cell exactly `email`, comma-separated.
+CSV: comma-separated. The header cell `email` or `contato` may be omitted. A phone in that column is still WhatsApp.
 
 ```csv
 email
@@ -190,7 +191,7 @@ pessoa.dois@example.com
 
 Example: [`docs/tool/invitations.csv`](tool/invitations.csv).
 
-Brazilian Excel often uses a semicolon. If the header line contains `;` and the header cell is exactly `email`, the separator is a semicolon. A trailing semicolon on a one-column file is empty and is ignored. A second header such as `nome` is rejected.
+Brazilian Excel often uses a semicolon. If the first line contains `;`, the separator is a semicolon. The header cell `email` or `contato` may be omitted. A trailing semicolon on a one-column file is empty and is ignored. A second header such as `nome` is rejected.
 
 ```csv
 email;
@@ -199,7 +200,7 @@ pessoa.tres@example.com;
 
 Example: [`docs/tool/invitations.semicolon.csv`](tool/invitations.semicolon.csv).
 
-Excel: the first worksheet of an `.xlsx` file. Row 1 is the header `email`. Same column rule as CSV.
+Excel: the first worksheet of an `.xlsx` file. Row 1 is the header `email` or `contato`, or already the first address. Same column rule as CSV. A phone stored as a number is read as digits, not as a decimal.
 
 Example: [`docs/tool/invitations.xlsx`](tool/invitations.xlsx).
 
@@ -212,7 +213,9 @@ A successful response looks like this. Tokens are not included.
   "ignored_empty": 0,
   "duplicates_in_file": [],
   "already_invited": [],
-  "invalid": []
+  "invalid": [],
+  "not_sent": [],
+  "not_configured": []
 }
 ```
 
@@ -253,7 +256,9 @@ A successful response looks like this. Tokens are not included.
 |---|---|
 | `id` | uuid, not copied onto an answer |
 | `company_id`, `round_id`, `upload_id` | |
-| `email` | normalized |
+| `email` | normalized, empty when the channel is WhatsApp |
+| `phone` | digits with country code `55`, empty when the channel is email |
+| `channel` | `email` or `whatsapp` |
 | `link_token` | secret in the link that was sent |
 | `link_token_hash` | unique, lookup for the later form |
 | `status` | `pending` or `submitted` |
@@ -261,7 +266,7 @@ A successful response looks like this. Tokens are not included.
 | `sent_at` | when the message left, empty if it never did |
 | `created_at` | |
 
-Unique on `(round_id, email)`.
+Unique on `(round_id, email)`. Where `phone` is set, also unique on `(round_id, phone)`.
 
 `hse_responses`
 

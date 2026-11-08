@@ -44,6 +44,7 @@
 
     <section class="card" aria-labelledby="invite-title">
       <h2 id="invite-title">{{ 'company.inviteTitle' | t }}</h2>
+      <p class="note">{{ 'company.inviteLead' | t }}</p>
       <form (ngSubmit)="uploadInvites(inviteInput)">
         <div class="file-row">
           <label class="file-field">
@@ -91,12 +92,28 @@
             <li *ngFor="let email of inviteResult.not_sent">{{ email }}</li>
           </ul>
         </ng-container>
+        <ng-container *ngIf="inviteResult.not_configured?.length">
+          <h3>{{ 'company.inviteNotConfigured' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let address of inviteResult.not_configured">{{ address }}</li>
+          </ul>
+        </ng-container>
         <ng-container *ngIf="inviteResult.invalid.length">
           <h3>{{ 'company.inviteInvalid' | t }}</h3>
           <ul class="roster">
             <li *ngFor="let email of inviteResult.invalid">{{ email }}</li>
           </ul>
         </ng-container>
+      </div>
+      <div class="invite-result" *ngIf="unsent.length">
+        <h3>{{ 'company.inviteNotSent' | t }}</h3>
+        <p class="note">{{ 'company.inviteKept' | t }}</p>
+        <ul class="roster">
+          <li *ngFor="let email of unsent">{{ email }}</li>
+        </ul>
+        <button type="button" class="button" (click)="retryUnsent()" [disabled]="retrying">
+          {{ (retrying ? 'company.inviteRetrying' : 'company.inviteRetry') | t }}
+        </button>
       </div>
     </section>
 

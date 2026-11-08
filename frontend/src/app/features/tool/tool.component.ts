@@ -62,6 +62,8 @@ export class ToolComponent implements OnInit, OnDestroy {
 
   private token = '';
   private advanceTimer: number | null = null;
+  private draftTimer: number | null = null;
+  private draftDirty = false;
 
   constructor(
     readonly i18n: I18nService,
@@ -93,6 +95,7 @@ export class ToolComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearAdvance();
+    this.clearDraftTimer();
   }
 
   get current(): HseItem {
@@ -153,6 +156,7 @@ export class ToolComponent implements OnInit, OnDestroy {
   }
 
   saveDraft(): void {
+    this.clearDraftTimer();
     if (!this.campaign || this.drafting || this.saving) {
       return;
     }
@@ -175,6 +179,7 @@ export class ToolComponent implements OnInit, OnDestroy {
         next: () => {
           this.drafting = false;
           this.draftSaved = true;
+          this.draftDirty = false;
           this.resumed = false;
         },
         error: (err: HttpErrorResponse) => {
@@ -217,6 +222,7 @@ export class ToolComponent implements OnInit, OnDestroy {
       return;
     }
     this.clearAdvance();
+    this.clearDraftTimer();
     if (!this.campaign) {
       this.showResults();
       return;
@@ -228,12 +234,18 @@ export class ToolComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.saving = false;
+          this.draftDirty = false;
           this.showResults();
         },
         error: (err: HttpErrorResponse) => {
           this.saving = false;
           if (this.linkWasUsed(err)) {
-            this.phase = 'used';
+            this.draftDirty = false;
+            this.showResults();
+            return;
+          }
+          if (err.status === 0 || err.status >= 500) {
+            this.confirmStored();
             return;
           }
           this.saveFailed = true;
@@ -300,6 +312,15 @@ export class ToolComponent implements OnInit, OnDestroy {
     return [copy.p20, copy.p50, copy.p80];
   }
 
+  @HostListener('window:beforeunload', ['$event'])
+  onLeave(event: BeforeUnloadEvent): void {
+    if (!this.campaign || (!this.draftDirty && !this.drafting)) {
+      return;
+    }
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKey(event: KeyboardEvent): void {
     if (this.phase !== 'ask') {
@@ -362,6 +383,35 @@ export class ToolComponent implements OnInit, OnDestroy {
     this.draftSaved = false;
     this.draftFailed = false;
     this.resumed = false;
+    this.draftDirty = true;
+    this.scheduleDraft();
+  }
+
+  private scheduleDraft(): void {
+    if (!this.campaign || this.saving) {
+      return;
+    }
+    this.clearDraftTimer();
+    this.draftTimer = window.setTimeout(() => {
+      this.draftTimer = null;
+      this.saveDraft();
+    }, 1000);
+  }
+
+  private confirmStored(): void {
+    this.api.openTool(this.token).subscribe({
+      next: () => {
+        this.saveFailed = true;
+      },
+      error: (err: HttpErrorResponse) => {
+        if (this.linkWasUsed(err)) {
+          this.draftDirty = false;
+          this.showResults();
+          return;
+        }
+        this.saveFailed = true;
+      },
+    });
   }
 
   private linkWasUsed(err: HttpErrorResponse): boolean {
@@ -395,6 +445,13 @@ export class ToolComponent implements OnInit, OnDestroy {
     if (this.advanceTimer != null) {
       window.clearTimeout(this.advanceTimer);
       this.advanceTimer = null;
+    }
+  }
+
+  private clearDraftTimer(): void {
+    if (this.draftTimer != null) {
+      window.clearTimeout(this.draftTimer);
+      this.draftTimer = null;
     }
   }
 }

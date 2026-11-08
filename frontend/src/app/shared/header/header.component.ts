@@ -14,7 +14,7 @@ import { I18nService, TranslatePipe } from '../../core/i18n';
       </a>
       <nav>
         <a routerLink="/contato">{{ 'nav.contact' | t }}</a>
-        <a routerLink="/abordagem">{{ 'nav.register' | t }}</a>
+        <a routerLink="/cadastro">{{ 'nav.register' | t }}</a>
         <a routerLink="/empresa">{{ 'nav.login' | t }}</a>
         <button type="button" (click)="toggleLang()">{{ 'nav.lang' | t }}</button>
       </nav>

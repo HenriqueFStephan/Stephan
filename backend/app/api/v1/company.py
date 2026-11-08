@@ -15,10 +15,17 @@ from app.models.schemas import (
     CompanyLoginResponse,
     CompanyOverview,
     CompanyRoundRow,
+    InvitationRetryResult,
     InvitationRoster,
     InvitationUploadResult,
 )
-from app.services.campaign_store import NoOpenRound, add_invitations, list_invitations, list_rounds
+from app.services.campaign_store import (
+    NoOpenRound,
+    add_invitations,
+    list_invitations,
+    list_rounds,
+    retry_unsent,
+)
 from app.services.company_accounts import (
     CompanySession,
     authenticate,
@@ -28,6 +35,11 @@ from app.services.company_accounts import (
 from app.services.company_overview import overview_for_round
 from app.services.invitation_file import InvitationFileError, parse_invitation_file
 from app.services.invitation_mail import MailDeliveryError, MailNotConfigured
+from app.services.invitation_whatsapp import (
+    ChannelsNotConfigured,
+    WhatsAppDeliveryError,
+    WhatsAppNotConfigured,
+)
 
 router = APIRouter(prefix="/company", tags=["company"])
 
@@ -135,6 +147,34 @@ def upload_company_invitations(
         raise HTTPException(status_code=409, detail={"code": "no_open_round"}) from exc
     except MailNotConfigured as exc:
         raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
+    except WhatsAppNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "whatsapp_not_configured"}) from exc
+    except ChannelsNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "channels_not_configured"}) from exc
     except MailDeliveryError as exc:
         raise HTTPException(status_code=502, detail={"code": "mail_failed"}) from exc
+    except WhatsAppDeliveryError as exc:
+        raise HTTPException(status_code=502, detail={"code": "whatsapp_failed"}) from exc
     return InvitationUploadResult.model_validate(stored)
+
+
+@router.post("/invitations/retry", response_model=InvitationRetryResult)
+def retry_company_invitations(
+    session: CompanySession = Depends(require_company_token),
+) -> InvitationRetryResult:
+    """Send the stored link again for addresses in this round whose message never left."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            result = retry_unsent(conn, session.company_id)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except NoOpenRound as exc:
+        raise HTTPException(status_code=409, detail={"code": "no_open_round"}) from exc
+    except MailNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
+    except WhatsAppNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "whatsapp_not_configured"}) from exc
+    except ChannelsNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "channels_not_configured"}) from exc
+    return InvitationRetryResult.model_validate(result)
