@@ -32,11 +32,36 @@ class UnknownPaymentMethod(Exception):
         super().__init__(method)
 
 
+class PaymentRequired(Exception):
+    """A list with new forms is held until a method is confirmed."""
+
+
+class SkipNotAllowed(Exception):
+    """Only the internal admin company can release a list without a method."""
+
+
 def require_method(method: str) -> str:
     code = method.strip()
     if code not in METHODS:
         raise UnknownPaymentMethod(code)
     return code
+
+
+def gate_payment(slug: str, method: str, skip: bool, forms: int) -> str | None:
+    """Return the method that releases the list, or None when there is nothing to pay.
+
+    The internal company (slug ``internal``) may skip. That records no debit.
+    """
+    if skip:
+        if slug != "internal":
+            raise SkipNotAllowed()
+        return None
+    if forms <= 0:
+        return None
+    code = method.strip()
+    if not code:
+        raise PaymentRequired()
+    return require_method(code)
 
 
 def quote_forms(forms: int, method: str | None = None) -> dict:

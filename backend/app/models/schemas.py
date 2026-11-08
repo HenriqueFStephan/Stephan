@@ -332,6 +332,20 @@ class CompanyOverview(BaseModel):
     bands: list[CompanyBandRow]
 
 
+class ListQuote(BaseModel):
+    """Price of a file before anything is stored or sent."""
+
+    forms: int
+    unit_cents: int
+    total_cents: int
+    provisional: bool = True
+    methods: list[str]
+    ignored_empty: int = 0
+    duplicates_in_file: list[str] = []
+    already_invited: list[str] = []
+    invalid: list[str] = []
+
+
 class FormQuote(BaseModel):
     """Provisional amount for the forms this list created. charged stays false."""
 

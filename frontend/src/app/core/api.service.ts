@@ -19,6 +19,7 @@ import {
   CompanyRoundRow,
   FormQuote,
   InvitationRoster,
+  ListQuote,
   InvitationRetryResult,
   InvitationUploadResult,
   ToolAccessResult,
@@ -112,9 +113,24 @@ export class ApiService {
     });
   }
 
-  uploadCompanyInvitations(passage: string, file: File): Observable<InvitationUploadResult> {
+  quoteCompanyInvitations(passage: string, file: File): Observable<ListQuote> {
     const body = new FormData();
     body.append('file', file, file.name);
+    return this.http.post<ListQuote>(`${this.base}/company/invitations/quote`, body, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
+  }
+
+  uploadCompanyInvitations(
+    passage: string,
+    file: File,
+    method = '',
+    skip = false,
+  ): Observable<InvitationUploadResult> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    body.append('method', method);
+    body.append('skip', skip ? '1' : '');
     return this.http.post<InvitationUploadResult>(`${this.base}/company/invitations`, body, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
     });

@@ -258,4 +258,41 @@ describe('CompanyComponent', () => {
     expect(root.querySelector('#stats-pending-title')).not.toBeNull();
     expect(root.textContent).toContain('Ocultar estatísticas');
   });
+
+  it('shows payment before the list goes out, and a skip only for the admin company', () => {
+    api.loginCompany.and.returnValue(
+      of({ success: true, passage: 'clearance', company_name: 'Uso interno', company_slug: 'internal' }),
+    );
+    const component = create();
+    fixture.detectChanges();
+    component.username = 'admin';
+    component.password = 'secret';
+    component.login();
+    component.preview = {
+      forms: 2,
+      unit_cents: 1000,
+      total_cents: 2000,
+      provisional: true,
+      methods: ['pix', 'boleto'],
+      ignored_empty: 0,
+      duplicates_in_file: [],
+      already_invited: [],
+      invalid: [],
+    };
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    const confirm = Array.from(root.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Confirmar pagamento e enviar'),
+    ) as HTMLButtonElement;
+    expect(confirm.disabled).toBeTrue();
+    expect(root.textContent).toContain('Pular pagamento e enviar');
+    expect(root.textContent).toContain('R$ 10 por formulário. Este valor não é o preço final.');
+    expect(root.textContent).toContain('Pix');
+
+    component.companySlug = 'hse-it';
+    fixture.detectChanges();
+    expect(root.textContent).not.toContain('Pular pagamento e enviar');
+    expect(root.textContent).toContain('Confirmar pagamento e enviar');
+  });
 });

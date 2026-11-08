@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
 
 from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import (
@@ -19,6 +19,7 @@ from app.models.schemas import (
     CompanyRoundRow,
     FormQuote,
     InvitationRetryResult,
+    ListQuote,
     InvitationRoster,
     InvitationUploadResult,
 )
@@ -28,10 +29,16 @@ from app.services.campaign_store import (
     add_invitations,
     choose_form_charge,
     list_invitations,
+    preview_invitations,
     list_rounds,
     retry_unsent,
 )
-from app.services.form_pricing import UnknownPaymentMethod
+from app.services.form_pricing import (
+    PaymentRequired,
+    SkipNotAllowed,
+    UnknownPaymentMethod,
+    gate_payment,
+)
 from app.services.company_accounts import (
     CompanySession,
     authenticate,
@@ -128,25 +135,68 @@ def company_rounds(session: CompanySession = Depends(require_company_token)) -> 
     return [CompanyRoundRow.model_validate(row) for row in rows]
 
 
-@router.post("/invitations", response_model=InvitationUploadResult)
-def upload_company_invitations(
-    file: UploadFile = File(...),
-    session: CompanySession = Depends(require_company_token),
-) -> InvitationUploadResult:
+def _parsed_upload(file: UploadFile):
     data = file.file.read(1_000_001)
     if len(data) > 1_000_000:
         raise HTTPException(status_code=400, detail={"code": "bad_file"})
     try:
-        parsed = parse_invitation_file(file.filename or "", data)
+        return parse_invitation_file(file.filename or "", data)
     except InvitationFileError as exc:
         raise HTTPException(
             status_code=400,
             detail={"code": exc.code, "columns": exc.columns},
         ) from exc
+
+
+@router.post("/invitations/quote", response_model=ListQuote)
+def quote_company_invitations(
+    file: UploadFile = File(...),
+    session: CompanySession = Depends(require_company_token),
+) -> ListQuote:
+    """Price the file. The addresses stay unstored and no message goes out."""
+    parsed = _parsed_upload(file)
     try:
         with connect() as conn:
             ensure_schema(conn)
-            stored = add_invitations(conn, session.company_id, file.filename or "", parsed)
+            preview = preview_invitations(conn, session.company_id, parsed)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except NoOpenRound as exc:
+        raise HTTPException(status_code=409, detail={"code": "no_open_round"}) from exc
+    return ListQuote.model_validate(preview)
+
+
+@router.post("/invitations", response_model=InvitationUploadResult)
+def upload_company_invitations(
+    file: UploadFile = File(...),
+    method: Annotated[str, Form()] = "",
+    skip: Annotated[str, Form()] = "",
+    session: CompanySession = Depends(require_company_token),
+) -> InvitationUploadResult:
+    parsed = _parsed_upload(file)
+    release = skip.strip().lower() in {"1", "true", "yes"}
+    if release and session.slug != "internal":
+        raise HTTPException(status_code=403, detail={"code": "skip_not_allowed"})
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            preview = preview_invitations(conn, session.company_id, parsed)
+            try:
+                chosen = gate_payment(session.slug, method, release, preview["forms"])
+            except PaymentRequired as exc:
+                raise HTTPException(status_code=409, detail={"code": "payment_required"}) from exc
+            except SkipNotAllowed as exc:
+                raise HTTPException(status_code=403, detail={"code": "skip_not_allowed"}) from exc
+            except UnknownPaymentMethod as exc:
+                raise HTTPException(status_code=422, detail={"code": "unknown_method"}) from exc
+            stored = add_invitations(
+                conn,
+                session.company_id,
+                file.filename or "",
+                parsed,
+                method=chosen,
+                skipped=release,
+            )
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
     except NoOpenRound as exc:

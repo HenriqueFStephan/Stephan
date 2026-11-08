@@ -45,56 +45,89 @@
     <section class="card" aria-labelledby="invite-title">
       <h2 id="invite-title">{{ 'company.inviteTitle' | t }}</h2>
       <p class="note">{{ 'company.inviteLead' | t }}</p>
-      <form (ngSubmit)="uploadInvites(inviteInput)">
-        <div class="file-row">
-          <label class="file-field">
-            <span class="file">
-              <input
-                #inviteInput
-                class="file__input"
-                type="file"
-                name="invite-file"
-                accept=".json,.csv,.xlsx,text/csv,application/json"
-                (change)="onInviteFile($event)"
-              />
-              <span class="file__pick">{{ 'company.inviteChoose' | t }}</span>
-              <span class="file__name">{{ inviteFile?.name || ('company.inviteNone' | t) }}</span>
-            </span>
-          </label>
-          <button type="submit" class="button" [disabled]="inviteSubmitting || !inviteFile">
-            {{ inviteSubmitting ? ('company.inviteSending' | t) : ('company.inviteSend' | t) }}
-          </button>
-        </div>
-        <p class="error" *ngIf="inviteErrorKey" role="alert">
-          {{ inviteErrorKey | t:{ columns: inviteUnknownColumns } }}
+      <div class="file-row">
+        <label class="file-field">
+          <span class="file">
+            <input
+              #inviteInput
+              class="file__input"
+              type="file"
+              name="invite-file"
+              accept=".json,.csv,.xlsx,text/csv,application/json"
+              (change)="onInviteFile($event)"
+            />
+            <span class="file__pick">{{ 'company.inviteChoose' | t }}</span>
+            <span class="file__name">{{ inviteFile?.name || ('company.inviteNone' | t) }}</span>
+          </span>
+        </label>
+      </div>
+      <p class="note" *ngIf="quoting">{{ 'company.payQuoting' | t }}</p>
+      <p class="error" *ngIf="inviteErrorKey" role="alert">
+        {{ inviteErrorKey | t:{ columns: inviteUnknownColumns } }}
+      </p>
+      <div class="pay" *ngIf="preview as quote">
+        <h3>{{ 'company.payTitle' | t }}</h3>
+        <p>
+          {{ 'company.payCount' | t:{ forms: quote.forms, unit: money(quote.unit_cents), total: money(quote.total_cents) } }}
         </p>
-      </form>
-      <div class="invite-result" *ngIf="inviteResult">
-        <p>{{ 'company.inviteAccepted' | t:{ count: inviteResult.accepted } }}</p>
-        <div class="pay" *ngIf="inviteResult.quote as quote">
-          <h3>{{ 'company.payTitle' | t }}</h3>
-          <p>
-            {{ 'company.payCount' | t:{ forms: quote.forms, unit: money(quote.unit_cents), total: money(quote.total_cents) } }}
-          </p>
-          <p class="note">{{ 'company.payProvisional' | t }}</p>
-          <p class="note">{{ 'company.payNotCharged' | t }}</p>
+        <p class="note">{{ 'company.payProvisional' | t }}</p>
+        <p class="note">{{ 'company.payGate' | t }}</p>
+        <p class="note" *ngIf="quote.forms === 0">{{ 'company.payNone' | t }}</p>
+        <ng-container *ngIf="quote.forms > 0">
           <p class="pay__legend">{{ 'company.payChoose' | t }}</p>
           <label class="choice" *ngFor="let method of quote.methods">
-            <input
-              type="radio"
-              name="pay-method"
-              [value]="method"
-              [checked]="quote.method === method"
-              [disabled]="payChoosing"
-              (change)="choosePay(method)"
-            />
+            <input type="radio" name="pay-method" [value]="method" [(ngModel)]="payMethod" />
             <span>
               <strong>{{ ('company.pay.' + method) | t }}</strong>
               <small>{{ ('company.payNote.' + method) | t }}</small>
             </span>
           </label>
-          <p class="error" *ngIf="payErrorKey" role="alert">{{ payErrorKey | t }}</p>
+        </ng-container>
+        <div class="pay__actions">
+          <button
+            type="button"
+            class="button"
+            *ngIf="quote.forms > 0"
+            [disabled]="inviteSubmitting || !payMethod"
+            (click)="releaseInvites(inviteInput, false)"
+          >
+            {{ inviteSubmitting && !releaseSkip ? ('company.inviteSending' | t) : ('company.payConfirm' | t) }}
+          </button>
+          <button
+            type="button"
+            class="pay__skip"
+            *ngIf="canSkip()"
+            [disabled]="inviteSubmitting"
+            (click)="releaseInvites(inviteInput, true)"
+          >
+            {{ inviteSubmitting && releaseSkip ? ('company.inviteSending' | t) : ('company.paySkip' | t) }}
+          </button>
         </div>
+        <p class="error" *ngIf="payErrorKey" role="alert">{{ payErrorKey | t }}</p>
+        <p *ngIf="quote.ignored_empty">
+          {{ 'company.inviteEmpty' | t:{ count: quote.ignored_empty } }}
+        </p>
+        <ng-container *ngIf="quote.duplicates_in_file.length">
+          <h3>{{ 'company.inviteDuplicates' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let email of quote.duplicates_in_file">{{ email }}</li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="quote.already_invited.length">
+          <h3>{{ 'company.inviteAlready' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let email of quote.already_invited">{{ email }}</li>
+          </ul>
+        </ng-container>
+        <ng-container *ngIf="quote.invalid.length">
+          <h3>{{ 'company.inviteInvalid' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let email of quote.invalid">{{ email }}</li>
+          </ul>
+        </ng-container>
+      </div>
+      <div class="invite-result" *ngIf="inviteResult">
+        <p>{{ 'company.inviteAccepted' | t:{ count: inviteResult.accepted } }}</p>
         <p *ngIf="inviteResult.ignored_empty">
           {{ 'company.inviteEmpty' | t:{ count: inviteResult.ignored_empty } }}
         </p>

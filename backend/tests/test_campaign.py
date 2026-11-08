@@ -138,6 +138,7 @@ def test_upload_rejects_a_name_column_without_storing_it(postgres):
     response = client.post(
         "/api/v1/company/invitations",
         headers={"X-Company-Token": passage},
+        data={"skip": "1"},
         files={"file": ("people.csv", b"email,nome\nada@example.com,Ada\n", "text/csv")},
     )
     assert response.status_code == 400
@@ -149,6 +150,7 @@ def test_upload_requires_the_company_session():
     client = TestClient(app)
     response = client.post(
         "/api/v1/company/invitations",
+        data={"skip": "1"},
         files={"file": ("people.csv", b"email\nada@example.com\n", "text/csv")},
     )
     assert response.status_code == 401
@@ -163,6 +165,7 @@ def test_upload_reports_database_unavailable_for_sqlite(postgres, monkeypatch):
     response = client.post(
         "/api/v1/company/invitations",
         headers={"X-Company-Token": passage},
+        data={"skip": "1"},
         files={"file": ("people.csv", "email\nada@example.com\n", "text/csv")},
     )
     assert response.status_code == 503
@@ -181,6 +184,7 @@ def test_upload_without_smtp_does_not_keep_the_address(postgres, monkeypatch):
     response = client.post(
         "/api/v1/company/invitations",
         headers={"X-Company-Token": logged.json()["passage"]},
+        data={"skip": "1"},
         files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
     )
     assert response.status_code == 503
@@ -189,6 +193,45 @@ def test_upload_without_smtp_does_not_keep_the_address(postgres, monkeypatch):
         found = conn.execute("SELECT 1 FROM invitations WHERE email = %s", (email,)).fetchone()
         assert found is None
     get_settings.cache_clear()
+
+
+def test_quote_prices_the_file_and_the_send_waits_for_payment(postgres):
+    email = f"pytest-{uuid4().hex}@example.com"
+    client = TestClient(app)
+    admin = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
+    passage = admin.json()["passage"]
+    payload = {"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")}
+    quoted = client.post(
+        "/api/v1/company/invitations/quote",
+        headers={"X-Company-Token": passage},
+        files=payload,
+    )
+    assert quoted.status_code == 200
+    assert quoted.json()["forms"] == 1
+    assert quoted.json()["total_cents"] == 1000
+    assert quoted.json()["provisional"] is True
+    held = client.post(
+        "/api/v1/company/invitations",
+        headers={"X-Company-Token": passage},
+        files=payload,
+    )
+    assert held.status_code == 409
+    assert held.json()["detail"]["code"] == "payment_required"
+    artigo = client.post(
+        "/api/v1/company/login",
+        json={"username": "artigo", "password": "voltarassamambanhas"},
+    )
+    refused = client.post(
+        "/api/v1/company/invitations",
+        headers={"X-Company-Token": artigo.json()["passage"]},
+        data={"skip": "1"},
+        files=payload,
+    )
+    assert refused.status_code == 403
+    assert refused.json()["detail"]["code"] == "skip_not_allowed"
+    with connect() as conn:
+        found = conn.execute("SELECT 1 FROM invitations WHERE email = %s", (email,)).fetchone()
+        assert found is None
 
 
 def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgres, monkeypatch):
@@ -217,7 +260,8 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
         first = client.post(
             "/api/v1/company/invitations",
             headers=headers,
-            files={"file": ("pytest.csv", body, "text/csv")},
+            data={"skip": "1"},
+        files={"file": ("pytest.csv", body, "text/csv")},
         )
         assert first.status_code == 200
         saved = first.json()
@@ -234,7 +278,8 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
         second = client.post(
             "/api/v1/company/invitations",
             headers=headers,
-            files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
+            data={"skip": "1"},
+        files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
         )
         assert second.status_code == 200
         assert second.json()["accepted"] == 0
@@ -423,7 +468,8 @@ def test_a_refused_send_keeps_the_address_and_the_same_link(postgres, monkeypatc
         first = client.post(
             "/api/v1/company/invitations",
             headers=headers,
-            files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
+            data={"skip": "1"},
+        files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
         )
         assert first.status_code == 200
         assert first.json()["accepted"] == 0
@@ -484,7 +530,8 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
         uploaded = client.post(
             "/api/v1/company/invitations",
             headers=headers,
-            files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
+            data={"skip": "1"},
+        files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
         )
         assert uploaded.status_code == 200
         token = sent[0][1]
@@ -624,6 +671,7 @@ def test_a_phone_without_whatsapp_is_not_stored(postgres, monkeypatch):
     response = client.post(
         "/api/v1/company/invitations",
         headers={"X-Company-Token": logged.json()["passage"]},
+        data={"skip": "1"},
         files={"file": ("pytest.csv", f"contato\n{typed}\n".encode(), "text/csv")},
     )
     assert response.status_code == 503
@@ -662,7 +710,8 @@ def test_a_mixed_list_sends_each_channel_and_keeps_answers_anonymous(postgres, m
         response = client.post(
             "/api/v1/company/invitations",
             headers=headers,
-            files={"file": ("pytest.csv", body, "text/csv")},
+            data={"skip": "1"},
+        files={"file": ("pytest.csv", body, "text/csv")},
         )
         assert response.status_code == 200
         payload = response.json()
@@ -710,7 +759,8 @@ def test_a_mixed_list_keeps_email_when_whatsapp_is_not_configured(postgres, monk
         response = client.post(
             "/api/v1/company/invitations",
             headers={"X-Company-Token": logged.json()["passage"]},
-            files={"file": ("pytest.csv", f"email\n{email}\n{typed}\n".encode(), "text/csv")},
+            data={"skip": "1"},
+        files={"file": ("pytest.csv", f"email\n{email}\n{typed}\n".encode(), "text/csv")},
         )
         assert response.status_code == 200
         assert response.json()["accepted"] == 1
@@ -734,6 +784,7 @@ def test_neither_channel_stores_a_mixed_list(postgres, monkeypatch):
     response = client.post(
         "/api/v1/company/invitations",
         headers={"X-Company-Token": logged.json()["passage"]},
+        data={"skip": "1"},
         files={"file": ("pytest.csv", f"contato\n{email}\n{typed}\n".encode(), "text/csv")},
     )
     assert response.status_code == 503
@@ -772,7 +823,8 @@ def test_a_refused_whatsapp_keeps_the_phone_when_mail_is_down(postgres, monkeypa
         first = client.post(
             "/api/v1/company/invitations",
             headers=headers,
-            files={"file": ("pytest.csv", f"contato\n{typed}\n".encode(), "text/csv")},
+            data={"skip": "1"},
+        files={"file": ("pytest.csv", f"contato\n{typed}\n".encode(), "text/csv")},
         )
         assert first.status_code == 200
         assert first.json()["accepted"] == 0

@@ -12,6 +12,7 @@ import {
   CompanyRoundRow,
   CompanySectorRow,
   InvitationUploadResult,
+  ListQuote,
 } from '../../core/models';
 import {
   BAND_COPY,
@@ -26,6 +27,7 @@ import {
 
 const PASSAGE_KEY = 'stephan-company-passage';
 const COMPANY_NAME_KEY = 'stephan-company-name';
+const COMPANY_SLUG_KEY = 'stephan-company-slug';
 
 interface DayBar {
   x: number;
@@ -67,12 +69,16 @@ export class CompanyComponent implements OnInit {
   errorKey = '';
   overview: CompanyOverview | null = null;
   companyName = '';
+  companySlug = '';
   inviteFile: File | null = null;
   inviteSubmitting = false;
+  quoting = false;
+  releaseSkip = false;
   inviteErrorKey = '';
   inviteUnknownColumns = '';
   inviteResult: InvitationUploadResult | null = null;
-  payChoosing = false;
+  preview: ListQuote | null = null;
+  payMethod = '';
   payErrorKey = '';
   unsent: string[] = [];
   retrying = false;
@@ -95,6 +101,7 @@ export class CompanyComponent implements OnInit {
     const stored = this.readPassage();
     if (stored) {
       this.companyName = sessionStorage.getItem(COMPANY_NAME_KEY) || '';
+      this.companySlug = sessionStorage.getItem(COMPANY_SLUG_KEY) || '';
       this.load(stored);
     }
   }
@@ -116,8 +123,10 @@ export class CompanyComponent implements OnInit {
         this.password = '';
         this.submitting = false;
         this.companyName = response.company_name;
+        this.companySlug = response.company_slug;
         sessionStorage.setItem(PASSAGE_KEY, response.passage);
         sessionStorage.setItem(COMPANY_NAME_KEY, response.company_name);
+        sessionStorage.setItem(COMPANY_SLUG_KEY, response.company_slug);
         this.load(response.passage);
       },
       error: (err: HttpErrorResponse) => {
@@ -130,12 +139,17 @@ export class CompanyComponent implements OnInit {
   logout(): void {
     sessionStorage.removeItem(PASSAGE_KEY);
     sessionStorage.removeItem(COMPANY_NAME_KEY);
+    sessionStorage.removeItem(COMPANY_SLUG_KEY);
     this.companyName = '';
+    this.companySlug = '';
     this.overview = null;
     this.password = '';
     this.errorKey = '';
     this.inviteFile = null;
     this.inviteResult = null;
+    this.preview = null;
+    this.payMethod = '';
+    this.quoting = false;
     this.unsent = [];
     this.retrying = false;
     this.inviteErrorKey = '';
@@ -150,28 +164,76 @@ export class CompanyComponent implements OnInit {
     this.phase = 'login';
   }
 
+  canSkip(): boolean {
+    return this.companySlug === 'internal';
+  }
+
   onInviteFile(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.inviteFile = input.files && input.files.length ? input.files[0] : null;
     this.inviteResult = null;
+    this.preview = null;
+    this.payMethod = '';
+    this.payErrorKey = '';
     this.inviteErrorKey = '';
     this.inviteUnknownColumns = '';
+    if (this.inviteFile) {
+      this.quoteInvites();
+    }
   }
 
-  uploadInvites(input: HTMLInputElement): void {
+  quoteInvites(): void {
     const passage = this.readPassage();
     const file = this.inviteFile;
+    if (!passage || !file) {
+      return;
+    }
+    this.quoting = true;
+    this.inviteErrorKey = '';
+    this.inviteUnknownColumns = '';
+    this.api.quoteCompanyInvitations(passage, file).subscribe({
+      next: (preview) => {
+        if (this.inviteFile !== file) {
+          return;
+        }
+        this.quoting = false;
+        this.preview = preview;
+      },
+      error: (err: HttpErrorResponse) => {
+        if (this.inviteFile !== file) {
+          return;
+        }
+        this.quoting = false;
+        this.preview = null;
+        this.applyInviteError(err);
+      },
+    });
+  }
+
+  releaseInvites(input: HTMLInputElement, skip: boolean): void {
+    const passage = this.readPassage();
+    const file = this.inviteFile;
+    const forms = this.preview ? this.preview.forms : 0;
     if (!passage || !file || this.inviteSubmitting) {
       return;
     }
+    if (skip && !this.canSkip()) {
+      return;
+    }
+    if (!skip && forms > 0 && !this.payMethod) {
+      return;
+    }
     this.inviteSubmitting = true;
+    this.releaseSkip = skip;
     this.inviteErrorKey = '';
     this.inviteUnknownColumns = '';
-    this.api.uploadCompanyInvitations(passage, file).subscribe({
+    this.payErrorKey = '';
+    this.api.uploadCompanyInvitations(passage, file, skip ? '' : this.payMethod, skip).subscribe({
       next: (result) => {
         this.inviteSubmitting = false;
         this.inviteResult = result;
-        this.payErrorKey = '';
+        this.preview = null;
+        this.payMethod = '';
         this.inviteFile = null;
         input.value = '';
         this.refreshRounds(passage);
@@ -179,29 +241,7 @@ export class CompanyComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.inviteSubmitting = false;
-        this.inviteResult = null;
-        this.payErrorKey = '';
-        const detail = err.error && err.error.detail;
-        const code = detail && typeof detail === 'object' ? detail.code : '';
-        if (code === 'unknown_columns') {
-          this.inviteErrorKey = 'company.inviteUnknown';
-          const columns = Array.isArray(detail.columns) ? detail.columns : [];
-          this.inviteUnknownColumns = columns.join(', ');
-        } else if (code === 'mail_not_configured') {
-          this.inviteErrorKey = 'company.inviteMail';
-        } else if (code === 'whatsapp_not_configured') {
-          this.inviteErrorKey = 'company.inviteWhatsapp';
-        } else if (code === 'channels_not_configured') {
-          this.inviteErrorKey = 'company.inviteChannels';
-        } else if (code === 'mail_failed') {
-          this.inviteErrorKey = 'company.inviteMailFailed';
-        } else if (code === 'whatsapp_failed') {
-          this.inviteErrorKey = 'company.inviteWhatsappFailed';
-        } else if (code === 'database_unavailable' || err.status === 0 || err.status === 503) {
-          this.inviteErrorKey = 'company.inviteUnreachable';
-        } else {
-          this.inviteErrorKey = 'company.inviteBadFile';
-        }
+        this.applyInviteError(err);
       },
     });
   }
@@ -210,25 +250,30 @@ export class CompanyComponent implements OnInit {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cents / 100);
   }
 
-  choosePay(method: string): void {
-    const passage = this.readPassage();
-    const quote = this.inviteResult?.quote;
-    if (!passage || !quote || this.payChoosing || quote.method === method) {
-      return;
+  private applyInviteError(err: HttpErrorResponse): void {
+    const detail = err.error && err.error.detail;
+    const code = detail && typeof detail === 'object' ? detail.code : '';
+    if (code === 'unknown_columns') {
+      this.inviteErrorKey = 'company.inviteUnknown';
+      const columns = Array.isArray(detail.columns) ? detail.columns : [];
+      this.inviteUnknownColumns = columns.join(', ');
+    } else if (code === 'payment_required') {
+      this.payErrorKey = 'company.payNeedMethod';
+    } else if (code === 'mail_not_configured') {
+      this.inviteErrorKey = 'company.inviteMail';
+    } else if (code === 'whatsapp_not_configured') {
+      this.inviteErrorKey = 'company.inviteWhatsapp';
+    } else if (code === 'channels_not_configured') {
+      this.inviteErrorKey = 'company.inviteChannels';
+    } else if (code === 'mail_failed') {
+      this.inviteErrorKey = 'company.inviteMailFailed';
+    } else if (code === 'whatsapp_failed') {
+      this.inviteErrorKey = 'company.inviteWhatsappFailed';
+    } else if (code === 'database_unavailable' || err.status === 0 || err.status === 503) {
+      this.inviteErrorKey = 'company.inviteUnreachable';
+    } else {
+      this.inviteErrorKey = 'company.inviteBadFile';
     }
-    this.payChoosing = true;
-    this.payErrorKey = '';
-    this.api.chooseFormCharge(passage, quote.charge_id, method).subscribe({
-      next: (next) => {
-        this.payChoosing = false;
-        if (this.inviteResult) this.inviteResult = { ...this.inviteResult, quote: next };
-      },
-      error: () => {
-        this.payChoosing = false;
-        this.payErrorKey = 'company.payFail';
-        if (this.inviteResult) this.inviteResult = { ...this.inviteResult };
-      },
-    });
   }
 
   retryUnsent(): void {

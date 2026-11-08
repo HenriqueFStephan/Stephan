@@ -104,7 +104,42 @@ class DemographicRejected(Exception):
     """A demographic payload tried to carry an identifier or a nested value."""
 
 
-def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) -> dict[str, Any]:
+def preview_invitations(conn, company_id, parsed: ParsedInvitations) -> dict[str, Any]:
+    """Price the new addresses on this file. Does not store them and does not send."""
+    _company_id, round_id, _round_label = _open_round(conn, company_id)
+    existing: set[str] = set()
+    for row in conn.execute(
+        "SELECT channel, email, phone FROM invitations WHERE round_id = %s",
+        (round_id,),
+    ).fetchall():
+        address = _row_address(row)
+        if address:
+            existing.add(address)
+    contacts = list(parsed.emails) + list(parsed.phones)
+    already = [address for address in contacts if address in existing]
+    fresh = [address for address in contacts if address not in existing]
+    quote = quote_forms(len(fresh))
+    return {
+        "forms": quote["forms"],
+        "unit_cents": quote["unit_cents"],
+        "total_cents": quote["total_cents"],
+        "provisional": True,
+        "methods": quote["methods"],
+        "ignored_empty": parsed.ignored_empty,
+        "duplicates_in_file": _show(parsed.duplicates_in_file),
+        "already_invited": _show(already),
+        "invalid": parsed.invalid,
+    }
+
+
+def add_invitations(
+    conn,
+    company_id,
+    filename: str,
+    parsed: ParsedInvitations,
+    method: str | None = None,
+    skipped: bool = False,
+) -> dict[str, Any]:
     """Store new addresses whose channel is ready, commit them, and only then send.
 
     A phone number goes out on WhatsApp. An email goes by email. A crash after
@@ -176,14 +211,16 @@ def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) 
             ),
         )
         pending.append((address, token, channel))
-    quote = quote_forms(len(send_fresh))
+    quote = quote_forms(len(send_fresh), method)
     charge_id = uuid4()
+    status = "skipped" if skipped else ("method_chosen" if method else "quoted")
     conn.execute(
         """
         INSERT INTO form_charges (
-            id, company_id, round_id, upload_id, forms, unit_cents, total_cents, provisional
+            id, company_id, round_id, upload_id, forms, unit_cents, total_cents,
+            provisional, method, status
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, true)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, true, %s, %s)
         """,
         (
             charge_id,
@@ -193,6 +230,8 @@ def add_invitations(conn, company_id, filename: str, parsed: ParsedInvitations) 
             quote["forms"],
             quote["unit_cents"],
             quote["total_cents"],
+            method,
+            status,
         ),
     )
     quote["charge_id"] = str(charge_id)

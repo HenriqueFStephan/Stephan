@@ -228,7 +228,9 @@ A successful response looks like this. Tokens are not included.
 }
 ```
 
-`forms` is the number of new links this file created. An address already invited, a duplicate, or an invalid cell does not count. The placeholder is R$ 10 per form (`unit_cents` 1000). That amount is not the final price. `charged` stays false. The company can record one of `pix`, `pix_automatic`, `boleto`, `credit`, `credit_installments`, `debit`, `payment_link`, or `ted`. Recording a method does not debit, and the API has no recipient account yet.
+`POST /company/invitations/quote` prices the file and stores nothing. `forms` is the number of new addresses. An address already invited, a duplicate, or an invalid cell does not count. The placeholder is R$ 10 per form (`unit_cents` 1000). That amount is not the final price.
+
+`POST /company/invitations` sends the links only after `method` is one of `pix`, `pix_automatic`, `boleto`, `credit`, `credit_installments`, `debit`, `payment_link`, or `ted`. Without a method the response is `409 payment_required` and nothing is stored. The internal company may send `skip=1` to release the list for a test. Neither call debits, and the API has no recipient account yet. `charged` stays false.
 
 ## Tables
 

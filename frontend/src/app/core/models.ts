@@ -146,6 +146,18 @@ export interface CompanyBandRow {
   maintain: number;
 }
 
+export interface ListQuote {
+  forms: number;
+  unit_cents: number;
+  total_cents: number;
+  provisional: boolean;
+  methods: string[];
+  ignored_empty: number;
+  duplicates_in_file: string[];
+  already_invited: string[];
+  invalid: string[];
+}
+
 export interface FormQuote {
   charge_id: string;
   forms: number;

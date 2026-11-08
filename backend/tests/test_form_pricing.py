@@ -2,7 +2,16 @@
 
 import pytest
 
-from app.services.form_pricing import METHODS, UNIT_CENTS, UnknownPaymentMethod, quote_forms, require_method
+from app.services.form_pricing import (
+    METHODS,
+    UNIT_CENTS,
+    PaymentRequired,
+    SkipNotAllowed,
+    UnknownPaymentMethod,
+    gate_payment,
+    quote_forms,
+    require_method,
+)
 
 
 def test_three_forms_cost_thirty_reais_and_nothing_is_charged():
@@ -26,3 +35,15 @@ def test_only_catalog_methods_can_be_chosen():
     assert require_method(" pix ") == "pix"
     with pytest.raises(UnknownPaymentMethod):
         require_method("cash")
+
+
+def test_a_list_stays_held_until_payment_and_only_admin_can_skip():
+    assert gate_payment("hse-it", "pix", False, 2) == "pix"
+    assert gate_payment("internal", "", True, 2) is None
+    assert gate_payment("hse-it", "", False, 0) is None
+    with pytest.raises(PaymentRequired):
+        gate_payment("hse-it", "", False, 2)
+    with pytest.raises(SkipNotAllowed):
+        gate_payment("hse-it", "", True, 2)
+    with pytest.raises(UnknownPaymentMethod):
+        gate_payment("internal", "cash", False, 1)
