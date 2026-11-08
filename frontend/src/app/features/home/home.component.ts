@@ -4,6 +4,15 @@ import { RouterLink } from '@angular/router';
 
 import { TranslatePipe } from '../../core/i18n';
 
+/** Canonical NR-1 PDF (chapter 1.5 citations on the home page). */
+export const NR1_NORM_PDF_URL =
+  'https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/nr-01-atualizada-2025-i-3.pdf';
+
+type NormItem = {
+  bodyKey: string;
+  cites: readonly string[];
+};
+
 type MethodStep = {
   index: string;
   image: string;
@@ -23,7 +32,16 @@ export class HomeComponent {
   readonly dimensions = [1, 2, 3, 4, 5, 6, 7] as const;
   readonly stats = [1, 2, 3] as const;
   readonly gains = [1, 2, 3, 4, 5, 6] as const;
-  readonly normItems = [1, 2, 3, 4, 5, 6] as const;
+  readonly nr1NormPdfUrl = NR1_NORM_PDF_URL;
+
+  readonly normItems: readonly NormItem[] = [
+    { bodyKey: 'home.norm.item.1.body', cites: ['1.5.3.1.4º'] },
+    { bodyKey: 'home.norm.item.2.body', cites: ['1.5.3.2.1'] },
+    { bodyKey: 'home.norm.item.3.body', cites: ['1.5.4.4.2.1', '1.5.4.4.2.2'] },
+    { bodyKey: 'home.norm.item.4.body', cites: ['1.5.7.1', '1.5.7.3.2º'] },
+    { bodyKey: 'home.norm.item.5.body', cites: ['1.5.5.2'] },
+    { bodyKey: 'home.norm.item.6.body', cites: ['1.5.3.3', '1.5.7.2.1'] },
+  ];
   readonly deliverables = [1, 2, 3, 4, 5, 6] as const;
 
   readonly methodSteps: MethodStep[] = [
@@ -60,10 +78,6 @@ export class HomeComponent {
 
   gainKey(index: number, field: 'title' | 'body'): string {
     return `home.gain.${index}.${field}`;
-  }
-
-  normKey(index: number): string {
-    return `home.norm.item.${index}`;
   }
 
   deliverKey(index: number): string {

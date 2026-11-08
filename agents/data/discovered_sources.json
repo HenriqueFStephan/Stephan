@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-26T07:14:34.645816+00:00",
+  "updated_at": "2026-11-02T06:49:43.612334+00:00",
   "notes": "Sources already posted in weekly law-report issues. The weekly report skips these DOIs and URLs.",
   "papers": [
     {
@@ -485,6 +485,105 @@
       "published": "2026-09-25",
       "category": "psychosocial",
       "first_seen": "2026-10-26"
+    },
+    {
+      "title": "NR-28 – Fiscalização e Penalidades (texto consolidado, atualização 2026)",
+      "url": "https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/nr-28-atualizada-2026.pdf",
+      "doi": "",
+      "journal": "Norma Regulamentadora nº 28 (MTE)",
+      "authors": "Ministério do Trabalho e Emprego",
+      "year": 2026,
+      "published": "2026-10-20",
+      "category": "inspection",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Prospective associations between psychosocial work exposures and general practitioner consultations in France",
+      "url": "https://doi.org/10.1186/s12889-026-30113-5",
+      "doi": "10.1186/s12889-026-30113-5",
+      "journal": "BMC Public Health",
+      "authors": "Isabelle Niedhammer et al.",
+      "year": 2026,
+      "published": "2026-10-27",
+      "category": "psychosocial",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Psychosocial work environment and the risk of disability pension among 1.2 million individuals with and without psychiatric diagnoses: a Danish nationwide register-based cohort study",
+      "url": "https://doi.org/10.1007/s00127-026-03224-y",
+      "doi": "10.1007/s00127-026-03224-y",
+      "journal": "Social Psychiatry and Psychiatric Epidemiology",
+      "authors": "Jeppe Karl Sørensen et al.",
+      "year": 2026,
+      "published": "2026-10-26",
+      "category": "methods",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Validation of the Questionnaire on Psychosocial Risks, Well-Being, and Health at Work (QRBEST)",
+      "url": "https://doi.org/10.16993/sjwop.451",
+      "doi": "10.16993/sjwop.451",
+      "journal": "Scandinavian Journal of Work and Organizational Psychology",
+      "authors": "Mahée Gilbert-Ouimet et al.",
+      "year": 2026,
+      "published": "2026-10-27",
+      "category": "methods",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Associations of multidimensional occupational stress and social support with anxiety and depressive tendencies among hospital workers in China: cross sectional survey study",
+      "url": "https://doi.org/10.1186/s40359-026-05825-3",
+      "doi": "10.1186/s40359-026-05825-3",
+      "journal": "BMC Psychology",
+      "authors": "Wenjun Zhang et al.",
+      "year": 2026,
+      "published": "2026-10-19",
+      "category": "psychosocial",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Linking work-rest disruption to occupational burnout and turnover intention: evidence from a multilevel study among nurses in China",
+      "url": "https://doi.org/10.1186/s12912-026-05565-0",
+      "doi": "10.1186/s12912-026-05565-0",
+      "journal": "BMC Nursing",
+      "authors": "Mengze Zhang et al.",
+      "year": 2026,
+      "published": "2026-10-24",
+      "category": "psychosocial",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Psychosocial, Ergonomic, and Demographic Risk Factors Associated with Work-Related Musculoskeletal Disorders: A Systematic Review",
+      "url": "https://doi.org/10.3390/safety12050130",
+      "doi": "10.3390/safety12050130",
+      "journal": "Safety",
+      "authors": "Karen Nallely Casillas-Arias et al.",
+      "year": 2026,
+      "published": "2026-10-03",
+      "category": "methods",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Supporting the Supporters: Feasibility and Acceptability of Balint Groups for Burnout Among Psychiatric Caseworkers",
+      "url": "https://doi.org/10.1007/s10597-026-01735-1",
+      "doi": "10.1007/s10597-026-01735-1",
+      "journal": "Community Mental Health Journal",
+      "authors": "Aderonke Oyetunji et al.",
+      "year": 2026,
+      "published": "2026-10-27",
+      "category": "anonymity-lgpd",
+      "first_seen": "2026-11-02"
+    },
+    {
+      "title": "Psychosocial Hazards and Occupational Well-Being Deficit in the Gig Economy: A Mediated Model of Emotional Exhaustion",
+      "url": "https://doi.org/10.18311/jeoh/2026/62574",
+      "doi": "10.18311/jeoh/2026/62574",
+      "journal": "Journal of Ecophysiology and Occupational Health",
+      "authors": "Ajit Kumar Singh et al.",
+      "year": 2026,
+      "published": "2026-10-30",
+      "category": "psychosocial",
+      "first_seen": "2026-11-02"
     }
   ]
 }

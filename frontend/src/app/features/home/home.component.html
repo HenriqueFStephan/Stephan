@@ -67,9 +67,29 @@
   <div class="container">
     <p class="eyebrow">{{ 'home.norm.eyebrow' | t }}</p>
     <h2>{{ 'home.norm.title' | t }}</h2>
-    <p class="intro">{{ 'home.norm.lead' | t }}</p>
+    <p class="intro">
+      {{ 'home.norm.leadPrefix' | t
+      }}<a
+        class="norm-link"
+        [href]="nr1NormPdfUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        >NR-1</a
+      >{{ 'home.norm.leadSuffix' | t }}
+    </p>
     <ul class="norm">
-      <li *ngFor="let index of normItems">{{ normKey(index) | t }}</li>
+      <li *ngFor="let item of normItems">
+        {{ item.bodyKey | t }}
+        (<ng-container *ngFor="let cite of item.cites; let last = last"
+          ><a
+            class="norm-link"
+            [href]="nr1NormPdfUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{ cite }}</a
+          ><ng-container *ngIf="!last">{{ 'home.norm.citeSep' | t }}</ng-container></ng-container
+        >)
+      </li>
     </ul>
     <p class="closing">{{ 'home.norm.closing' | t }}</p>
   </div>

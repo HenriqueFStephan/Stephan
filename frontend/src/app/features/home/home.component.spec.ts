@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { I18nService } from '../../core/i18n';
-import { HomeComponent } from './home.component';
+import { HomeComponent, NR1_NORM_PDF_URL } from './home.component';
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
@@ -53,6 +53,24 @@ describe('HomeComponent', () => {
       node.textContent?.trim(),
     );
     expect(titles).toEqual(['HSE-IT', 'Leitura estatística', 'Grupo focal']);
+  });
+
+  it('links NR-1 and norm citations to the official PDF (issue #13)', () => {
+    const root = fixture.nativeElement as HTMLElement;
+    const normSection = root.querySelector('#norma');
+    expect(normSection).not.toBeNull();
+
+    const leadLink = normSection?.querySelector('.intro .norm-link');
+    expect(leadLink?.textContent?.trim()).toBe('NR-1');
+    expect(leadLink?.getAttribute('href')).toBe(NR1_NORM_PDF_URL);
+    expect(leadLink?.getAttribute('target')).toBe('_blank');
+
+    const citeLinks = normSection?.querySelectorAll('.norm .norm-link') ?? [];
+    expect(citeLinks.length).toBe(9);
+    citeLinks.forEach((anchor) => {
+      expect(anchor.getAttribute('href')).toBe(NR1_NORM_PDF_URL);
+    });
+    expect(citeLinks[0]?.textContent?.trim()).toBe('1.5.3.1.4º');
   });
 
   it('leaves the people and contact form sections off the home page', () => {
