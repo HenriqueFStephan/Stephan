@@ -41,7 +41,7 @@ describe('ToolComponent', () => {
     fixture.detectChanges();
 
     expect(text()).toContain('1 de 35');
-    expect(text()).toContain('Sei com clareza o que esperam de mim no trabalho.');
+    expect(text()).toContain('Sei claramente o que é esperado de mim no trabalho.');
     expect(text()).toContain('Nunca');
 
     const back = fixture.nativeElement.querySelector('.text') as HTMLButtonElement;
@@ -108,7 +108,7 @@ describe('ToolComponent campaign draft', () => {
     const text = fixture.nativeElement.textContent as string;
     expect(text).toContain('Continuando de onde você parou.');
     expect(text).toContain('3 de 35');
-    expect(text).toContain('Grupos diferentes no trabalho me pedem coisas difíceis de conciliar.');
+    expect(text).toContain('No trabalho, diferentes grupos exigem de mim, coisas difíceis de conciliar.');
     expect(text).toContain('Salvar e continuar depois');
 
     const save = [...fixture.nativeElement.querySelectorAll('button')].find((button) =>

@@ -2,7 +2,7 @@
 
 This is the store for one company’s HSE Management Standards Indicator Tool wave: about 300 anonymous answers, plus the invitation list used to send each person a link. It replaces nothing on the public site. A public-site schema (pages, posts, comments, practice contact details) was drafted elsewhere and has been discarded. Do not rebuild it.
 
-`/tool` shows the introduction, then the sociodemographic questionnaire (Anexo B), then the 35 items. With `?t=`, that is the campaign form. Without a token, it is the local reading and posts nothing. The working Portuguese for the 35 items lives in `frontend/src/app/features/tool/hse-it.ts` and is not copied into the database. Anexo B sentences live in `frontend/src/app/features/tool/profile.ts`. The database stores codes.
+`/tool` shows the introduction, then the sociodemographic questionnaire (Anexo B), then the 35 items. With `?t=`, that is the campaign form. Without a token, it is the local reading and posts nothing. The 35 sentences live in `frontend/src/app/features/tool/hse-it.ts` and are not copied into the database. Portuguese is the source; English is translated from it. See [Item wording](#item-wording). Anexo B sentences live in `frontend/src/app/features/tool/profile.ts`. The database stores codes.
 
 ## Where PostgreSQL runs
 
@@ -134,7 +134,43 @@ Items 24–35 use the agreement scale: 1 strongly disagree, 2 disagree, 3 neutra
 
 Reverse item numbers: 3, 5, 6, 9, 12, 14, 16, 18, 20, 21, 22, 34.
 
-The working translation already in `frontend/src/app/features/tool/hse-it.ts` is for the local reading. It is not the confirmed Portuguese instrument. Do not copy those sentences into the database, into a second module, or onto the campaign form until the wording is confirmed.
+### Item wording
+
+Decision, 9 November 2026. The reviewed Brazilian Portuguese is the source of the 35 items. The English on the language toggle is a translation of that Portuguese. It is not the text of the UK questionnaire.
+
+What we had before this decision was the other way around. The English column in `hse-it.ts` was the UK Health and Safety Executive wording, and the Portuguese column was a working translation written from that English. `docs/TOOL.md` called it unconfirmed. That translation is retired. Several differences in the Brazilian review are cultural, not just linguistic, and a translation that starts from the UK sentence hides them.
+
+The canonical sentences are the `pt` fields in `frontend/src/app/features/tool/hse-it.ts`. Do not replace an English item with the UK original when the Portuguese says something else. Do not copy the sentences into the database: answers stay raw marks from 1 to 5. Order, scales, and reverse scoring are unchanged.
+
+The wording was taken as given. Only the surface of the form was cleaned: double spaces collapsed, the space before the period on item 27 removed, the accent restored on "difíceis" (item 3), and a final period added on items 13 and 23. The comma in item 3 ("exigem de mim, coisas") was kept.
+
+Items where the Brazilian sentence must not be "corrected" back toward the UK English:
+
+| Item | Brazilian source | English on the form | UK sentence this replaces |
+|---|---|---|---|
+| 1 | Sei claramente o que é esperado de mim | I clearly know what is expected of me at work | I am clear what is expected of me at work |
+| 3 | diferentes grupos exigem de mim, coisas difíceis de conciliar | different groups demand of me things that are hard to reconcile | Different groups at work demand things from me that are hard to combine |
+| 4 | Sei como fazer para executar o meu trabalho | I know how to go about carrying out my work | I know how to go about getting my job done |
+| 5 | Estou sujeito a assédio pessoal… comportamentos rudes | rude words or behaviour | unkind words or behaviour |
+| 8 | Recebo retorno sobre o trabalho que eu realizo | I receive feedback on the work that I carry out | I am given supportive feedback on the work I do |
+| 10 | Posso decidir sobre o meu ritmo de trabalho | I can decide on my work pace | I have a say in my own work speed |
+| 11 | Estou ciente quais são os meus deveres e responsabilidades | I am aware of what my duties and responsibilities are | I am clear what my duties and responsibilities are |
+| 12 | Preciso deixar de lado algumas tarefas… coisas demais | I need to set some tasks aside because I have too many things to do | I have to neglect some tasks because I have too much to do |
+| 13 | Eu conheço as metas e objetivos do meu departamento | I know the goals and objectives of my department | I am clear about the goals and objectives for my department |
+| 14 | atrito ou animosidade entre os colegas de trabalho | friction or animosity among work colleagues | friction or anger between colleagues |
+| 18 | pressionado para trabalhar por longos períodos | pressured to work for long periods | pressured to work long hours |
+| 21 | Estou sujeito a constrangimentos no trabalho | I am subject to embarrassing situations at work | I am subject to bullying at work |
+| 22 | pressões de tempo absurdas | I suffer absurd time pressures | I have unrealistic time pressures |
+| 23 | a ajuda do meu chefe imediato para resolver problemas | my immediate boss's help to resolve work problems | my line manager to help me out with a work problem |
+| 25 | algum poder de decisão sobre a minha maneira de trabalhar | some decision-making power over the way I work | some say over the way I work |
+| 27 | Sou respeitado como eu mereço pelos meus colegas | I am respected by my colleagues as I deserve | I receive the respect at work I deserve from my colleagues |
+| 28 | A equipe é sempre consultada sobre mudanças | The team is always consulted about changes at work | Staff are always consulted about change at work |
+| 29 | algo que me incomodou no trabalho | something that bothered me at work | something that has upset or annoyed me about work |
+| 32 | sou esclarecido de como elas funcionarão na prática | I am given an explanation of how they will work in practice | I am clear how they will work out in practice |
+| 33 | trabalho que pode ser emocionalmente desgastante | work that can be emotionally draining | emotionally demanding work |
+| 35 | Meu chefe imediato me motiva no trabalho | My immediate boss motivates me at work | My line manager encourages me at work |
+
+Item 21 is the clearest case. "Constrangimentos" is not rendered as "bullying". The English says embarrassing situations, which is what the Brazilian sentence says.
 
 ## Access
 
@@ -363,7 +399,6 @@ ss -ltn 'sport = :5432'
 
 ## What a later step still has to do
 
-- Confirm the Portuguese HSE item wording. The working translation is already on the form.
 - Render `/tool` only when `t` matches a pending invitation. No token, no page.
 - Save the 35 raw marks and Anexo B in one transaction with the status change above. This is what `POST /api/v1/tool/responses` does.
 - Replace `admin` / `admintest` before a real list is uploaded on the server.

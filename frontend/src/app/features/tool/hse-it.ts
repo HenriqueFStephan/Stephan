@@ -2,6 +2,17 @@ import { Lang } from '../../core/i18n';
 
 /**
  * HSE Management Standards Indicator Tool (35 items).
+ *
+ * The Portuguese sentences are the reviewed Brazilian instrument, adopted
+ * on 9 November 2026 as the source of the 35 items. See "Item wording" in
+ * docs/TOOL.md. They are not a translation of the UK English questionnaire.
+ * The English sentences are a translation of this Portuguese, so a cultural
+ * difference stays visible in English and is not pulled back to the UK item.
+ *
+ * Spacing was normalized, including the space before the period on item 27.
+ * "difíceis" (item 3) carries its accent, and items 13 and 23 end with a
+ * period. The words were not rewritten.
+ *
  * Item order, scales, and reverse scoring follow the HSE questionnaire.
  * Bands follow the HSE Analysis Tool organisational benchmark
  * (136 organisations): below the 20th percentile, 20th to 50th,
@@ -153,41 +164,41 @@ export const SCALE_LABELS: Record<ScaleKind, Record<Lang, readonly string[]>> = 
 };
 
 export const HSE_ITEMS: readonly HseItem[] = [
-  { n: 1, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Sei com clareza o que esperam de mim no trabalho.', en: 'I am clear what is expected of me at work.' },
+  { n: 1, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Sei claramente o que é esperado de mim no trabalho.', en: 'I clearly know what is expected of me at work.' },
   { n: 2, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Posso decidir quando fazer uma pausa.', en: 'I can decide when to take a break.' },
-  { n: 3, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Grupos diferentes no trabalho me pedem coisas difíceis de conciliar.', en: 'Different groups at work demand things from me that are hard to combine.' },
-  { n: 4, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Sei como conduzir o meu trabalho.', en: 'I know how to go about getting my job done.' },
-  { n: 5, dimension: 'relationships', reverse: true, scale: 'frequency', pt: 'Sofro assédio pessoal, na forma de palavras ou comportamentos hostis.', en: 'I am subject to personal harassment in the form of unkind words or behaviour.' },
-  { n: 6, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Tenho prazos impossíveis de cumprir.', en: 'I have unachievable deadlines.' },
-  { n: 7, dimension: 'peer', reverse: false, scale: 'frequency', pt: 'Se o trabalho fica difícil, meus colegas me ajudam.', en: 'If work gets difficult, my colleagues will help me.' },
-  { n: 8, dimension: 'manager', reverse: false, scale: 'frequency', pt: 'Recebo retorno de apoio sobre o trabalho que faço.', en: 'I am given supportive feedback on the work I do.' },
-  { n: 9, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Preciso trabalhar de modo muito intenso.', en: 'I have to work very intensively.' },
-  { n: 10, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Tenho voz sobre o ritmo do meu trabalho.', en: 'I have a say in my own work speed.' },
-  { n: 11, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Tenho clareza sobre os meus deveres e responsabilidades.', en: 'I am clear what my duties and responsibilities are.' },
-  { n: 12, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Deixo algumas tarefas de lado porque tenho coisa demais para fazer.', en: 'I have to neglect some tasks because I have too much to do.' },
-  { n: 13, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Tenho clareza sobre as metas e os objetivos da minha área.', en: 'I am clear about the goals and objectives for my department.' },
-  { n: 14, dimension: 'relationships', reverse: true, scale: 'frequency', pt: 'Há atrito ou raiva entre colegas.', en: 'There is friction or anger between colleagues.' },
-  { n: 15, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Posso escolher como faço o meu trabalho.', en: 'I have a choice in deciding how I do my work.' },
-  { n: 16, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Não consigo fazer pausas suficientes.', en: 'I am unable to take sufficient breaks.' },
-  { n: 17, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Entendo como o meu trabalho se encaixa no objetivo da organização.', en: 'I understand how my work fits into the overall aim of the organisation.' },
-  { n: 18, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Sou pressionado a trabalhar por muitas horas.', en: 'I am pressured to work long hours.' },
-  { n: 19, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Posso escolher o que faço no trabalho.', en: 'I have a choice in deciding what I do at work.' },
-  { n: 20, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Preciso trabalhar muito rápido.', en: 'I have to work very fast.' },
-  { n: 21, dimension: 'relationships', reverse: true, scale: 'frequency', pt: 'Sofro intimidação no trabalho.', en: 'I am subject to bullying at work.' },
-  { n: 22, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Sofro pressões de tempo irreais.', en: 'I have unrealistic time pressures.' },
-  { n: 23, dimension: 'manager', reverse: false, scale: 'frequency', pt: 'Posso contar com minha chefia imediata quando tenho um problema de trabalho.', en: 'I can rely on my line manager to help me out with a work problem.' },
-  { n: 24, dimension: 'peer', reverse: false, scale: 'agreement', pt: 'Recebo dos colegas a ajuda e o apoio de que preciso.', en: 'I get help and support I need from colleagues.' },
-  { n: 25, dimension: 'control', reverse: false, scale: 'agreement', pt: 'Tenho alguma voz sobre o modo como trabalho.', en: 'I have some say over the way I work.' },
-  { n: 26, dimension: 'change', reverse: false, scale: 'agreement', pt: 'Tenho oportunidades suficientes para questionar a chefia sobre mudanças no trabalho.', en: 'I have sufficient opportunities to question managers about change at work.' },
-  { n: 27, dimension: 'peer', reverse: false, scale: 'agreement', pt: 'Recebo dos colegas o respeito que mereço no trabalho.', en: 'I receive the respect at work I deserve from my colleagues.' },
-  { n: 28, dimension: 'change', reverse: false, scale: 'agreement', pt: 'As pessoas são sempre consultadas sobre mudanças no trabalho.', en: 'Staff are always consulted about change at work.' },
-  { n: 29, dimension: 'manager', reverse: false, scale: 'agreement', pt: 'Posso falar com minha chefia imediata sobre algo no trabalho que me incomodou ou irritou.', en: 'I can talk to my line manager about something that has upset or annoyed me about work.' },
-  { n: 30, dimension: 'control', reverse: false, scale: 'agreement', pt: 'Meu horário de trabalho pode ser flexível.', en: 'My working time can be flexible.' },
-  { n: 31, dimension: 'peer', reverse: false, scale: 'agreement', pt: 'Meus colegas estão dispostos a ouvir problemas relacionados ao trabalho.', en: 'My colleagues are willing to listen to my work-related problems.' },
-  { n: 32, dimension: 'change', reverse: false, scale: 'agreement', pt: 'Quando há mudanças no trabalho, entendo com clareza como elas vão funcionar na prática.', en: 'When changes are made at work, I am clear how they will work out in practice.' },
-  { n: 33, dimension: 'manager', reverse: false, scale: 'agreement', pt: 'Recebo apoio quando o trabalho é emocionalmente exigente.', en: 'I am supported through emotionally demanding work.' },
-  { n: 34, dimension: 'relationships', reverse: true, scale: 'agreement', pt: 'As relações no trabalho são tensas.', en: 'Relationships at work are strained.' },
-  { n: 35, dimension: 'manager', reverse: false, scale: 'agreement', pt: 'Minha chefia imediata me encoraja no trabalho.', en: 'My line manager encourages me at work.' },
+  { n: 3, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'No trabalho, diferentes grupos exigem de mim, coisas difíceis de conciliar.', en: 'At work, different groups demand of me things that are hard to reconcile.' },
+  { n: 4, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Sei como fazer para executar o meu trabalho.', en: 'I know how to go about carrying out my work.' },
+  { n: 5, dimension: 'relationships', reverse: true, scale: 'frequency', pt: 'Estou sujeito a assédio pessoal na forma de palavras ou comportamentos rudes.', en: 'I am subject to personal harassment in the form of rude words or behaviour.' },
+  { n: 6, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Tenho prazos impossíveis de serem cumpridos.', en: 'I have deadlines that are impossible to meet.' },
+  { n: 7, dimension: 'peer', reverse: false, scale: 'frequency', pt: 'Se o trabalho fica difícil, meus colegas me ajudam.', en: 'If work gets difficult, my colleagues help me.' },
+  { n: 8, dimension: 'manager', reverse: false, scale: 'frequency', pt: 'Recebo retorno sobre o trabalho que eu realizo.', en: 'I receive feedback on the work that I carry out.' },
+  { n: 9, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Tenho que trabalhar muito intensamente.', en: 'I have to work very intensively.' },
+  { n: 10, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Posso decidir sobre o meu ritmo de trabalho.', en: 'I can decide on my work pace.' },
+  { n: 11, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Estou ciente quais são os meus deveres e responsabilidades.', en: 'I am aware of what my duties and responsibilities are.' },
+  { n: 12, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Preciso deixar de lado algumas tarefas porque tenho coisas demais para fazer.', en: 'I need to set some tasks aside because I have too many things to do.' },
+  { n: 13, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Eu conheço as metas e objetivos do meu departamento.', en: 'I know the goals and objectives of my department.' },
+  { n: 14, dimension: 'relationships', reverse: true, scale: 'frequency', pt: 'Existe atrito ou animosidade entre os colegas de trabalho.', en: 'There is friction or animosity among work colleagues.' },
+  { n: 15, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Posso escolher como fazer o meu trabalho.', en: 'I can choose how to do my work.' },
+  { n: 16, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Não consigo fazer pausas suficientes.', en: 'I cannot take sufficient breaks.' },
+  { n: 17, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Compreendo como o meu trabalho se integra com os objetivos da organização.', en: 'I understand how my work integrates with the objectives of the organization.' },
+  { n: 18, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Sou pressionado para trabalhar por longos períodos.', en: 'I am pressured to work for long periods.' },
+  { n: 19, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Posso escolher o que fazer no trabalho.', en: 'I can choose what to do at work.' },
+  { n: 20, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Tenho que trabalhar muito rápido.', en: 'I have to work very fast.' },
+  { n: 21, dimension: 'relationships', reverse: true, scale: 'frequency', pt: 'Estou sujeito a constrangimentos no trabalho.', en: 'I am subject to embarrassing situations at work.' },
+  { n: 22, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Sofro pressões de tempo absurdas.', en: 'I suffer absurd time pressures.' },
+  { n: 23, dimension: 'manager', reverse: false, scale: 'frequency', pt: 'Posso contar com a ajuda do meu chefe imediato para resolver problemas do trabalho.', en: "I can count on my immediate boss's help to resolve work problems." },
+  { n: 24, dimension: 'peer', reverse: false, scale: 'agreement', pt: 'Recebo a ajuda e o apoio necessário dos meus colegas.', en: 'I receive the necessary help and support from my colleagues.' },
+  { n: 25, dimension: 'control', reverse: false, scale: 'agreement', pt: 'Tenho algum poder de decisão sobre a minha maneira de trabalhar.', en: 'I have some decision-making power over the way I work.' },
+  { n: 26, dimension: 'change', reverse: false, scale: 'agreement', pt: 'Tenho oportunidades suficientes para questionar as chefias sobre mudanças no trabalho.', en: 'I have sufficient opportunities to question management about changes at work.' },
+  { n: 27, dimension: 'peer', reverse: false, scale: 'agreement', pt: 'Sou respeitado como eu mereço pelos meus colegas.', en: 'I am respected by my colleagues as I deserve.' },
+  { n: 28, dimension: 'change', reverse: false, scale: 'agreement', pt: 'A equipe é sempre consultada sobre mudanças no trabalho.', en: 'The team is always consulted about changes at work.' },
+  { n: 29, dimension: 'manager', reverse: false, scale: 'agreement', pt: 'Posso falar com o meu chefe imediato sobre algo que me incomodou no trabalho.', en: 'I can talk to my immediate boss about something that bothered me at work.' },
+  { n: 30, dimension: 'control', reverse: false, scale: 'agreement', pt: 'Meu horário de trabalho pode ser flexível.', en: 'My work schedule can be flexible.' },
+  { n: 31, dimension: 'peer', reverse: false, scale: 'agreement', pt: 'Meus colegas estão dispostos a ouvir os meus problemas relacionados ao trabalho.', en: 'My colleagues are willing to listen to my work-related problems.' },
+  { n: 32, dimension: 'change', reverse: false, scale: 'agreement', pt: 'Quando ocorrem mudanças no trabalho, sou esclarecido de como elas funcionarão na prática.', en: 'When changes occur at work, I am given an explanation of how they will work in practice.' },
+  { n: 33, dimension: 'manager', reverse: false, scale: 'agreement', pt: 'Recebo apoio quando realizo trabalho que pode ser emocionalmente desgastante.', en: 'I receive support when I do work that can be emotionally draining.' },
+  { n: 34, dimension: 'relationships', reverse: true, scale: 'agreement', pt: 'Os relacionamentos no trabalho são tensos.', en: 'Relationships at work are tense.' },
+  { n: 35, dimension: 'manager', reverse: false, scale: 'agreement', pt: 'Meu chefe imediato me motiva no trabalho.', en: 'My immediate boss motivates me at work.' },
 ];
 
 export function favourableScore(raw: number, reverse: boolean): number {

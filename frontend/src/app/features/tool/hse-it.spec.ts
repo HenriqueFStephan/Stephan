@@ -74,6 +74,22 @@ describe('HSE-IT', () => {
     expect(bandFor(DIMENSIONS.change.p80, 'change')).toBe('maintain');
   });
 
+  it('takes the reviewed Brazilian wording as the source, including where it differs from the UK items', () => {
+    const byN = Object.fromEntries(HSE_ITEMS.map((item) => [item.n, item]));
+    expect(byN[1].pt).toBe('Sei claramente o que é esperado de mim no trabalho.');
+    expect(byN[1].en).toBe('I clearly know what is expected of me at work.');
+    expect(byN[8].en).toBe('I receive feedback on the work that I carry out.');
+    expect(byN[18].pt).toBe('Sou pressionado para trabalhar por longos períodos.');
+    expect(byN[18].en).toBe('I am pressured to work for long periods.');
+    expect(byN[21].pt).toBe('Estou sujeito a constrangimentos no trabalho.');
+    expect(byN[21].en).toBe('I am subject to embarrassing situations at work.');
+    expect(byN[32].en).toBe(
+      'When changes occur at work, I am given an explanation of how they will work in practice.',
+    );
+    expect(byN[35].pt).toBe('Meu chefe imediato me motiva no trabalho.');
+    expect(byN[35].en).toBe('My immediate boss motivates me at work.');
+  });
+
   it('writes a local summary without treating one answer as a group result', () => {
     const scores = scoreHse(HSE_ITEMS.map((item) => (item.reverse ? 1 : 5)));
     const text = hseSummary(scores, '  Expedição ', 'pt-BR');
