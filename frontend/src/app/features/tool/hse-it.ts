@@ -166,7 +166,7 @@ export const SCALE_LABELS: Record<ScaleKind, Record<Lang, readonly string[]>> = 
 export const HSE_ITEMS: readonly HseItem[] = [
   { n: 1, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Sei claramente o que é esperado de mim no trabalho.', en: 'I clearly know what is expected of me at work.' },
   { n: 2, dimension: 'control', reverse: false, scale: 'frequency', pt: 'Posso decidir quando fazer uma pausa.', en: 'I can decide when to take a break.' },
-  { n: 3, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'No trabalho, diferentes grupos exigem de mim, coisas difíceis de conciliar.', en: 'At work, different groups demand of me things that are hard to reconcile.' },
+  { n: 3, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'No trabalho, diferentes grupos exigem de mim coisas difíceis de conciliar.', en: 'At work, different groups demand of me things that are hard to reconcile.' },
   { n: 4, dimension: 'role', reverse: false, scale: 'frequency', pt: 'Sei como fazer para executar o meu trabalho.', en: 'I know how to go about carrying out my work.' },
   { n: 5, dimension: 'relationships', reverse: true, scale: 'frequency', pt: 'Estou sujeito a assédio pessoal na forma de palavras ou comportamentos rudes.', en: 'I am subject to personal harassment in the form of rude words or behaviour.' },
   { n: 6, dimension: 'demands', reverse: true, scale: 'frequency', pt: 'Tenho prazos impossíveis de serem cumpridos.', en: 'I have deadlines that are impossible to meet.' },

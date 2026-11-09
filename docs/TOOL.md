@@ -142,14 +142,14 @@ What we had before this decision was the other way around. The English column in
 
 The canonical sentences are the `pt` fields in `frontend/src/app/features/tool/hse-it.ts`. Do not replace an English item with the UK original when the Portuguese says something else. Do not copy the sentences into the database: answers stay raw marks from 1 to 5. Order, scales, and reverse scoring are unchanged.
 
-The wording was taken as given. Only the surface of the form was cleaned: double spaces collapsed, the space before the period on item 27 removed, the accent restored on "difíceis" (item 3), and a final period added on items 13 and 23. The comma in item 3 ("exigem de mim, coisas") was kept.
+The wording was taken as given. Only the surface of the form was cleaned: double spaces collapsed, the space before the period on item 27 removed, the accent restored on "difíceis" (item 3), and a final period added on items 13 and 23. The comma after "mim" in item 3 was a typing error in the source note and was removed on the same day: "exigem de mim coisas difíceis de conciliar."
 
 Items where the Brazilian sentence must not be "corrected" back toward the UK English:
 
 | Item | Brazilian source | English on the form | UK sentence this replaces |
 |---|---|---|---|
 | 1 | Sei claramente o que é esperado de mim | I clearly know what is expected of me at work | I am clear what is expected of me at work |
-| 3 | diferentes grupos exigem de mim, coisas difíceis de conciliar | different groups demand of me things that are hard to reconcile | Different groups at work demand things from me that are hard to combine |
+| 3 | diferentes grupos exigem de mim coisas difíceis de conciliar | different groups demand of me things that are hard to reconcile | Different groups at work demand things from me that are hard to combine |
 | 4 | Sei como fazer para executar o meu trabalho | I know how to go about carrying out my work | I know how to go about getting my job done |
 | 5 | Estou sujeito a assédio pessoal… comportamentos rudes | rude words or behaviour | unkind words or behaviour |
 | 8 | Recebo retorno sobre o trabalho que eu realizo | I receive feedback on the work that I carry out | I am given supportive feedback on the work I do |
