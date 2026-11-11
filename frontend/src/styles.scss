@@ -49,3 +49,27 @@ textarea {
   margin: 0 auto;
   padding: 0 1.5rem;
 }
+
+html[data-page='landing'] {
+  scrollbar-color: #0f3f62 #efeae0;
+  caret-color: #0f3f62;
+}
+
+html[data-page='landing']::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html[data-page='landing']::-webkit-scrollbar-track {
+  background: #efeae0;
+}
+
+html[data-page='landing']::-webkit-scrollbar-thumb {
+  background: #0f3f62;
+  border: 3px solid #efeae0;
+}
+
+html[data-page='landing'] ::selection {
+  background: #0f3f62;
+  color: #f7f4ec;
+}

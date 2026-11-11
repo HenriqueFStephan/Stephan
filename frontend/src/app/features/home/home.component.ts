@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { TranslatePipe } from '../../core/i18n';
@@ -28,7 +28,19 @@ type MethodStep = {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit, OnDestroy {
+  ngOnInit(): void {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.page = 'landing';
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (typeof document !== 'undefined') {
+      delete document.documentElement.dataset.page;
+    }
+  }
+
   readonly dimensions = [1, 2, 3, 4, 5, 6, 7] as const;
   readonly stats = [1, 2, 3] as const;
   readonly gains = [1, 2, 3, 4, 5, 6] as const;
