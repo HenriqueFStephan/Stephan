@@ -31,13 +31,13 @@ type MethodStep = {
 export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (typeof document !== 'undefined') {
-      document.documentElement.dataset.page = 'landing';
+      document.documentElement.dataset['page'] = 'landing';
     }
   }
 
   ngOnDestroy(): void {
     if (typeof document !== 'undefined') {
-      delete document.documentElement.dataset.page;
+      delete document.documentElement.dataset['page'];
     }
   }
 
