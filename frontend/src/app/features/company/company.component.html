@@ -30,10 +30,12 @@
             [(ngModel)]="password"
           />
         </label>
+        <a class="forgot" routerLink="/senha">{{ 'company.forgot' | t }}</a>
         <button type="submit" class="button" [disabled]="submitting || !username.trim() || !password.trim()">
           {{ submitting ? ('company.checking' | t) : ('company.enter' | t) }}
         </button>
         <p class="error" *ngIf="errorKey" role="alert">{{ errorKey | t }}</p>
+        <a class="forgot" *ngIf="errorKey === 'company.unconfirmed'" routerLink="/confirmar">{{ 'company.resendConfirm' | t }}</a>
       </form>
     </section>
   </div>

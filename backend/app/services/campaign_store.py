@@ -37,7 +37,16 @@ from app.services.invitation_whatsapp import (
 DEMOGRAPHIC_FIELDS: dict[str, tuple[str, ...]] = {
     "age_band": ("18_24", "25_34", "35_44", "45_54", "55_64", "65_plus"),
     "gender": ("female", "male", "undisclosed"),
-    "education": ("fundamental", "high_school", "higher_incomplete", "higher_complete", "postgraduate"),
+    "education": (
+        "fundamental_incomplete",
+        "fundamental_complete",
+        "high_school_incomplete",
+        "high_school",
+        "higher_incomplete",
+        "higher_complete",
+        "postgraduate",
+        "fundamental",
+    ),
     "economic_sector": (
         "manufacturing",
         "retail",
@@ -59,7 +68,11 @@ DEMOGRAPHIC_FIELDS: dict[str, tuple[str, ...]] = {
     "leadership": ("yes", "no"),
     "region": ("north", "northeast", "center_west", "southeast", "south"),
 }
-REQUIRED_DEMOGRAPHIC_KEYS = frozenset({"age_band", "economic_sector"})
+# Questions still on the form. Older columns stay in DEMOGRAPHIC_FIELDS so a
+# stored row can keep them, and a new form may omit them.
+REQUIRED_DEMOGRAPHIC_KEYS = frozenset(
+    {"age_band", "gender", "education", "tenure_org", "work_shift", "leadership"}
+)
 DEMOGRAPHIC_COLUMNS = tuple(DEMOGRAPHIC_FIELDS)
 
 # Identifiers we already refused. This is not the list of demographic fields.
@@ -571,7 +584,7 @@ def record_response(
 
 
 def clean_demographics(raw: dict[str, Any], *, require_complete: bool = True) -> dict[str, Any]:
-    """Keep Anexo B codes only. A finished form requires age band and economic sector."""
+    """Keep Anexo B codes only. A finished form requires every question still asked."""
     if not isinstance(raw, dict):
         raise DemographicRejected("demographics must be an object")
     cleaned: dict[str, Any] = {}

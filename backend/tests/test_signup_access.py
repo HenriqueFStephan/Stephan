@@ -1,4 +1,7 @@
-"""Signup opens the first access email for a company. Further emails are more rows."""
+"""Signup opens the first access email for a company. Further emails are more rows.
+
+The row stays closed until the confirmation link is opened.
+"""
 
 import json
 from uuid import uuid4
@@ -13,11 +16,13 @@ from tests.test_orders import payload
 client = TestClient(app)
 
 
-def test_signup_creates_an_owner_and_hides_the_password(postgres):
+def test_signup_stays_closed_until_the_email_is_confirmed(postgres, monkeypatch):
     email = f"signup-{uuid4().hex[:8]}@example.com"
     cnpj = "00.000.080/0001-85"
     digits = "00000080000185"
     password = "senha-segura"
+    sent: list[tuple[str, str]] = []
+    monkeypatch.setattr("app.api.v1.orders.send_confirmation", lambda address, token: sent.append((address, token)))
     try:
         response = client.post(
             "/api/v1/orders",
@@ -28,6 +33,26 @@ def test_signup_creates_an_owner_and_hides_the_password(postgres):
         assert stored["access_email"] == email
         assert "password" not in stored
         assert password not in json.dumps(stored)
+        assert sent[0][0] == email.casefold()
+        assert sent[0][1] 
+
+        closed = client.post(
+            "/api/v1/company/login",
+            json={"username": email, "password": password},
+        )
+        assert closed.status_code == 403
+        assert closed.json()["detail"]["code"] == "email_unconfirmed"
+
+        wrong = client.post(
+            "/api/v1/company/login",
+            json={"username": email, "password": "outra-senha"},
+        )
+        assert wrong.status_code == 401
+
+        confirmed = client.post("/api/v1/company/confirm", json={"token": sent[0][1]})
+        assert confirmed.status_code == 200
+        again = client.post("/api/v1/company/confirm", json={"token": sent[0][1]})
+        assert again.status_code == 400
 
         login = client.post(
             "/api/v1/company/login",
@@ -35,12 +60,6 @@ def test_signup_creates_an_owner_and_hides_the_password(postgres):
         )
         assert login.status_code == 200
         assert login.json()["success"] is True
-
-        wrong = client.post(
-            "/api/v1/company/login",
-            json={"username": email, "password": "outra-senha"},
-        )
-        assert wrong.status_code == 401
 
         again = client.post(
             "/api/v1/orders",

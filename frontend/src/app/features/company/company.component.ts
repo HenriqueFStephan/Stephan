@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { ApiService } from '../../core/api.service';
 import { I18nService, TranslatePipe } from '../../core/i18n';
@@ -48,7 +49,7 @@ interface BandPart {
 @Component({
   selector: 'app-company',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe, RouterLink],
   templateUrl: './company.component.html',
   styleUrls: ['./company.component.scss'],
 })
@@ -130,8 +131,14 @@ export class CompanyComponent implements OnInit {
         this.load(response.passage);
       },
       error: (err: HttpErrorResponse) => {
+        const detail = err.error?.detail;
+        const code = detail && typeof detail === 'object' ? String(detail.code ?? '') : '';
         this.submitting = false;
-        this.errorKey = err.status === 0 || err.status === 503 ? 'company.unreachable' : 'company.badLogin';
+        this.errorKey = code === 'email_unconfirmed'
+          ? 'company.unconfirmed'
+          : err.status === 0 || err.status === 503
+            ? 'company.unreachable'
+            : 'company.badLogin';
       },
     });
   }

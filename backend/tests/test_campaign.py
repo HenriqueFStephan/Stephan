@@ -73,9 +73,23 @@ def test_a_draft_may_omit_required_demographics():
 
 
 def test_demographics_are_the_annex_and_reject_identifiers():
-    assert clean_demographics({"Age_Band": "35_44", "economic_sector": "Health", "Leadership": "yes"}) == {
+    assert clean_demographics(
+        {
+            "Age_Band": "35_44",
+            "gender": "Female",
+            "education": "high_school_incomplete",
+            "economic_sector": "Health",
+            "tenure_org": "lt_1",
+            "work_shift": "Day_Fixed",
+            "Leadership": "yes",
+        }
+    ) == {
         "age_band": "35_44",
+        "gender": "female",
+        "education": "high_school_incomplete",
         "economic_sector": "health",
+        "tenure_org": "lt_1",
+        "work_shift": "day_fixed",
         "leadership": "yes",
     }
     with pytest.raises(DemographicRejected):
@@ -101,7 +115,7 @@ def test_annex_codes_match_the_schema_and_the_form():
             rf"CHECK \({column} IS NULL OR {column} IN \((.*?)\)\)",
             sql,
         )
-        assert len(bodies) == 3
+        assert len(bodies) == (5 if column == "education" else 3)
         for body in bodies:
             assert re.findall(r"'([^']*)'", body) == list(values)
     text = (ROOT / "frontend/src/app/features/tool/profile.ts").read_text(encoding="utf-8")
@@ -114,10 +128,21 @@ def test_annex_codes_match_the_schema_and_the_form():
         text,
         re.S,
     )
-    assert [item[0] for item in questions] == list(DEMOGRAPHIC_FIELDS)
+    asked = (
+        "age_band",
+        "gender",
+        "education",
+        "tenure_org",
+        "work_shift",
+        "leadership",
+    )
+    retired = {"education": ("fundamental",)}
+    assert [item[0] for item in questions] == list(asked)
+    assert REQUIRED_DEMOGRAPHIC_KEYS == frozenset(asked)
     for key, required, _pt, _en, options in questions:
         found = re.findall(r"id: '([a-z0-9_]+)'", options)
-        assert found == list(DEMOGRAPHIC_FIELDS[key])
+        hidden = retired.get(key, ())
+        assert found == [code for code in DEMOGRAPHIC_FIELDS[key] if code not in hidden]
         assert (required == "true") is (key in REQUIRED_DEMOGRAPHIC_KEYS)
 
 
@@ -345,7 +370,10 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             annex = {
                 "age_band": "35_44",
                 "gender": "female",
+                "education": "high_school",
                 "economic_sector": "health",
+                "tenure_org": "y1_3",
+                "work_shift": "day_fixed",
                 "leadership": "no",
                 "region": "southeast",
             }
@@ -417,7 +445,7 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             assert stored["economic_sector"] == "health"
             assert stored["leadership"] == "no"
             assert stored["region"] == "southeast"
-            assert stored["education"] is None
+            assert stored["education"] == "high_school"
             posted_ids = _ids(conn, "hse_responses") - before_answers - {response_id}
             assert len(posted_ids) == 1
             posted = conn.execute(
@@ -620,7 +648,15 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
             json={
                 "token": token,
                 "answers": [3] * 35,
-                "demographics": {"age_band": "35_44", "economic_sector": "health"},
+                "demographics": {
+                    "age_band": "35_44",
+                    "gender": "female",
+                    "education": "high_school",
+                    "economic_sector": "health",
+                    "tenure_org": "y1_3",
+                    "work_shift": "day_fixed",
+                    "leadership": "no",
+                },
             },
         )
         assert finished.status_code == 200

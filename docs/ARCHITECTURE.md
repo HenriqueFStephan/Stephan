@@ -13,7 +13,7 @@ browser  →  Angular (Netlify)  →  /api/v1/* proxy  →  FastAPI (Render)
 | `backend/` | FastAPI. `GET /health` is the Render check. `GET /api/v1/status` is the same payload through the proxy. |
 | `render.yaml` | Blueprint for `stephan-api`. Secrets use `sync: false`. |
 | `/studio` | Hidden page. On localhost it skips the access token. With `GITHUB_STUDIO_TOKEN` it opens a GitHub issue labeled `solve` and stores snips on branch `studio-attachments`, in the same order as the composer. |
-| `/empresa` | Company portal. Login stays on the API. `admin` is company `internal`; `artigo` is company `hse-it`. The charts are still a simulated wave; see `docs/COMPANY_PORTAL.md`. Invitations and answers are per company; see `docs/TOOL.md`. |
+| `/empresa` | Company portal. Login stays on the API. `admin` is company `internal` and is already confirmed at `henrique.f.stephan@gmail.com`. `artigo` is company `hse-it` and is already confirmed at `celsostephan@gmail.com`. A signup cannot enter until `/confirmar` opens it. A forgotten password is replaced from `/senha`. The charts are still a simulated wave; see `docs/COMPANY_PORTAL.md`. Invitations and answers are per company; see `docs/TOOL.md`. |
 | `/tool` | Local reading with no token. With `?t=`, the campaign form for that invitation. |
 | PostgreSQL | HSE campaign only. Same machine as the API, `127.0.0.1` only. `DATABASE_URL` in `debt.txt`. Not a Lightsail managed database. |
 | `.github/workflows/` | Deploy hook, weekly law report, issue solver. |

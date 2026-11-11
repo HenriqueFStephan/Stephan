@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS hse_responses (
     ),
     CONSTRAINT hse_responses_age_band CHECK (age_band IS NULL OR age_band IN ('18_24', '25_34', '35_44', '45_54', '55_64', '65_plus')),
     CONSTRAINT hse_responses_gender CHECK (gender IS NULL OR gender IN ('female', 'male', 'undisclosed')),
-    CONSTRAINT hse_responses_education CHECK (education IS NULL OR education IN ('fundamental', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate')),
+    CONSTRAINT hse_responses_education CHECK (education IS NULL OR education IN ('fundamental_incomplete', 'fundamental_complete', 'high_school_incomplete', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate', 'fundamental')),
     CONSTRAINT hse_responses_economic_sector CHECK (economic_sector IS NULL OR economic_sector IN ('manufacturing', 'retail', 'services', 'health', 'education', 'it', 'construction', 'transport', 'agribusiness', 'public_admin', 'other')),
     CONSTRAINT hse_responses_org_size CHECK (org_size IS NULL OR org_size IN ('micro', 'small', 'medium', 'large', 'unknown')),
     CONSTRAINT hse_responses_employment_bond CHECK (employment_bond IS NULL OR employment_bond IN ('clt', 'public_statute', 'autonomous_pj', 'intern_apprentice', 'other')),
@@ -284,7 +284,7 @@ CREATE TABLE IF NOT EXISTS hse_drafts (
     ),
     CONSTRAINT hse_drafts_age_band CHECK (age_band IS NULL OR age_band IN ('18_24', '25_34', '35_44', '45_54', '55_64', '65_plus')),
     CONSTRAINT hse_drafts_gender CHECK (gender IS NULL OR gender IN ('female', 'male', 'undisclosed')),
-    CONSTRAINT hse_drafts_education CHECK (education IS NULL OR education IN ('fundamental', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate')),
+    CONSTRAINT hse_drafts_education CHECK (education IS NULL OR education IN ('fundamental_incomplete', 'fundamental_complete', 'high_school_incomplete', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate', 'fundamental')),
     CONSTRAINT hse_drafts_economic_sector CHECK (economic_sector IS NULL OR economic_sector IN ('manufacturing', 'retail', 'services', 'health', 'education', 'it', 'construction', 'transport', 'agribusiness', 'public_admin', 'other')),
     CONSTRAINT hse_drafts_org_size CHECK (org_size IS NULL OR org_size IN ('micro', 'small', 'medium', 'large', 'unknown')),
     CONSTRAINT hse_drafts_employment_bond CHECK (employment_bond IS NULL OR employment_bond IN ('clt', 'public_statute', 'autonomous_pj', 'intern_apprentice', 'other')),
@@ -333,9 +333,12 @@ CREATE TABLE IF NOT EXISTS hse_drafts (
 );
 
 -- One row is one person who can sign in. A company has many rows.
--- Signup creates the first row, with role owner. Further emails are more rows
--- on the same company_id, each with its own password. username is the login key:
--- an email for a registered company, a short name for the seeded accounts.
+-- Signup creates the first row, with role owner, and leaves confirmed_at empty
+-- until the link in the confirmation email is opened. The two seeded accounts
+-- are confirmed already. Further emails are more rows on the same company_id,
+-- each with its own password. username is the login key: an email for a
+-- registered company, a short name for the seeded accounts.
+-- confirm_token_hash and reset_token_hash store a hash. The raw token stays in the email.
 CREATE TABLE IF NOT EXISTS company_users (
     id uuid PRIMARY KEY,
     company_id uuid NOT NULL REFERENCES companies (id),
@@ -359,6 +362,20 @@ ALTER TABLE company_users ADD COLUMN IF NOT EXISTS role text NOT NULL DEFAULT 'm
 CREATE UNIQUE INDEX IF NOT EXISTS company_users_email
     ON company_users (lower(email))
     WHERE email IS NOT NULL;
+
+ALTER TABLE company_users ADD COLUMN IF NOT EXISTS confirmed_at timestamptz;
+ALTER TABLE company_users ADD COLUMN IF NOT EXISTS confirm_token_hash text;
+ALTER TABLE company_users ADD COLUMN IF NOT EXISTS confirm_expires_at timestamptz;
+ALTER TABLE company_users ADD COLUMN IF NOT EXISTS reset_token_hash text;
+ALTER TABLE company_users ADD COLUMN IF NOT EXISTS reset_expires_at timestamptz;
+
+CREATE UNIQUE INDEX IF NOT EXISTS company_users_confirm_token
+    ON company_users (confirm_token_hash)
+    WHERE confirm_token_hash IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS company_users_reset_token
+    ON company_users (reset_token_hash)
+    WHERE reset_token_hash IS NOT NULL;
 
 -- Existing local lists were stored on slug pilot. They belong to the internal account.
 UPDATE companies
@@ -414,7 +431,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS invitations_round_phone
 -- from CREATE TABLE, so each ADD is skipped once the column is there.
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS age_band text CONSTRAINT hse_responses_age_band CHECK (age_band IS NULL OR age_band IN ('18_24', '25_34', '35_44', '45_54', '55_64', '65_plus'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS gender text CONSTRAINT hse_responses_gender CHECK (gender IS NULL OR gender IN ('female', 'male', 'undisclosed'));
-ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS education text CONSTRAINT hse_responses_education CHECK (education IS NULL OR education IN ('fundamental', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate'));
+ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS education text CONSTRAINT hse_responses_education CHECK (education IS NULL OR education IN ('fundamental_incomplete', 'fundamental_complete', 'high_school_incomplete', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate', 'fundamental'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS economic_sector text CONSTRAINT hse_responses_economic_sector CHECK (economic_sector IS NULL OR economic_sector IN ('manufacturing', 'retail', 'services', 'health', 'education', 'it', 'construction', 'transport', 'agribusiness', 'public_admin', 'other'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS org_size text CONSTRAINT hse_responses_org_size CHECK (org_size IS NULL OR org_size IN ('micro', 'small', 'medium', 'large', 'unknown'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS employment_bond text CONSTRAINT hse_responses_employment_bond CHECK (employment_bond IS NULL OR employment_bond IN ('clt', 'public_statute', 'autonomous_pj', 'intern_apprentice', 'other'));
@@ -423,6 +440,13 @@ ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS tenure_profession text CONSTR
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS work_shift text CONSTRAINT hse_responses_work_shift CHECK (work_shift IS NULL OR work_shift IN ('day_fixed', 'night_fixed', 'rotating', 'flexible'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS leadership text CONSTRAINT hse_responses_leadership CHECK (leadership IS NULL OR leadership IN ('yes', 'no'));
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS region text CONSTRAINT hse_responses_region CHECK (region IS NULL OR region IN ('north', 'northeast', 'center_west', 'southeast', 'south'));
+
+-- Existing databases keep the old education check until it is replaced.
+-- `fundamental` stays allowed so a row stored before the split remains valid.
+ALTER TABLE hse_responses DROP CONSTRAINT IF EXISTS hse_responses_education;
+ALTER TABLE hse_responses ADD CONSTRAINT hse_responses_education CHECK (education IS NULL OR education IN ('fundamental_incomplete', 'fundamental_complete', 'high_school_incomplete', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate', 'fundamental'));
+ALTER TABLE hse_drafts DROP CONSTRAINT IF EXISTS hse_drafts_education;
+ALTER TABLE hse_drafts ADD CONSTRAINT hse_drafts_education CHECK (education IS NULL OR education IN ('fundamental_incomplete', 'fundamental_complete', 'high_school_incomplete', 'high_school', 'higher_incomplete', 'higher_complete', 'postgraduate', 'fundamental'));
 
 -- One quote per uploaded list. forms is the number of new links this file
 -- created. The price is provisional. method stays empty until the company picks

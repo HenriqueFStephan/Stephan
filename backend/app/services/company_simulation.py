@@ -216,7 +216,12 @@ def _insert_round(conn, company_id, spec: dict) -> None:
             submitted_on=person["day"],
             demographics={
                 "age_band": AGE_BANDS[index % len(AGE_BANDS)],
+                "gender": "female" if index % 2 == 0 else "male",
+                "education": "high_school",
                 "economic_sector": person["sector"],
+                "tenure_org": "y1_3",
+                "work_shift": "day_fixed",
+                "leadership": "no",
             },
             answers=person["raw"],
         )

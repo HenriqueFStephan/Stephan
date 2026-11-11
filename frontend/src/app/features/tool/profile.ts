@@ -2,6 +2,11 @@
  * Anexo B, asked after the introduction and stored on the same form as the 35 items.
  * Option ids are the database codes. Keep them aligned with DEMOGRAPHIC_FIELDS
  * in backend/app/services/campaign_store.py.
+ *
+ * The form asks six questions, all required. Economic sector, organization size,
+ * employment relationship, time in the occupation, and region stay as stored
+ * columns and are no longer asked. The combined `fundamental` education code
+ * is retired on the form and still accepted on older rows.
  */
 
 export interface ProfileOption {
@@ -35,9 +40,9 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'gender',
-    required: false,
-    pt: 'Gênero',
-    en: 'Gender',
+    required: true,
+    pt: 'Sexo',
+    en: 'Sex',
     options: [
       { id: 'female', pt: 'Feminino', en: 'Female' },
       { id: 'male', pt: 'Masculino', en: 'Male' },
@@ -46,14 +51,24 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'education',
-    required: false,
+    required: true,
     pt: 'Grau de Escolaridade',
     en: 'Education',
     options: [
       {
-        id: 'fundamental',
-        pt: 'Ensino Fundamental completo/incompleto',
-        en: 'Elementary education, complete or incomplete',
+        id: 'fundamental_incomplete',
+        pt: 'Ensino Fundamental incompleto',
+        en: 'Incomplete elementary education',
+      },
+      {
+        id: 'fundamental_complete',
+        pt: 'Ensino Fundamental completo',
+        en: 'Complete elementary education',
+      },
+      {
+        id: 'high_school_incomplete',
+        pt: 'Ensino Médio incompleto',
+        en: 'Incomplete secondary education',
       },
       { id: 'high_school', pt: 'Ensino Médio completo', en: 'Complete secondary education' },
       {
@@ -70,99 +85,10 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
     ],
   },
   {
-    id: 'economic_sector',
-    required: true,
-    pt: 'Setor Econômico da Organização de Trabalho',
-    en: 'Economic sector of the work organization',
-    options: [
-      {
-        id: 'manufacturing',
-        pt: 'Indústria e Produção de Manufaturados',
-        en: 'Manufacturing',
-      },
-      { id: 'retail', pt: 'Comércio Varejista e Atacadista', en: 'Retail and wholesale trade' },
-      { id: 'services', pt: 'Setor de Serviços Gerais', en: 'General services' },
-      { id: 'health', pt: 'Saúde Humana e Serviços Sociais', en: 'Human health and social services' },
-      { id: 'education', pt: 'Educação e Ensino', en: 'Education and teaching' },
-      {
-        id: 'it',
-        pt: 'Tecnologia da Informação (TI) e Comunicação',
-        en: 'Information technology and communication',
-      },
-      { id: 'construction', pt: 'Construção Civil', en: 'Construction' },
-      {
-        id: 'transport',
-        pt: 'Transporte, Logística e Armazenagem',
-        en: 'Transport, logistics, and storage',
-      },
-      {
-        id: 'agribusiness',
-        pt: 'Agropecuária e Agronegócio',
-        en: 'Agriculture and agribusiness',
-      },
-      {
-        id: 'public_admin',
-        pt: 'Administração Pública e Gestão Governamental',
-        en: 'Public administration',
-      },
-      { id: 'other', pt: 'Outro segmento produtivo', en: 'Another productive sector' },
-    ],
-  },
-  {
-    id: 'org_size',
-    required: false,
-    pt: 'Porte Aproximado da Organização de Trabalho',
-    en: 'Approximate size of the work organization',
-    options: [
-      { id: 'micro', pt: 'Microempresa (até 19 colaboradores)', en: 'Micro enterprise (up to 19 employees)' },
-      { id: 'small', pt: 'Pequena empresa (20 a 99 colaboradores)', en: 'Small enterprise (20 to 99 employees)' },
-      {
-        id: 'medium',
-        pt: 'Média empresa (100 a 499 colaboradores)',
-        en: 'Medium enterprise (100 to 499 employees)',
-      },
-      {
-        id: 'large',
-        pt: 'Grande empresa (500 ou mais colaboradores)',
-        en: 'Large enterprise (500 or more employees)',
-      },
-      { id: 'unknown', pt: 'Não sei informar', en: 'I do not know' },
-    ],
-  },
-  {
-    id: 'employment_bond',
-    required: false,
-    pt: 'Natureza do Vínculo de Trabalho',
-    en: 'Employment relationship',
-    options: [
-      {
-        id: 'clt',
-        pt: 'Empregado com registro em carteira profissional (CLT)',
-        en: 'Employee with a signed work card (CLT)',
-      },
-      {
-        id: 'public_statute',
-        pt: 'Servidor público regido por estatuto',
-        en: 'Public servant under a statute',
-      },
-      {
-        id: 'autonomous_pj',
-        pt: 'Trabalhador autônomo / Prestador de serviços Pessoa Jurídica (PJ)',
-        en: 'Self-employed or service provider as a legal entity (PJ)',
-      },
-      {
-        id: 'intern_apprentice',
-        pt: 'Estágio curricular ou contrato de Jovem Aprendiz',
-        en: 'Curricular internship or young apprentice contract',
-      },
-      { id: 'other', pt: 'Outra modalidade contratual', en: 'Another contractual arrangement' },
-    ],
-  },
-  {
     id: 'tenure_org',
-    required: false,
-    pt: 'Tempo de Serviço na Organização Atual',
-    en: 'Length of service in the current organization',
+    required: true,
+    pt: 'Tempo de Serviço na Empresa',
+    en: 'Length of service at the company',
     options: [
       { id: 'lt_1', pt: 'Menos de 1 ano', en: 'Less than 1 year' },
       { id: 'y1_3', pt: 'Entre 1 e 3 anos', en: 'Between 1 and 3 years' },
@@ -171,22 +97,10 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
     ],
   },
   {
-    id: 'tenure_profession',
-    required: false,
-    pt: 'Tempo Total de Atuação na Profissão Vigente',
-    en: 'Total time in the current occupation',
-    options: [
-      { id: 'lt_1', pt: 'Menos de 1 ano', en: 'Less than 1 year' },
-      { id: 'y1_5', pt: 'Entre 1 e 5 anos', en: 'Between 1 and 5 years' },
-      { id: 'y6_15', pt: 'Entre 6 e 15 anos', en: 'Between 6 and 15 years' },
-      { id: 'gt_15', pt: 'Mais de 15 anos', en: 'More than 15 years' },
-    ],
-  },
-  {
     id: 'work_shift',
-    required: false,
-    pt: 'Regime de Turno Laboral Predominante',
-    en: 'Predominant work shift',
+    required: true,
+    pt: 'Regime de Turno de Trabalho',
+    en: 'Work shift regime',
     options: [
       { id: 'day_fixed', pt: 'Diurno fixo', en: 'Fixed day shift' },
       { id: 'night_fixed', pt: 'Noturno fixo', en: 'Fixed night shift' },
@@ -200,25 +114,12 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'leadership',
-    required: false,
+    required: true,
     pt: 'Você exerce atribuições funcionais de chefia, gestão ou liderança formal de equipes?',
     en: 'Do you formally supervise, manage, or lead a team?',
     options: [
       { id: 'yes', pt: 'Sim', en: 'Yes' },
       { id: 'no', pt: 'Não', en: 'No' },
-    ],
-  },
-  {
-    id: 'region',
-    required: false,
-    pt: 'Região Geográfica de Residência e Trabalho',
-    en: 'Geographic region of residence and work',
-    options: [
-      { id: 'north', pt: 'Região Norte', en: 'North' },
-      { id: 'northeast', pt: 'Região Nordeste', en: 'Northeast' },
-      { id: 'center_west', pt: 'Região Centro-Oeste', en: 'Center-West' },
-      { id: 'southeast', pt: 'Região Sudeste', en: 'Southeast' },
-      { id: 'south', pt: 'Região Sul', en: 'South' },
     ],
   },
 ];

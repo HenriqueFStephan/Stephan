@@ -97,6 +97,10 @@ export interface CompanyLoginResponse {
   company_name: string;
 }
 
+export interface AccountAck {
+  success: boolean;
+}
+
 export interface ToolDraft {
   place: 'profile' | 'ask';
   index: number;

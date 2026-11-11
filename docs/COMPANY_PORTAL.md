@@ -8,12 +8,12 @@ The page speaks Portuguese by default, with the same EN toggle as the rest of th
 
 Two accounts are seeded in PostgreSQL. Each one is a company. Invitations and answers for one are not visible to the other, and a future company is another row, not a share of these two.
 
-| Username | Password | Company slug | Name on the page |
-|---|---|---|---|
-| `admin` | `admintest` | `internal` | Uso interno |
-| `artigo` | `voltarassamambanhas` | `hse-it` | HSE-IT |
+| Username | Password | Email | Company slug | Name on the page |
+|---|---|---|---|---|
+| `admin` | `admintest` | `henrique.f.stephan@gmail.com` | `internal` | Uso interno |
+| `artigo` | `voltarassamambanhas` | `celsostephan@gmail.com` | `hse-it` | HSE-IT |
 
-`admin` is for tests on this project. `artigo` is for the paper. Do not upload a client’s list into either of them.
+`admin` is for tests on this project. `artigo` is for the paper. Do not upload a client’s list into either of them. Both rows are confirmed. A company that signs up at `/cadastro` is not: the API mails a link to `/confirmar?t=…`, and login answers `403` with `email_unconfirmed` until that link is opened. `/senha` sends a reset link to a confirmed email. The link returns to `/senha?t=…`, where the new password is saved, and that page then points back to `/empresa`.
 
 `POST /api/v1/company/login` checks the pair on the server. A match returns a `passage` plus the company slug and name. The passage is not the password. The browser keeps it in `sessionStorage` under `stephan-company-passage` and sends it as `X-Company-Token`. Closing the tab drops the session. Log out drops it too.
 
@@ -39,7 +39,7 @@ Each person is drawn from a shared factor, a factor for each of the seven scales
 All of these are group figures. None of them is an individual report or a risk inventory.
 
 1. **Cronbach’s alpha** (required). The large figure is the alpha of all 35 scored items. The table repeats it for each of the seven scales, with the item count, the group mean, and a conventional reading of the coefficient. The line under the title states how many complete responses went into the calculation and the date of the newest one. In this test wave that is all 100 forms, latest 26 September 2026.
-2. **Conditions by factor.** Group mean on each scale, from 1 to 5, with the HSE reference marks (20th, 50th, and 80th percentiles) on the bar. Same cuts as the public `/tool` page.
+2. **Conditions by factor.** Group mean on each scale, from 1 to 5, with the HSE reference marks (20th, 50th, and 80th percentiles) on the bar. The individual reading on `/tool` uses the same cuts as four equal color stripes.
 3. **Where the group sits.** How many of the 100 people fall below p20, between p20 and p50, between p50 and p80, and at or above p80, scale by scale.
 4. **By area.** The same means split by the four simulated areas.
 5. **Responses across the weeks.** How many forms were submitted in each week of the wave.

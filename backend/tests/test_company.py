@@ -208,7 +208,15 @@ def test_overview_is_the_signed_in_companys_round(postgres):
                 company_id=company["id"],
                 round_id=round_id,
                 submitted_on=date(2026, 8, 4),
-                demographics={"age_band": "35_44", "economic_sector": "health"},
+                demographics={
+                    "age_band": "35_44",
+                    "gender": "female",
+                    "education": "high_school",
+                    "economic_sector": "health",
+                    "tenure_org": "y1_3",
+                    "work_shift": "day_fixed",
+                    "leadership": "no",
+                },
                 answers=[1] * 35,
             )
             conn.commit()

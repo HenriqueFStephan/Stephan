@@ -11,9 +11,10 @@
 | `.cursor/skills/studio-mode/SKILL.md` | Required when a public page, its copy, or its layout changes. `/studio` frames the live site and must be updated in that same change. |
 | `frontend/src/app/features/company/` | Company portal at `/empresa`. Header Login. |
 | `frontend/src/app/features/billing/` | Signup at `/cadastro`. The header register link lands here. The monthly fee follows how many forms the cycle covers, so signup does not choose a plan or a payment method. Supplier facts stay in `offer.config.ts`. |
-| `backend/app/api/v1/orders.py` | Stores a signup in `backend/data/orders.jsonl`. Does not charge. No card fields. No plan is chosen on signup. |
+| `backend/app/api/v1/orders.py` | Stores a signup in `backend/data/orders.jsonl` and sends the confirmation email. Does not charge. No card fields. No plan is chosen on signup. The access stays closed until `/confirmar` opens it. |
 | `backend/app/api/v1/cnpj.py` | Public CNPJ lookup for `/cadastro`. Fills company and address. Does not return partners or store the number. |
-| `backend/app/api/v1/company.py` | Company login. `internal` and `hse-it` do not share invitations. |
+| `backend/app/api/v1/company.py` | Company login, confirmation, and password reset. `internal` and `hse-it` do not share invitations. Those two accounts are already confirmed. |
+| `frontend/src/app/features/account/` | `/confirmar` opens a signup from the email link. `/senha` asks for a reset and, with `?t=`, stores the new password. |
 | `backend/app/db/schema.sql` | PostgreSQL schema for the HSE campaign. |
 | `docs/TOOL.md` | `/tool` campaign: anonymity, upload formats, local and Lightsail PostgreSQL. |
 | `docs/COMPANY_PORTAL.md` | Demo account, simulated forms, and the plan for real data. |

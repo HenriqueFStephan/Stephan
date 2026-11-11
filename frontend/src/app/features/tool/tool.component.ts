@@ -1,21 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-
 import { ApiService } from '../../core/api.service';
 import { I18nService, TranslatePipe } from '../../core/i18n';
 import { ToolDraft } from '../../core/models';
 import {
-  BAND_COPY,
+  Band,
   DIMENSIONS,
-  DIMENSION_ORDER,
   DimensionId,
   DimensionScore,
   HSE_ITEMS,
   HseItem,
   SCALE_LABELS,
-  barWidth,
   formatMean,
   hseSummary,
   scoreHse,
@@ -35,12 +31,11 @@ const ADVANCE_MS = 180;
 @Component({
   selector: 'app-tool',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './tool.component.html',
   styleUrls: ['./tool.component.scss'],
 })
 export class ToolComponent implements OnInit, OnDestroy {
-  readonly dimensions = DIMENSION_ORDER;
   readonly items = HSE_ITEMS;
   readonly profileQuestions = PROFILE_QUESTIONS;
 
@@ -196,12 +191,6 @@ export class ToolComponent implements OnInit, OnDestroy {
   back(): void {
     this.clearAdvance();
     this.noteDraftChanged();
-    if (this.phase === 'results') {
-      this.phase = 'ask';
-      this.index = this.items.length - 1;
-      this.reveal();
-      return;
-    }
     if (this.phase === 'ask') {
       if (this.index > 0) {
         this.index -= 1;
@@ -253,18 +242,6 @@ export class ToolComponent implements OnInit, OnDestroy {
       });
   }
 
-  restart(): void {
-    this.clearAdvance();
-    this.answers = Array(this.items.length).fill(null);
-    this.profile = {};
-    this.scores = [];
-    this.index = 0;
-    this.phase = 'intro';
-    this.copied = false;
-    this.summaryText = '';
-    this.reveal();
-  }
-
   async copySummary(): Promise<void> {
     const text = hseSummary(this.scores, this.sector, this.i18n.lang());
     this.summaryText = '';
@@ -295,21 +272,18 @@ export class ToolComponent implements OnInit, OnDestroy {
     return this.i18n.lang() === 'en' ? copy.aboutEn : copy.aboutPt;
   }
 
-  bandText(band: DimensionScore['band']): string {
-    return BAND_COPY[band][this.i18n.lang()];
-  }
-
   meanText(mean: number): string {
     return formatMean(mean, this.i18n.lang());
   }
 
-  fillWidth(mean: number): number {
-    return barWidth(mean);
-  }
-
-  ticks(id: DimensionId): number[] {
-    const copy = DIMENSIONS[id];
-    return [copy.p20, copy.p50, copy.p80];
+  stripeName(band: Band): string {
+    const names: Record<Band, Record<'pt-BR' | 'en', string>> = {
+      urgent: { 'pt-BR': 'Preto', en: 'Black' },
+      improve: { 'pt-BR': 'Vermelho', en: 'Red' },
+      good: { 'pt-BR': 'Amarelo', en: 'Yellow' },
+      maintain: { 'pt-BR': 'Verde', en: 'Green' },
+    };
+    return names[band][this.i18n.lang()];
   }
 
   @HostListener('window:beforeunload', ['$event'])

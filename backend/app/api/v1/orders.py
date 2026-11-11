@@ -1,4 +1,8 @@
-"""Company signup. Stores the order and does not charge a card, Pix, or boleto."""
+"""Company signup. Stores the order and does not charge a card, Pix, or boleto.
+
+The access email stays closed until the confirmation link is opened. If that
+message cannot be sent, the company row is not kept.
+"""
 
 import json
 import os
@@ -11,12 +15,13 @@ from app.core.config import DATA_DIR
 from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import OrderAck, OrderCreate
 from app.services.br_docs import only_digits
+from app.services.account_mail import send_confirmation
 from app.services.company_accounts import (
     AccessEmailTaken,
     CompanyAlreadyRegistered,
     provision_company_access,
 )
-from app.services.invitation_mail import notify_consulting
+from app.services.invitation_mail import MailDeliveryError, MailNotConfigured, notify_consulting
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -26,19 +31,24 @@ def submit_order(payload: OrderCreate) -> OrderAck:
     try:
         with connect() as conn:
             ensure_schema(conn)
-            provision_company_access(
+            email, token = provision_company_access(
                 conn,
                 legal_name=payload.legal_name,
                 cnpj_digits=only_digits(payload.cnpj),
                 email=payload.access_email,
                 password=payload.password,
             )
+            send_confirmation(email, token)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
     except AccessEmailTaken as exc:
         raise HTTPException(status_code=409, detail={"code": "email_taken"}) from exc
     except CompanyAlreadyRegistered as exc:
         raise HTTPException(status_code=409, detail={"code": "cnpj_taken"}) from exc
+    except MailNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
+    except MailDeliveryError as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_failed"}) from exc
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     reference = secrets.token_hex(5).upper()
     record = payload.model_dump(exclude={"password"})

@@ -1,0 +1,42 @@
+<div class="account">
+  <header class="bar">
+    <a href="/" class="brand" aria-label="Stephan">
+      <img src="assets/brand/stephan-lockup.png" alt="Stephan" />
+    </a>
+    <div class="bar__side">
+      <button type="button" class="text" (click)="toggleLang()">{{ 'nav.lang' | t }}</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="card" *ngIf="phase === 'working'">
+      <h1>{{ 'account.confirmTitle' | t }}</h1>
+      <p class="lead">{{ 'account.confirmWorking' | t }}</p>
+    </section>
+
+    <section class="card" *ngIf="phase === 'done'">
+      <h1>{{ 'account.confirmDoneTitle' | t }}</h1>
+      <p class="lead">{{ 'account.confirmDone' | t }}</p>
+      <a class="button" routerLink="/empresa">{{ 'account.toLogin' | t }}</a>
+    </section>
+
+    <section class="card" *ngIf="phase === 'invalid' || phase === 'missing' || phase === 'error'">
+      <h1>{{ (phase === 'invalid' ? 'account.confirmInvalidTitle' : 'account.confirmTitle') | t }}</h1>
+      <p class="lead" *ngIf="phase !== 'error'">
+        {{ (phase === 'missing' ? 'account.confirmMissing' : 'account.confirmInvalid') | t }}
+      </p>
+      <form (ngSubmit)="resend()">
+        <label>
+          <span>{{ 'account.email' | t }}</span>
+          <input type="email" name="confirm-email" autocomplete="email" [(ngModel)]="email" />
+          <small class="field-error" *ngIf="emailError">{{ emailError | t }}</small>
+        </label>
+        <button type="submit" class="button" [disabled]="submitting || !email.trim()">
+          {{ submitting ? ('account.resending' | t) : ('account.resend' | t) }}
+        </button>
+        <p class="note" *ngIf="sent">{{ 'account.resendSent' | t }}</p>
+        <p class="error" *ngIf="errorKey" role="alert">{{ errorKey | t }}</p>
+      </form>
+    </section>
+  </div>
+</div>

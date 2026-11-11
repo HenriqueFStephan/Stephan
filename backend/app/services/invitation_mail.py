@@ -50,12 +50,7 @@ def build_invitation_message(recipient: str, token: str, settings: Settings | No
     message["To"] = recipient
     message.set_content(_plain(link))
     message.add_alternative(_html(link), subtype="html")
-    lockup = _lockup_bytes()
-    if lockup:
-        html_part = message.get_payload()[-1]
-        html_part.add_related(lockup, maintype="image", subtype="png", cid=f"<{_LOCKUP_CID}>")
-        image = html_part.get_payload()[-1]
-        image.replace_header("Content-Disposition", "inline")
+    attach_lockup(message)
     return message
 
 
@@ -117,6 +112,47 @@ def notify_consulting(subject: str, body: str) -> bool:
         log.warning("consulting notice was not sent: %s", type(exc).__name__)
         return False
     return True
+
+
+def lockup_available() -> bool:
+    return bool(_lockup_bytes())
+
+
+def attach_lockup(message: EmailMessage) -> None:
+    """Attach the wordmark to the HTML part already on the message."""
+    lockup = _lockup_bytes()
+    if not lockup:
+        return
+    html_part = message.get_payload()[-1]
+    html_part.add_related(lockup, maintype="image", subtype="png", cid=f"<{_LOCKUP_CID}>")
+    image = html_part.get_payload()[-1]
+    image.replace_header("Content-Disposition", "inline")
+
+
+def deliver_one(message: EmailMessage) -> None:
+    """Send one message. Raises when SMTP is missing or the server refuses it."""
+    current = get_settings()
+    if not smtp_ready(current):
+        raise MailNotConfigured()
+    try:
+        smtp = smtplib.SMTP(current.smtp_host, current.smtp_port, timeout=30)
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
+        smtp.login(current.smtp_username, _password(current))
+    except Exception as exc:
+        log.warning("account mail could not sign in: %s", type(exc).__name__)
+        raise MailDeliveryError() from exc
+    try:
+        smtp.send_message(message)
+    except Exception as exc:
+        log.warning("account mail was refused: %s", type(exc).__name__)
+        raise MailDeliveryError() from exc
+    finally:
+        try:
+            smtp.quit()
+        except Exception:
+            pass
 
 
 def _password(settings: Settings) -> str:

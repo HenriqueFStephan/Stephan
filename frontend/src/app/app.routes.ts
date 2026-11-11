@@ -32,6 +32,16 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/billing/cadastro.component').then((m) => m.CadastroComponent),
   },
+  {
+    path: 'confirmar',
+    loadComponent: () =>
+      import('./features/account/confirm.component').then((m) => m.ConfirmComponent),
+  },
+  {
+    path: 'senha',
+    loadComponent: () =>
+      import('./features/account/password.component').then((m) => m.PasswordComponent),
+  },
   { path: 'pagamento', redirectTo: 'cadastro', pathMatch: 'full' },
   { path: '**', redirectTo: '' },
 ];

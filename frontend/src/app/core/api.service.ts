@@ -14,6 +14,7 @@ import {
   StudioIssueResponse,
   StudioStatusResponse,
   StudioUnlockResponse,
+  AccountAck,
   CompanyLoginResponse,
   CompanyOverview,
   CompanyRoundRow,
@@ -72,6 +73,22 @@ export class ApiService {
 
   loginCompany(username: string, password: string): Observable<CompanyLoginResponse> {
     return this.http.post<CompanyLoginResponse>(`${this.base}/company/login`, { username, password });
+  }
+
+  confirmAccount(token: string): Observable<AccountAck> {
+    return this.http.post<AccountAck>(`${this.base}/company/confirm`, { token });
+  }
+
+  resendConfirmation(email: string): Observable<AccountAck> {
+    return this.http.post<AccountAck>(`${this.base}/company/confirm/resend`, { email });
+  }
+
+  forgotPassword(email: string): Observable<AccountAck> {
+    return this.http.post<AccountAck>(`${this.base}/company/password/forgot`, { email });
+  }
+
+  resetPassword(token: string, password: string): Observable<AccountAck> {
+    return this.http.post<AccountAck>(`${this.base}/company/password/reset`, { token, password });
   }
 
   getCompanyOverview(passage: string, round: string): Observable<CompanyOverview> {

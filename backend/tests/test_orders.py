@@ -24,7 +24,11 @@ def skip_account(monkeypatch):
     """Order tests record the file. Account rows are covered in test_signup_access."""
     monkeypatch.setattr("app.api.v1.orders.connect", lambda: _QuietConnection())
     monkeypatch.setattr("app.api.v1.orders.ensure_schema", lambda conn: None)
-    monkeypatch.setattr("app.api.v1.orders.provision_company_access", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        "app.api.v1.orders.provision_company_access",
+        lambda *args, **kwargs: ("ana@oficina.example", "token"),
+    )
+    monkeypatch.setattr("app.api.v1.orders.send_confirmation", lambda *args, **kwargs: None)
 
 
 def payload(**overrides):

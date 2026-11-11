@@ -37,6 +37,7 @@ export interface BillingDraft {
 export interface BillingReceipt {
   reference: string;
   company: string;
+  email?: string;
   quotedCents: number | null;
   plan: string;
 }

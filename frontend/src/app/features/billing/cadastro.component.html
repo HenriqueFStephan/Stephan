@@ -12,6 +12,7 @@
     <section class="card">
       <h1>{{ 'bill.doneTitle' | t }}</h1>
       <p class="lead">{{ 'bill.doneBody' | t:{ reference: done.reference, company: done.company } }}</p>
+      <p class="note" *ngIf="done.email">{{ 'bill.confirmSent' | t:{ email: done.email } }}</p>
       <p class="note">{{ 'bill.notCharged' | t }}</p>
       <p class="note" *ngIf="offer.supplier.sacEmail">{{ 'bill.withdrawNow' | t:{ email: offer.supplier.sacEmail } }}</p>
       <p class="note" *ngIf="!offer.supplier.sacEmail">{{ 'bill.withdrawNoMail' | t }}</p>

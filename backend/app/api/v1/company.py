@@ -12,6 +12,9 @@ from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query
 
 from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import (
+    AccountAck,
+    AccountEmail,
+    AccountToken,
     ChargeMethodChoice,
     CompanyLogin,
     CompanyLoginResponse,
@@ -22,6 +25,7 @@ from app.models.schemas import (
     ListQuote,
     InvitationRoster,
     InvitationUploadResult,
+    PasswordReset,
 )
 from app.services.campaign_store import (
     ChargeNotFound,
@@ -39,10 +43,16 @@ from app.services.form_pricing import (
     UnknownPaymentMethod,
     gate_payment,
 )
+from app.services.account_mail import send_confirmation, send_reset
 from app.services.company_accounts import (
     CompanySession,
+    EmailUnconfirmed,
+    apply_password_reset,
     authenticate,
+    begin_password_reset,
+    confirm_access,
     issue_passage,
+    reissue_confirmation,
     session_from_passage,
 )
 from app.services.company_overview import overview_for_round
@@ -84,6 +94,8 @@ def company_login(body: CompanyLogin) -> CompanyLoginResponse:
             session = authenticate(conn, body.username, body.password)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except EmailUnconfirmed as exc:
+        raise HTTPException(status_code=403, detail={"code": "email_unconfirmed"}) from exc
     if session is None:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     return CompanyLoginResponse(
@@ -92,6 +104,70 @@ def company_login(body: CompanyLogin) -> CompanyLoginResponse:
         company_slug=session.slug,
         company_name=session.name,
     )
+
+
+@router.post("/confirm", response_model=AccountAck)
+def confirm_company_email(body: AccountToken) -> AccountAck:
+    """Open the account named by the confirmation link. The link is single use."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            opened = confirm_access(conn, body.token)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    if not opened:
+        raise HTTPException(status_code=400, detail={"code": "invalid_token"})
+    return AccountAck()
+
+
+@router.post("/confirm/resend", response_model=AccountAck)
+def resend_company_confirmation(body: AccountEmail) -> AccountAck:
+    """Send another confirmation when the account is still closed. A missing email stays quiet."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            pending = reissue_confirmation(conn, body.email)
+            if pending is not None:
+                send_confirmation(*pending)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except MailNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
+    except MailDeliveryError as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_failed"}) from exc
+    return AccountAck()
+
+
+@router.post("/password/forgot", response_model=AccountAck)
+def forgot_company_password(body: AccountEmail) -> AccountAck:
+    """Send a reset link to a confirmed email. An unknown address gets the same answer."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            pending = begin_password_reset(conn, body.email)
+            if pending is not None:
+                send_reset(*pending)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except MailNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
+    except MailDeliveryError as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_failed"}) from exc
+    return AccountAck()
+
+
+@router.post("/password/reset", response_model=AccountAck)
+def reset_company_password(body: PasswordReset) -> AccountAck:
+    """Store a new password when the reset link is still valid."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            changed = apply_password_reset(conn, body.token, body.password)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    if not changed:
+        raise HTTPException(status_code=400, detail={"code": "invalid_token"})
+    return AccountAck()
 
 
 @router.get("/overview", response_model=CompanyOverview)

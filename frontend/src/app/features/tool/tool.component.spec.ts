@@ -21,6 +21,8 @@ describe('ToolComponent', () => {
   it('opens on the introduction, then the sociodemographic form, then the first HSE item', () => {
     const text = (): string => fixture.nativeElement.textContent as string;
     expect(text()).toContain('Indicador das condições de trabalho');
+    expect(text()).toContain('Começar');
+    expect(text()).not.toContain('Trinta e cinco perguntas');
     expect(text()).not.toContain('Sei com clareza');
     expect(text()).not.toContain('Faixa Etária');
 
@@ -30,8 +32,15 @@ describe('ToolComponent', () => {
 
     expect(text()).toContain('Questionário sociodemográfico e ocupacional');
     expect(text()).toContain('Faixa Etária');
-    expect(text()).toContain('Preenchimento obrigatório');
-    expect(text()).toContain('Região Sul');
+    expect(text()).toContain('Sexo');
+    expect(text()).toContain('Ensino Fundamental incompleto');
+    expect(text()).toContain('Ensino Fundamental completo');
+    expect(text()).toContain('Ensino Médio incompleto');
+    expect(text()).toContain('Tempo de Serviço na Empresa');
+    expect(text()).toContain('Regime de Turno de Trabalho');
+    expect(text()).not.toContain('Preenchimento obrigatório');
+    expect(text()).not.toContain('Região Sul');
+    expect(text()).not.toContain('Gênero');
     const next = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
     expect(next.disabled).toBeTrue();
 
@@ -43,6 +52,7 @@ describe('ToolComponent', () => {
     expect(text()).toContain('1 de 35');
     expect(text()).toContain('Sei claramente o que é esperado de mim no trabalho.');
     expect(text()).toContain('Nunca');
+    expect(fixture.nativeElement.querySelector('.choice__n')).toBeNull();
 
     const back = fixture.nativeElement.querySelector('.text') as HTMLButtonElement;
     back.click();
@@ -99,7 +109,14 @@ describe('ToolComponent campaign draft', () => {
       draft: {
         place: 'ask',
         index: 2,
-        demographics: { age_band: '35_44', economic_sector: 'health' },
+        demographics: {
+          age_band: '35_44',
+          gender: 'female',
+          education: 'high_school',
+          tenure_org: 'y1_3',
+          work_shift: 'day_fixed',
+          leadership: 'no',
+        },
         answers,
       },
     });
@@ -127,12 +144,11 @@ describe('ToolComponent campaign draft', () => {
 });
 
 function markRequired(fixture: ComponentFixture<ToolComponent>): void {
-  for (const id of ['age_band', 'economic_sector']) {
-    const choice = fixture.nativeElement.querySelector(
-      `[data-question="${id}"] .choice`,
-    ) as HTMLButtonElement;
+  const questions = fixture.nativeElement.querySelectorAll('[data-question]');
+  questions.forEach((question: Element) => {
+    const choice = question.querySelector('.choice') as HTMLButtonElement;
     choice.click();
-  }
+  });
   fixture.detectChanges();
 }
 

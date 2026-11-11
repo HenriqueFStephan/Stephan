@@ -1,5 +1,4 @@
 import {
-  BAND_COPY,
   DIMENSION_ORDER,
   DIMENSIONS,
   HSE_ITEMS,
@@ -94,7 +93,8 @@ describe('HSE-IT', () => {
     const scores = scoreHse(HSE_ITEMS.map((item) => (item.reverse ? 1 : 5)));
     const text = hseSummary(scores, '  Expedição ', 'pt-BR');
     expect(text).toContain('Setor: Expedição');
-    expect(text).toContain(`Papel: 5,00 — ${BAND_COPY.maintain['pt-BR']}`);
+    expect(text).toContain('Papel: 5,00');
+    expect(text).not.toContain('percentil');
     expect(text).toContain('não é o resultado de um grupo');
   });
 });

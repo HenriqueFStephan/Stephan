@@ -228,7 +228,7 @@ class OrderAck(BaseModel):
 
 
 class CompanyLogin(BaseModel):
-    username: str = Field(..., min_length=1, max_length=80)
+    username: str = Field(..., min_length=1, max_length=200)
     password: str = Field(..., min_length=1, max_length=200)
 
     @field_validator("username", "password")
@@ -245,6 +245,47 @@ class CompanyLoginResponse(BaseModel):
     passage: str
     company_slug: str
     company_name: str
+
+
+class AccountEmail(BaseModel):
+    email: str = Field(..., min_length=1, max_length=200)
+
+    @field_validator("email")
+    @classmethod
+    def strip_email(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("required")
+        return stripped
+
+
+class AccountToken(BaseModel):
+    token: str = Field(..., min_length=16, max_length=200)
+
+    @field_validator("token")
+    @classmethod
+    def strip_token(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("required")
+        return stripped
+
+
+class PasswordReset(BaseModel):
+    token: str = Field(..., min_length=16, max_length=200)
+    password: str = Field(..., min_length=8, max_length=200)
+
+    @field_validator("token", "password")
+    @classmethod
+    def strip_reset(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("required")
+        return stripped
+
+
+class AccountAck(BaseModel):
+    success: bool = True
 
 
 class ToolAccessRequest(BaseModel):

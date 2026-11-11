@@ -82,7 +82,9 @@ The original file is not kept. A rejected file is not stored at all. An address 
 
 The sociodemographic and occupational questions are the page after the introduction, before the 35 items. They belong to the form. Each answer is a column on `hse_responses`, the same row as `i01`–`i35`. They are not columns on `invitations`. There is still no foreign key from an answer to an invitation.
 
-Age band and economic sector are required. The other nine may be left blank. A blank is SQL `NULL`. A new form that omits a required answer is refused, and the invitation stays `pending`.
+The form asks six questions, and every one of them is required: age band, sex, education, length of service at the company, work shift, and formal leadership. Five earlier questions stay as columns so an older row can still be read, and a new form leaves them null: economic sector, organization size, employment relationship, time in the occupation, and region. A blank is SQL `NULL`. A new form that omits a required answer is refused, and the invitation stays `pending`.
+
+The reading after the 35 items shows each area as four equal stripes — black, red, yellow, green — for the same cuts (below the 20th percentile, up to the 50th, up to the 80th, and at or above the 80th). It does not print the percentile sentence, and it does not offer to revise the answers or start again.
 
 Stored values are stable codes, not the sentences on the page. A name, a job title, or any other free text cannot be written into these columns.
 
@@ -91,16 +93,16 @@ Stored values are stable codes, not the sentences on the page. A name, a job tit
 | Column | Required | Codes |
 |---|---|---|
 | `age_band` | yes | `18_24`, `25_34`, `35_44`, `45_54`, `55_64`, `65_plus` |
-| `gender` | no | `female`, `male`, `undisclosed` |
-| `education` | no | `fundamental`, `high_school`, `higher_incomplete`, `higher_complete`, `postgraduate` |
-| `economic_sector` | yes | `manufacturing`, `retail`, `services`, `health`, `education`, `it`, `construction`, `transport`, `agribusiness`, `public_admin`, `other` |
-| `org_size` | no | `micro`, `small`, `medium`, `large`, `unknown` |
-| `employment_bond` | no | `clt`, `public_statute`, `autonomous_pj`, `intern_apprentice`, `other` |
-| `tenure_org` | no | `lt_1`, `y1_3`, `y4_10`, `gt_10` |
-| `tenure_profession` | no | `lt_1`, `y1_5`, `y6_15`, `gt_15` |
-| `work_shift` | no | `day_fixed`, `night_fixed`, `rotating`, `flexible` |
-| `leadership` | no | `yes`, `no` |
-| `region` | no | `north`, `northeast`, `center_west`, `southeast`, `south` |
+| `gender` | yes | `female`, `male`, `undisclosed` |
+| `education` | yes | `fundamental_incomplete`, `fundamental_complete`, `high_school_incomplete`, `high_school`, `higher_incomplete`, `higher_complete`, `postgraduate`. The retired code `fundamental` (complete and incomplete together) is still accepted on a stored row and is not offered on the form. |
+| `economic_sector` | not asked | `manufacturing`, `retail`, `services`, `health`, `education`, `it`, `construction`, `transport`, `agribusiness`, `public_admin`, `other` |
+| `org_size` | not asked | `micro`, `small`, `medium`, `large`, `unknown` |
+| `employment_bond` | not asked | `clt`, `public_statute`, `autonomous_pj`, `intern_apprentice`, `other` |
+| `tenure_org` | yes | `lt_1`, `y1_3`, `y4_10`, `gt_10` |
+| `tenure_profession` | not asked | `lt_1`, `y1_5`, `y6_15`, `gt_15` |
+| `work_shift` | yes | `day_fixed`, `night_fixed`, `rotating`, `flexible` |
+| `leadership` | yes | `yes`, `no` |
+| `region` | not asked | `north`, `northeast`, `center_west`, `southeast`, `south` |
 
 These keys are still refused, on top of any key that is not in the table above:
 

@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { ApiService } from '../../core/api.service';
@@ -63,7 +64,7 @@ describe('CompanyComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [CompanyComponent],
-      providers: [{ provide: ApiService, useValue: api }],
+      providers: [provideRouter([]), { provide: ApiService, useValue: api }],
     }).compileComponents();
 
     TestBed.inject(I18nService).setLang('pt-BR');

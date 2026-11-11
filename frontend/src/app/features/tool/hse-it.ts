@@ -258,7 +258,7 @@ export function hseSummary(scores: readonly DimensionScore[], sector: string, la
   lines.push('');
   for (const score of scores) {
     const name = lang === 'en' ? DIMENSIONS[score.id].en : DIMENSIONS[score.id].pt;
-    lines.push(`${name}: ${formatMean(score.mean, lang)} — ${BAND_COPY[score.band][lang]}`);
+    lines.push(`${name}: ${formatMean(score.mean, lang)}`);
   }
   lines.push('');
   lines.push(

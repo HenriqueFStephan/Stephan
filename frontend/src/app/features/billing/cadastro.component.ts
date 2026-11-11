@@ -179,6 +179,7 @@ export class CadastroComponent implements OnDestroy {
         this.receipt = {
           reference: response.reference,
           company: this.draft.legalName.trim(),
+          email: this.draft.accessEmail.trim(),
           quotedCents: null,
           plan: '',
         };
@@ -192,7 +193,9 @@ export class CadastroComponent implements OnDestroy {
           ? 'bill.err.emailTaken'
           : code === 'cnpj_taken'
             ? 'bill.err.cnpjTaken'
-            : 'bill.fail';
+            : code === 'mail_not_configured' || code === 'mail_failed'
+              ? 'bill.mailFail'
+              : 'bill.fail';
         this.failed = true;
         this.submitting = false;
       },
