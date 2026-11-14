@@ -6,12 +6,13 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(10rem, 0.65fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
   grid-template-rows: 1fr auto;
   align-items: end;
   gap: 1.5rem 2rem;
   min-height: calc(100vh - 76px);
   padding: 3rem 6vw 1.35rem;
+  overflow-x: clip;
   background: $color-bg-dark;
   color: #f7f4ec;
 }
@@ -67,6 +68,7 @@
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
+  min-width: 0;
   gap: 0.65rem 1.35rem;
   margin: 0;
   padding-top: 1rem;
@@ -316,10 +318,10 @@ h3 {
 
 .thread__figure img {
   display: block;
-  width: 100vw;
-  max-width: 100vw;
+  width: calc(100% + 16vw);
+  max-width: none;
   height: auto;
-  margin-left: calc(50% - 50vw);
+  margin-left: -8vw;
   border: 0;
   background: $color-surface;
 }
@@ -417,14 +419,9 @@ h3 {
     font-size: clamp(2.3rem, 10vw, 3.2rem);
   }
 
-  .docket {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-  }
-
-  .docket a {
-    flex: 0 0 auto;
+  .thread__figure img {
+    width: calc(100% + 2.5rem);
+    margin-left: -1.25rem;
   }
 
   .section {
