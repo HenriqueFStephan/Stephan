@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-16T16:23:04.294705+00:00",
+  "updated_at": "2026-11-23T18:43:17.765973+00:00",
   "notes": "Sources already posted in weekly law-report issues. The weekly report skips these DOIs and URLs.",
   "papers": [
     {
@@ -771,6 +771,138 @@
       "published": "2026-10-29",
       "category": "nr-1",
       "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Structural associations between psychosocial risks and burnout syndrome among mining workers in Peru",
+      "url": "https://doi.org/10.3389/fpsyg.2026.1878865",
+      "doi": "10.3389/fpsyg.2026.1878865",
+      "journal": "Frontiers in Psychology",
+      "authors": "Ramirez et al.",
+      "year": 2026,
+      "published": "2026-11-02",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Algorithmic Pressure and Psycho-Emotional Risk Among Airport Employees: A Two-Level Mamdani Fuzzy Model",
+      "url": "https://doi.org/10.3390/safety12060140",
+      "doi": "10.3390/safety12060140",
+      "journal": "Safety",
+      "authors": "Anayatova et al.",
+      "year": 2026,
+      "published": "2026-10-23",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Is gig work the same for everyone? Psychosocial job demands, resources, and well-being in platform work across Europe: evidence from the GIG-OSH study",
+      "url": "https://doi.org/10.13075/ijomeh.1896.02881",
+      "doi": "10.13075/ijomeh.1896.02881",
+      "journal": "International Journal of Occupational Medicine and Environmental Health",
+      "authors": "Merecz-Kot et al.",
+      "year": 2026,
+      "published": "2026-11-12",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Psychosocial work conditions and the severity of insomnia symptoms and daytime sleepiness among nurses",
+      "url": "https://doi.org/10.3389/fpubh.2026.1984035",
+      "doi": "10.3389/fpubh.2026.1984035",
+      "journal": "Frontiers in Public Health",
+      "authors": "Lisowicz et al.",
+      "year": 2026,
+      "published": "2026-11-12",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "The mental health of workers: Associations with work-related hyperconnectivity and individual and organisational factors",
+      "url": "https://doi.org/10.1080/15555240.2026.2758757",
+      "doi": "10.1080/15555240.2026.2758757",
+      "journal": "Journal of Workplace Behavioral Health",
+      "authors": "García-González et al.",
+      "year": 2026,
+      "published": "2026-11-05",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Physical and psychosocial risk factors associated with work-related musculoskeletal disorders among workers in the stone-cutting industry in Shiraz, Iran",
+      "url": "https://doi.org/10.1080/10803548.2026.2752733",
+      "doi": "10.1080/10803548.2026.2752733",
+      "journal": "International Journal of Occupational Safety and Ergonomics",
+      "authors": "Keshavarz et al.",
+      "year": 2026,
+      "published": "2026-11-16",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Psychosocial job factors, safety climate, and safety behavior among hospital radiation workers: An integrated path analysis and machine learning study",
+      "url": "https://doi.org/10.1016/j.hfh.2026.100167",
+      "doi": "10.1016/j.hfh.2026.100167",
+      "journal": "Human Factors in Healthcare",
+      "authors": "Mahdavi et al.",
+      "year": 2026,
+      "published": "2026-11-01",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Cumulative years of biomechanical and psychosocial work exposures and long-term sickness absence: A register-based cohort study among early-career Norwegian employees",
+      "url": "https://doi.org/10.5271/sjweh/242580",
+      "doi": "10.5271/sjweh/242580",
+      "journal": "Scandinavian Journal of Work, Environment & Health",
+      "authors": "Kleven et al.",
+      "year": 2026,
+      "published": "2026-11-16",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Prospective associations between psychosocial work factors and smoking",
+      "url": "https://doi.org/10.1097/JOM.0000000000003933",
+      "doi": "10.1097/JOM.0000000000003933",
+      "journal": "Journal of Occupational and Environmental Medicine",
+      "authors": "Niedhammer et al.",
+      "year": 2026,
+      "published": "2026-11-09",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Psychosocial drivers of occupational stress in industrial employees: implications for workplace health management",
+      "url": "https://doi.org/10.1108/IJWHM-03-2026-0103",
+      "doi": "10.1108/IJWHM-03-2026-0103",
+      "journal": "International Journal of Workplace Health Management",
+      "authors": "Akbarzadeh et al.",
+      "year": 2026,
+      "published": "2026-11-10",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Institutional blind spots in occupational mental health: a data-driven identification and prioritization of psychosocial risk factors using administrative records, interpretable machine learning, and psychosocial safety climate theory",
+      "url": "https://doi.org/10.1016/j.ssci.2026.107567",
+      "doi": "10.1016/j.ssci.2026.107567",
+      "journal": "Safety Science",
+      "authors": "Rachid et al.",
+      "year": 2026,
+      "published": "2026-11-12",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Validation for the Core version of the Copenhagen Psychosocial Questionnaire III in Korean",
+      "url": "https://doi.org/10.1016/j.shaw.2026.11.004",
+      "doi": "10.1016/j.shaw.2026.11.004",
+      "journal": "Safety and Health at Work",
+      "authors": "Song et al.",
+      "year": 2026,
+      "published": "2026-11-15",
+      "category": "methods",
+      "first_seen": "2026-11-23"
     }
   ]
 }
