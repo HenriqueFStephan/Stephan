@@ -152,20 +152,23 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
-  padding: 1px 2px;
-  border: 1.6px inset #767676;
-  border-radius: 0;
-  font: inherit;
-  font-weight: 600;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: $color-surface;
   color: $color-text;
-  background: #fff;
+  font: inherit;
+  font-weight: 400;
+}
 
-  &:focus {
-    outline: 2px solid rgba($color-primary, 0.3);
-    border-color: $color-primary;
-  }
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba(15, 63, 98, 0.35);
+  border-color: $color-primary;
 }
 
 .hint {
@@ -237,6 +240,9 @@ em {
     width: 1.05rem;
     height: 1.05rem;
     margin-top: 0.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     accent-color: $color-primary;
   }
 }
@@ -256,6 +262,9 @@ em {
     width: 1.05rem;
     height: 1.05rem;
     margin-top: 0.3rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
     accent-color: $color-primary;
   }
 
