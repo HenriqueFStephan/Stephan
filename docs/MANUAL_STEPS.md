@@ -34,7 +34,7 @@ O link é só seu. Não o reencaminhe.
 ```
 
   - Sample value for `{{1}}`: `https://stephan.net.br/tool?t=exemplo`
-- [ ] Put these two lines in the repo-root `debt.txt` and in `/opt/stephan/debt.txt` on the server:
+- [ ] Put these two lines in the repo-root `debt.txt`, and store the same values as Actions secrets `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`. The deploy writes those two lines into `/opt/stephan/debt.txt` and leaves every other line there:
 
 ```
 WHATSAPP_TOKEN=

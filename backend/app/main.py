@@ -63,6 +63,9 @@ def _health() -> HealthResponse:
         environment=current.app_env,
         smtp_configured=bool(current.smtp_host and password),
         studio_configured=studio_ok,
+        whatsapp_configured=bool(
+            (current.whatsapp_token or "").strip() and (current.whatsapp_phone_number_id or "").strip()
+        ),
     )
 
 

@@ -4,7 +4,8 @@ name: "🚀 DEPLOY SITE"
 # Builds the Angular site and copies it, with the API, to the São Paulo
 # Lightsail instance behind https://stephan.net.br.
 # Secrets: LIGHTSAIL_HOST, LIGHTSAIL_SSH_KEY (the stephan-deploy private key).
-# Does not replace /opt/stephan/debt.txt.
+# Does not replace /opt/stephan/debt.txt. When WHATSAPP_TOKEN and
+# WHATSAPP_PHONE_NUMBER_ID are both set, those two lines are written into it.
 
 on:
   push:
@@ -51,11 +52,28 @@ jobs:
       - name: Upload site and API
         env:
           LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
         run: |
           tar -czf site.tgz -C frontend/dist/stephan .
           tar -czf api.tgz --exclude __pycache__ --exclude .venv --exclude data backend
+          if [ -n "$WHATSAPP_TOKEN" ] && [ -n "$WHATSAPP_PHONE_NUMBER_ID" ]; then
+            umask 077
+            python3 - << 'PY'
+          import os
+          from pathlib import Path
+          Path("wa.env").write_text(
+              "WHATSAPP_TOKEN=" + os.environ["WHATSAPP_TOKEN"] + "\n"
+              + "WHATSAPP_PHONE_NUMBER_ID=" + os.environ["WHATSAPP_PHONE_NUMBER_ID"] + "\n",
+              encoding="utf-8",
+          )
+          PY
+            scp -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
+              wa.env "ubuntu@${LIGHTSAIL_HOST}:/tmp/wa.env"
+            rm -f wa.env
+          fi
           scp -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
             site.tgz api.tgz scripts/deploy_lightsail_remote.sh scripts/postgres_on_lightsail.sh scripts/backup_stephan.sh \
             "ubuntu@${LIGHTSAIL_HOST}:/tmp/"
           ssh -i ~/.ssh/lightsail.pem -o IdentitiesOnly=yes \
-            "ubuntu@${LIGHTSAIL_HOST}" "sudo bash /tmp/backup_stephan.sh && sudo bash /tmp/postgres_on_lightsail.sh && sudo bash /tmp/deploy_lightsail_remote.sh"
+            "ubuntu@${LIGHTSAIL_HOST}" "if [ -f /tmp/wa.env ]; then chmod 600 /tmp/wa.env; fi; sudo bash /tmp/backup_stephan.sh && sudo bash /tmp/postgres_on_lightsail.sh && sudo bash /tmp/deploy_lightsail_remote.sh"

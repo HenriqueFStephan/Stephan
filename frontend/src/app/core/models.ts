@@ -227,4 +227,5 @@ export interface ApiStatus {
   environment: string;
   smtp_configured: boolean;
   studio_configured: boolean;
+  whatsapp_configured: boolean;
 }

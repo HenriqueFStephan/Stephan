@@ -445,3 +445,4 @@ class HealthResponse(BaseModel):
     environment: str
     smtp_configured: bool = False
     studio_configured: bool = False
+    whatsapp_configured: bool = False
