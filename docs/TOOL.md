@@ -2,7 +2,7 @@
 
 This is the store for one company’s HSE Management Standards Indicator Tool wave: about 300 anonymous answers, plus the invitation list used to send each person a link. It replaces nothing on the public site. A public-site schema (pages, posts, comments, practice contact details) was drafted elsewhere and has been discarded. Do not rebuild it.
 
-`/tool` shows the introduction, then the sociodemographic questionnaire (Anexo B), then the 35 items. With `?t=`, that is the campaign form. Without a token, it is the local reading and posts nothing. The 35 sentences live in `frontend/src/app/features/tool/hse-it.ts` and are not copied into the database. Portuguese is the source; English is translated from it. See [Item wording](#item-wording). Anexo B sentences live in `frontend/src/app/features/tool/profile.ts`. The database stores codes.
+`/tool` shows the introduction, then the 35 items. The sociodemographic questionnaire is not on the page. With `?t=`, that is the campaign form. Without a token, it is the local reading and posts nothing. The 35 sentences live in `frontend/src/app/features/tool/hse-it.ts` and are not copied into the database. Portuguese is the source; English is translated from it. See [Item wording](#item-wording). Older Anexo B codes can still sit on an answer; the sentences that used to ask for them live in `frontend/src/app/features/tool/profile.ts`. The database stores codes.
 
 ## Where PostgreSQL runs
 
@@ -78,11 +78,11 @@ The link token stays on the invitation so the same link keeps working after the 
 
 The original file is not kept. A rejected file is not stored at all. An address whose message did not leave stays on `invitations` with `sent_at` empty. The company page lists those addresses and can send the same link again. It does not list addresses whose message already left.
 
-## Anexo B on the form
+## Anexo B on a stored answer
 
-The sociodemographic and occupational questions are the page after the introduction, before the 35 items. They belong to the form. Each answer is a column on `hse_responses`, the same row as `i01`–`i35`. They are not columns on `invitations`. There is still no foreign key from an answer to an invitation.
+The sociodemographic page is not shown. A new form leaves every Anexo B column null. The columns stay so an older row can still be read. They are not columns on `invitations`. There is still no foreign key from an answer to an invitation.
 
-The form asks six questions, and every one of them is required: age band, sex, education, length of service at the company, work shift, and formal leadership. Five earlier questions stay as columns so an older row can still be read, and a new form leaves them null: economic sector, organization size, employment relationship, time in the occupation, and region. A blank is SQL `NULL`. A new form that omits a required answer is refused, and the invitation stays `pending`.
+A blank is SQL `NULL`. A finished form does not need any of these codes.
 
 The reading after the 35 items shows each area as four equal stripes — black, red, yellow, green — for the same cuts (below the 20th percentile, up to the 50th, up to the 80th, and at or above the 80th). It does not print the percentile sentence, and it does not offer to revise the answers or start again.
 
@@ -90,18 +90,18 @@ Stored values are stable codes, not the sentences on the page. A name, a job tit
 
 `demographics` is that same set of codes as a JSON object, written in the same insert as the columns. It is not an open bag. Unknown keys are refused. Keys and codes are lowercase.
 
-| Column | Required | Codes |
+| Column | On a new form | Codes |
 |---|---|---|
-| `age_band` | yes | `18_24`, `25_34`, `35_44`, `45_54`, `55_64`, `65_plus` |
-| `gender` | yes | `female`, `male`, `undisclosed` |
-| `education` | yes | `fundamental_incomplete`, `fundamental_complete`, `high_school_incomplete`, `high_school`, `higher_incomplete`, `higher_complete`, `postgraduate`. The retired code `fundamental` (complete and incomplete together) is still accepted on a stored row and is not offered on the form. |
+| `age_band` | not asked | `18_24`, `25_34`, `35_44`, `45_54`, `55_64`, `65_plus` |
+| `gender` | not asked | `female`, `male`, `undisclosed` |
+| `education` | not asked | `fundamental_incomplete`, `fundamental_complete`, `high_school_incomplete`, `high_school`, `higher_incomplete`, `higher_complete`, `postgraduate`. The retired code `fundamental` (complete and incomplete together) is still accepted on a stored row. |
 | `economic_sector` | not asked | `manufacturing`, `retail`, `services`, `health`, `education`, `it`, `construction`, `transport`, `agribusiness`, `public_admin`, `other` |
 | `org_size` | not asked | `micro`, `small`, `medium`, `large`, `unknown` |
 | `employment_bond` | not asked | `clt`, `public_statute`, `autonomous_pj`, `intern_apprentice`, `other` |
-| `tenure_org` | yes | `lt_1`, `y1_3`, `y4_10`, `gt_10` |
+| `tenure_org` | not asked | `lt_1`, `y1_3`, `y4_10`, `gt_10` |
 | `tenure_profession` | not asked | `lt_1`, `y1_5`, `y6_15`, `gt_15` |
-| `work_shift` | yes | `day_fixed`, `night_fixed`, `rotating`, `flexible` |
-| `leadership` | yes | `yes`, `no` |
+| `work_shift` | not asked | `day_fixed`, `night_fixed`, `rotating`, `flexible` |
+| `leadership` | not asked | `yes`, `no` |
 | `region` | not asked | `north`, `northeast`, `center_west`, `southeast`, `south` |
 
 These keys are still refused, on top of any key that is not in the table above:

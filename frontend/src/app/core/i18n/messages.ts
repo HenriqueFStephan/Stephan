@@ -243,11 +243,8 @@ const ptBR = {
   'tool.sector': 'Setor ou equipe',
   'tool.sectorHint': 'Opcional. Só para nomear esta leitura.',
   'tool.start': 'Começar',
-  'tool.profile.title': 'Questionário sociodemográfico e ocupacional',
-  'tool.profile.lead':
-    'As perguntas abaixo têm como propósito descrever de forma agregada as características da amostra populacional do estudo. Suas respostas são inteiramente anônimas e livres de identificação nominal. Responda marcando a opção condizente com a sua situação profissional vigente.',
-  'tool.profile.required': 'Preenchimento obrigatório',
-  'tool.profile.continue': 'Continuar',
+  'tool.intro':
+    'Suas respostas são inteiramente anônimas e livres de identificação nominal. Responda marcando a opção que melhor represente sua situação.',
   'tool.saveDraft': 'Salvar e continuar depois',
   'tool.drafting': 'Salvando…',
   'tool.draftNote': 'Progresso salvo. Abra o mesmo link neste ou noutro aparelho para continuar.',
@@ -873,11 +870,8 @@ export const en: Record<MsgKey, string> = {
   'tool.sector': 'Area or team',
   'tool.sectorHint': 'Optional. Only to name this reading.',
   'tool.start': 'Begin',
-  'tool.profile.title': 'Sociodemographic and occupational questionnaire',
-  'tool.profile.lead':
-    'The questions below describe, in aggregate, the characteristics of the study sample. Your answers are entirely anonymous and carry no name. Mark the option that matches your current work situation.',
-  'tool.profile.required': 'Required',
-  'tool.profile.continue': 'Continue',
+  'tool.intro':
+    'Your answers are entirely anonymous and carry no name. Mark the option that best represents your situation.',
   'tool.saveDraft': 'Save and continue later',
   'tool.drafting': 'Saving…',
   'tool.draftNote': 'Progress saved. Open the same link on this or another device to continue.',

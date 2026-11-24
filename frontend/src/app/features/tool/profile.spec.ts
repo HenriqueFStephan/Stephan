@@ -10,7 +10,7 @@ const COMPLETE_PROFILE = {
 };
 
 describe('Anexo B', () => {
-  it('asks six required questions and splits elementary and secondary school', () => {
+  it('keeps the stored codes and does not require them on the form', () => {
     expect(PROFILE_QUESTIONS.map((question) => question.id)).toEqual([
       'age_band',
       'gender',
@@ -19,29 +19,9 @@ describe('Anexo B', () => {
       'work_shift',
       'leadership',
     ]);
-    expect(PROFILE_QUESTIONS.every((question) => question.required)).toBeTrue();
-    expect(PROFILE_QUESTIONS.map((question) => question.pt)).toEqual([
-      'Faixa Etária',
-      'Sexo',
-      'Grau de Escolaridade',
-      'Tempo de Serviço na Empresa',
-      'Regime de Turno de Trabalho',
-      'Você exerce atribuições funcionais de chefia, gestão ou liderança formal de equipes?',
-    ]);
-    const education = PROFILE_QUESTIONS.find((question) => question.id === 'education');
-    expect(education?.options.map((option) => option.id)).toEqual([
-      'fundamental_incomplete',
-      'fundamental_complete',
-      'high_school_incomplete',
-      'high_school',
-      'higher_incomplete',
-      'higher_complete',
-      'postgraduate',
-    ]);
-    expect(isProfileReady({})).toBeFalse();
-    expect(isProfileReady({ age_band: '18_24' })).toBeFalse();
-    expect(isProfileReady(COMPLETE_PROFILE)).toBeTrue();
-    expect(isProfileReady({ ...COMPLETE_PROFILE, age_band: 'nope' })).toBeFalse();
+    expect(PROFILE_QUESTIONS.every((question) => question.required)).toBeFalse();
+    expect(isProfileReady({})).toBeTrue();
+    expect(profilePayload({})).toEqual({});
     expect(profilePayload({ ...COMPLETE_PROFILE, region: '' })).toEqual(COMPLETE_PROFILE);
   });
 });

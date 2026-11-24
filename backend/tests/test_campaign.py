@@ -92,10 +92,8 @@ def test_demographics_are_the_annex_and_reject_identifiers():
         "work_shift": "day_fixed",
         "leadership": "yes",
     }
-    with pytest.raises(DemographicRejected):
-        clean_demographics({})
-    with pytest.raises(DemographicRejected):
-        clean_demographics({"age_band": "35_44"})
+    assert clean_demographics({}) == {}
+    assert clean_demographics({"age_band": "35_44"}) == {"age_band": "35_44"}
     with pytest.raises(DemographicRejected):
         clean_demographics({"age_band": "35_44", "economic_sector": "health", "nome": "Ada"})
     with pytest.raises(DemographicRejected):
@@ -128,7 +126,7 @@ def test_annex_codes_match_the_schema_and_the_form():
         text,
         re.S,
     )
-    asked = (
+    catalog = (
         "age_band",
         "gender",
         "education",
@@ -137,13 +135,16 @@ def test_annex_codes_match_the_schema_and_the_form():
         "leadership",
     )
     retired = {"education": ("fundamental",)}
-    assert [item[0] for item in questions] == list(asked)
-    assert REQUIRED_DEMOGRAPHIC_KEYS == frozenset(asked)
+    assert [item[0] for item in questions] == list(catalog)
+    assert REQUIRED_DEMOGRAPHIC_KEYS == frozenset()
+    page = (ROOT / "frontend/src/app/features/tool/tool.component.html").read_text(encoding="utf-8")
+    assert "Questionário sociodemográfico" not in page
+    assert "tool.profile" not in page
     for key, required, _pt, _en, options in questions:
         found = re.findall(r"id: '([a-z0-9_]+)'", options)
         hidden = retired.get(key, ())
         assert found == [code for code in DEMOGRAPHIC_FIELDS[key] if code not in hidden]
-        assert (required == "true") is (key in REQUIRED_DEMOGRAPHIC_KEYS)
+        assert required == "false"
 
 
 def test_tool_stays_out_of_the_public_menu_and_footer():
@@ -387,13 +388,13 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             )
             refused = client.post(
                 "/api/v1/tool/responses",
-                json={"token": sent[0][1], "answers": [3] * 35, "demographics": {}},
+                json={"token": sent[0][1], "answers": [3] * 35, "demographics": {"nome": "Ada"}},
             )
             assert refused.status_code == 400
             assert refused.json()["detail"]["code"] == "demographics"
             saved = client.post(
                 "/api/v1/tool/responses",
-                json={"token": sent[0][1], "answers": [3] * 35, "demographics": annex},
+                json={"token": sent[0][1], "answers": [3] * 35, "demographics": {}},
             )
             assert saved.status_code == 200
             assert sent[0][1] not in saved.text
@@ -456,8 +457,8 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
                 """,
                 (posted_ids.pop(),),
             ).fetchone()
-            assert posted["age_band"] == "35_44"
-            assert posted["economic_sector"] == "health"
+            assert posted["age_band"] is None
+            assert posted["economic_sector"] is None
             conn.commit()
     finally:
         with connect() as conn:

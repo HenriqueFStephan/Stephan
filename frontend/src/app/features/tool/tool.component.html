@@ -26,48 +26,8 @@
 
     <section *ngIf="phase === 'intro'" class="card card--intro">
       <h1>{{ 'tool.title' | t }}</h1>
+      <p class="lead">{{ 'tool.intro' | t }}</p>
       <button type="button" class="button button--start" (click)="start()">{{ 'tool.start' | t }}</button>
-    </section>
-
-    <section *ngIf="phase === 'profile'" class="card">
-      <h1>{{ 'tool.profile.title' | t }}</h1>
-      <p class="lead">{{ 'tool.profile.lead' | t }}</p>
-      <fieldset
-        class="profile"
-        *ngFor="let question of profileQuestions; let i = index"
-        [attr.data-question]="question.id"
-      >
-        <legend>
-          <span class="profile__q">{{ i + 1 }}. {{ questionText(question) }}</span>
-        </legend>
-        <div class="choices" role="radiogroup" [attr.aria-label]="questionText(question)">
-          <button
-            type="button"
-            class="choice"
-            *ngFor="let option of question.options"
-            role="radio"
-            [attr.aria-checked]="profile[question.id] === option.id"
-            [class.is-selected]="profile[question.id] === option.id"
-            (click)="chooseProfile(question.id, option.id)"
-          >
-            <span>{{ optionText(option) }}</span>
-          </button>
-        </div>
-      </fieldset>
-      <div class="ask__nav">
-        <button type="button" class="text" (click)="back()">{{ 'tool.back' | t }}</button>
-        <span class="ask__aside">
-          <button type="button" class="text" *ngIf="campaign" (click)="saveDraft()" [disabled]="drafting || saving">
-            {{ (drafting ? 'tool.drafting' : 'tool.saveDraft') | t }}
-          </button>
-          <button type="button" class="button" (click)="continueProfile()" [disabled]="!profileReady">
-            {{ 'tool.profile.continue' | t }}
-          </button>
-        </span>
-      </div>
-      <p class="note" *ngIf="draftSaved">{{ 'tool.draftNote' | t }}</p>
-      <p class="note" *ngIf="resumed && !draftSaved">{{ 'tool.resumed' | t }}</p>
-      <p class="error" *ngIf="draftFailed" role="alert">{{ 'tool.draftFailed' | t }}</p>
     </section>
 
     <section *ngIf="phase === 'ask'" class="card">
@@ -103,7 +63,7 @@
             type="button"
             class="button"
             (click)="finish()"
-            [disabled]="answers[index] == null || !profileReady || saving"
+            [disabled]="answers[index] == null || saving"
           >
             {{ (saving ? 'tool.sending' : (campaign ? 'tool.send' : 'tool.see')) | t }}
           </button>

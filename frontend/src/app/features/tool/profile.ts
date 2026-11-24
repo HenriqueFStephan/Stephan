@@ -1,12 +1,7 @@
 /**
- * Anexo B, asked after the introduction and stored on the same form as the 35 items.
+ * Anexo B codes that an older answer may still carry. The form no longer asks them.
  * Option ids are the database codes. Keep them aligned with DEMOGRAPHIC_FIELDS
  * in backend/app/services/campaign_store.py.
- *
- * The form asks six questions, all required. Economic sector, organization size,
- * employment relationship, time in the occupation, and region stay as stored
- * columns and are no longer asked. The combined `fundamental` education code
- * is retired on the form and still accepted on older rows.
  */
 
 export interface ProfileOption {
@@ -26,7 +21,7 @@ export interface ProfileQuestion {
 export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   {
     id: 'age_band',
-    required: true,
+    required: false,
     pt: 'Faixa Etária',
     en: 'Age band',
     options: [
@@ -40,7 +35,7 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'gender',
-    required: true,
+    required: false,
     pt: 'Sexo',
     en: 'Sex',
     options: [
@@ -51,7 +46,7 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'education',
-    required: true,
+    required: false,
     pt: 'Grau de Escolaridade',
     en: 'Education',
     options: [
@@ -86,7 +81,7 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'tenure_org',
-    required: true,
+    required: false,
     pt: 'Tempo de Serviço na Empresa',
     en: 'Length of service at the company',
     options: [
@@ -98,7 +93,7 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'work_shift',
-    required: true,
+    required: false,
     pt: 'Regime de Turno de Trabalho',
     en: 'Work shift regime',
     options: [
@@ -114,7 +109,7 @@ export const PROFILE_QUESTIONS: readonly ProfileQuestion[] = [
   },
   {
     id: 'leadership',
-    required: true,
+    required: false,
     pt: 'Você exerce atribuições funcionais de chefia, gestão ou liderança formal de equipes?',
     en: 'Do you formally supervise, manage, or lead a team?',
     options: [

@@ -60,4 +60,4 @@ The password above is the local Docker default. The Lightsail password is differ
 
 ## Questionnaire on `/tool`
 
-The campaign form is already `/tool?t=`. After the introduction comes Anexo B, then the 35 HSE-IT items. Anexo B is stored on `hse_responses`, not on the invitation. See [TOOL.md](TOOL.md). Do not add `/tool` to the header or the footer.
+The campaign form is already `/tool?t=`. After the introduction come the 35 HSE-IT items. The sociodemographic page is not shown. Older Anexo B codes stay on `hse_responses`, not on the invitation. See [TOOL.md](TOOL.md). Do not add `/tool` to the header or the footer.

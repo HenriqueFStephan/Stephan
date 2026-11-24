@@ -16,15 +16,9 @@ import {
   hseSummary,
   scoreHse,
 } from './hse-it';
-import {
-  PROFILE_QUESTIONS,
-  ProfileOption,
-  ProfileQuestion,
-  isProfileReady,
-  profilePayload,
-} from './profile';
+import { PROFILE_QUESTIONS, profilePayload } from './profile';
 
-type Phase = 'checking' | 'invalid' | 'used' | 'intro' | 'profile' | 'ask' | 'results';
+type Phase = 'checking' | 'invalid' | 'used' | 'intro' | 'ask' | 'results';
 
 const ADVANCE_MS = 180;
 
@@ -37,7 +31,6 @@ const ADVANCE_MS = 180;
 })
 export class ToolComponent implements OnInit, OnDestroy {
   readonly items = HSE_ITEMS;
-  readonly profileQuestions = PROFILE_QUESTIONS;
 
   phase: Phase = 'intro';
   index = 0;
@@ -97,38 +90,13 @@ export class ToolComponent implements OnInit, OnDestroy {
     return this.items[this.index];
   }
 
-  get profileReady(): boolean {
-    return isProfileReady(this.profile);
-  }
-
   toggleLang(): void {
     this.i18n.setLang(this.i18n.lang() === 'pt-BR' ? 'en' : 'pt-BR');
   }
 
   start(): void {
-    this.phase = 'profile';
-    this.reveal();
-  }
-
-  questionText(question: ProfileQuestion): string {
-    return this.i18n.lang() === 'en' ? question.en : question.pt;
-  }
-
-  optionText(option: ProfileOption): string {
-    return this.i18n.lang() === 'en' ? option.en : option.pt;
-  }
-
-  chooseProfile(questionId: string, optionId: string): void {
-    this.profile = { ...this.profile, [questionId]: optionId };
-    this.noteDraftChanged();
-  }
-
-  continueProfile(): void {
-    if (!this.profileReady) {
-      return;
-    }
-    this.noteDraftChanged();
     this.phase = 'ask';
+    this.index = 0;
     this.reveal();
   }
 
@@ -155,18 +123,18 @@ export class ToolComponent implements OnInit, OnDestroy {
     if (!this.campaign || this.drafting || this.saving) {
       return;
     }
-    if (this.phase !== 'profile' && this.phase !== 'ask') {
+    if (this.phase !== 'ask') {
       return;
     }
     this.clearAdvance();
     this.drafting = true;
     this.draftSaved = false;
     this.draftFailed = false;
-    const place = this.phase;
+    const place = 'ask' as const;
     this.api
       .saveToolDraft(this.token, {
         place,
-        index: place === 'ask' ? this.index : 0,
+        index: this.index,
         demographics: profilePayload(this.profile),
         answers: this.answers,
       })
@@ -195,19 +163,14 @@ export class ToolComponent implements OnInit, OnDestroy {
       if (this.index > 0) {
         this.index -= 1;
       } else {
-        this.phase = 'profile';
+        this.phase = 'intro';
       }
-      this.reveal();
-      return;
-    }
-    if (this.phase === 'profile') {
-      this.phase = 'intro';
       this.reveal();
     }
   }
 
   finish(): void {
-    if (this.answers.some((value) => value == null) || this.saving || !this.profileReady) {
+    if (this.answers.some((value) => value == null) || this.saving) {
       return;
     }
     this.clearAdvance();
@@ -341,13 +304,13 @@ export class ToolComponent implements OnInit, OnDestroy {
       const value = marks[position];
       return typeof value === 'number' && value >= 1 && value <= 5 ? value : null;
     });
-    if (draft.place === 'ask' && this.profileReady) {
+    if (draft.place === 'ask') {
       const index = Number(draft.index);
       this.index = Number.isInteger(index) ? Math.min(this.items.length - 1, Math.max(0, index)) : 0;
       this.phase = 'ask';
     } else {
       this.index = 0;
-      this.phase = 'profile';
+      this.phase = 'intro';
     }
     this.resumed = true;
     this.reveal();

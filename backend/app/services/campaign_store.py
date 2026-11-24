@@ -70,9 +70,7 @@ DEMOGRAPHIC_FIELDS: dict[str, tuple[str, ...]] = {
 }
 # Questions still on the form. Older columns stay in DEMOGRAPHIC_FIELDS so a
 # stored row can keep them, and a new form may omit them.
-REQUIRED_DEMOGRAPHIC_KEYS = frozenset(
-    {"age_band", "gender", "education", "tenure_org", "work_shift", "leadership"}
-)
+REQUIRED_DEMOGRAPHIC_KEYS = frozenset()
 DEMOGRAPHIC_COLUMNS = tuple(DEMOGRAPHIC_FIELDS)
 
 # Identifiers we already refused. This is not the list of demographic fields.
@@ -584,7 +582,7 @@ def record_response(
 
 
 def clean_demographics(raw: dict[str, Any], *, require_complete: bool = True) -> dict[str, Any]:
-    """Keep Anexo B codes only. A finished form requires every question still asked."""
+    """Keep Anexo B codes only. The form no longer asks them, so a new answer may omit every one."""
     if not isinstance(raw, dict):
         raise DemographicRejected("demographics must be an object")
     cleaned: dict[str, Any] = {}

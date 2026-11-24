@@ -18,35 +18,18 @@ describe('ToolComponent', () => {
     fixture.detectChanges();
   });
 
-  it('opens on the introduction, then the sociodemographic form, then the first HSE item', () => {
+  it('opens on the introduction, then the first HSE item', () => {
     const text = (): string => fixture.nativeElement.textContent as string;
     expect(text()).toContain('Indicador das condições de trabalho');
+    expect(text()).toContain('Suas respostas são inteiramente anônimas e livres de identificação nominal.');
     expect(text()).toContain('Começar');
+    expect(text()).not.toContain('Questionário sociodemográfico e ocupacional');
     expect(text()).not.toContain('Trinta e cinco perguntas');
     expect(text()).not.toContain('Sei com clareza');
     expect(text()).not.toContain('Faixa Etária');
 
     const start = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
     start.click();
-    fixture.detectChanges();
-
-    expect(text()).toContain('Questionário sociodemográfico e ocupacional');
-    expect(text()).toContain('Faixa Etária');
-    expect(text()).toContain('Sexo');
-    expect(text()).toContain('Ensino Fundamental incompleto');
-    expect(text()).toContain('Ensino Fundamental completo');
-    expect(text()).toContain('Ensino Médio incompleto');
-    expect(text()).toContain('Tempo de Serviço na Empresa');
-    expect(text()).toContain('Regime de Turno de Trabalho');
-    expect(text()).not.toContain('Preenchimento obrigatório');
-    expect(text()).not.toContain('Região Sul');
-    expect(text()).not.toContain('Gênero');
-    const next = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
-    expect(next.disabled).toBeTrue();
-
-    markRequired(fixture);
-    expect((fixture.nativeElement.querySelector('.button') as HTMLButtonElement).disabled).toBeFalse();
-    (fixture.nativeElement.querySelector('.button') as HTMLButtonElement).click();
     fixture.detectChanges();
 
     expect(text()).toContain('1 de 35');
@@ -57,8 +40,8 @@ describe('ToolComponent', () => {
     const back = fixture.nativeElement.querySelector('.text') as HTMLButtonElement;
     back.click();
     fixture.detectChanges();
-    expect(text()).toContain('Faixa Etária');
-    expect(fixture.componentInstance.profile['age_band']).toBe('18_24');
+    expect(text()).toContain('Começar');
+    expect(text()).not.toContain('Faixa Etária');
   });
 
   it('advances after a choice and can step back', fakeAsync(() => {
@@ -143,21 +126,8 @@ describe('ToolComponent campaign draft', () => {
   });
 });
 
-function markRequired(fixture: ComponentFixture<ToolComponent>): void {
-  const questions = fixture.nativeElement.querySelectorAll('[data-question]');
-  questions.forEach((question: Element) => {
-    const choice = question.querySelector('.choice') as HTMLButtonElement;
-    choice.click();
-  });
-  fixture.detectChanges();
-}
-
 function openQuestions(fixture: ComponentFixture<ToolComponent>): void {
   const start = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
   start.click();
-  fixture.detectChanges();
-  markRequired(fixture);
-  const next = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
-  next.click();
   fixture.detectChanges();
 }
