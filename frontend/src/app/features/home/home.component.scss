@@ -8,10 +8,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
   grid-template-rows: 1fr auto;
-  align-items: end;
+  align-items: center;
   gap: 1.5rem 2rem;
-  min-height: calc(100vh - 76px);
-  padding: 3rem 6vw 1.35rem;
+  min-height: calc(100dvh - 5rem);
+  padding: 2rem 6vw 1.35rem;
   overflow-x: clip;
   background: $color-bg-dark;
   color: #f7f4ec;
@@ -33,19 +33,6 @@
   line-height: 1.35;
 }
 
-.hero__lead {
-  margin: 0 0 1.5rem;
-  max-width: 42ch;
-  color: #d7e4ec;
-  font-size: 1.08rem;
-}
-
-.hero__notice {
-  margin: 1.1rem 0 0;
-  max-width: 36ch;
-  color: #f7f4ec;
-}
-
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
@@ -54,7 +41,7 @@
 
 .hero__mark {
   justify-self: end;
-  width: min(34vw, 420px);
+  width: min(28vw, 320px);
 }
 
 .hero__mark img {
@@ -158,6 +145,20 @@ h3 {
   margin-bottom: 0;
 }
 
+#conceito .prose {
+  column-count: 2;
+  column-gap: 2.75rem;
+}
+
+#conceito .prose p {
+  max-width: none;
+  break-inside: avoid;
+}
+
+#conceito h3 {
+  font-size: clamp(1.9rem, 2.8vw, 2.35rem);
+}
+
 .closing {
   margin: 1.75rem 0 0;
   color: $color-text;
@@ -183,10 +184,14 @@ h3 {
 }
 
 .dimensions h4 {
-  margin: 0 0 0.3rem;
-  font-size: clamp(1.55rem, 2.5vw, 2rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
+  margin: 0 0 0.2rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.dimensions p {
+  font-size: 0.95rem;
 }
 
 .dimensions p,
@@ -247,8 +252,23 @@ h3 {
 
 .stat__source {
   margin: 0.2rem 0 0 !important;
-  color: #e6eef3 !important;
   font-size: 0.95rem;
+}
+
+.stat__source a {
+  color: #e6eef3;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+.stat__source a:hover {
+  color: #f7f4ec;
+}
+
+.stat__source a:focus-visible {
+  outline: 2px solid #f7f4ec;
+  outline-offset: 3px;
 }
 
 .gains {
@@ -290,13 +310,21 @@ h3 {
 }
 
 .thread__segment {
-  display: flex;
-  flex-direction: column;
-  margin-top: 2.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 13.5rem;
+  grid-template-areas: "copy figure";
+  gap: 1.15rem 2rem;
+  align-items: center;
+  margin-top: 1.75rem;
 }
 
-.thread__segment--image-first .thread__figure {
-  order: -1;
+.thread__copy {
+  grid-area: copy;
+}
+
+.thread__segment--image-first {
+  grid-template-columns: 13.5rem minmax(0, 1fr);
+  grid-template-areas: "figure copy";
 }
 
 .thread__index {
@@ -313,39 +341,62 @@ h3 {
 }
 
 .thread__figure {
+  grid-area: figure;
   margin: 0;
 }
 
 .thread__figure img {
   display: block;
-  width: calc(100% + 16vw);
-  max-width: none;
+  width: 100%;
   height: auto;
-  margin-left: -8vw;
-  border: 0;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  margin: 0;
+  border: 1px solid $color-border;
   background: $color-surface;
 }
 
-.thread__segment--image-first .thread__copy {
-  position: relative;
-  z-index: 1;
-  max-width: 38rem;
-  margin-top: -2.75rem;
-  padding: 1.15rem 1.5rem 0 0;
-  background: $color-bg;
-}
-
-.thread__segment--text-first .thread__figure {
-  margin-top: 1.15rem;
-}
-
 .highlight {
-  max-width: 44rem;
-  margin-top: 3rem;
+  max-width: 46rem;
+  margin-top: 2.75rem;
 }
 
 .highlight h3 {
   margin-top: 0;
+  max-width: 22ch;
+}
+
+.highlight > h4 {
+  margin: 1.75rem 0 0.35rem;
+  font-size: 1.2rem;
+}
+
+.diff {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.diff li {
+  padding: 0.75rem 0;
+  border-top: 1px solid $color-border;
+}
+
+.diff h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.diff p,
+.highlight .closing {
+  margin: 0;
+  color: $color-text-muted;
+}
+
+.highlight .closing {
+  margin-top: 1.25rem;
+  max-width: 42ch;
 }
 
 .deliverables {
@@ -404,8 +455,12 @@ h3 {
 @media (max-width: 800px) {
   .hero {
     grid-template-columns: 1fr;
-    min-height: auto;
-    padding: 2rem 1.25rem 1rem;
+    min-height: calc(100svh - 6.4rem);
+    padding: 1.5rem 1.25rem 1rem;
+  }
+
+  #conceito .prose {
+    column-count: 1;
   }
 
   .hero__mark {
@@ -419,9 +474,18 @@ h3 {
     font-size: clamp(2.3rem, 10vw, 3.2rem);
   }
 
-  .thread__figure img {
-    width: calc(100% + 2.5rem);
-    margin-left: -1.25rem;
+  .thread__segment,
+  .thread__segment--image-first {
+    grid-template-columns: 1fr;
+    grid-template-areas: "copy" "figure";
+  }
+
+  .thread__segment--image-first {
+    grid-template-areas: "figure" "copy";
+  }
+
+  .thread__figure {
+    max-width: 16rem;
   }
 
   .section {
@@ -441,10 +505,6 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  .thread__segment--image-first .thread__copy {
-    margin-top: 0.85rem;
-    padding-right: 0;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

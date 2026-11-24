@@ -2,12 +2,10 @@
   <div class="hero__copy">
     <h1>{{ 'hero.title' | t }}</h1>
     <p class="hero__subtitle">{{ 'hero.subtitle' | t }}</p>
-    <p class="hero__lead">{{ 'hero.lead' | t }}</p>
     <div class="hero__actions">
       <a class="button" href="#metodo">{{ 'hero.ctaMethod' | t }}</a>
       <a class="button button--ghost" routerLink="/contato">{{ 'hero.ctaContact' | t }}</a>
     </div>
-    <p class="hero__notice">{{ 'home.nr1Notice' | t }}</p>
   </div>
   <div class="hero__mark" aria-hidden="true">
     <img src="assets/brand/stephan-mark-cream.png" alt="" />
@@ -50,7 +48,11 @@
       <div>
         <p class="stat__label">{{ statKey(index, 'label') | t }}</p>
         <p>{{ statKey(index, 'body') | t }}</p>
-        <p class="stat__source">{{ statKey(index, 'source') | t }}</p>
+        <p class="stat__source">
+          <a [href]="statSource(index)" target="_blank" rel="noopener noreferrer">{{
+            statKey(index, 'source') | t
+          }}</a>
+        </p>
       </div>
     </article>
   </div>
@@ -111,16 +113,28 @@
         <p>{{ step.bodyKey | t }}</p>
       </div>
       <figure class="thread__figure">
-        <img [src]="step.image" alt="" width="640" height="360" loading="lazy" />
+        <img [src]="step.image" alt="" width="1200" height="900" loading="lazy" />
       </figure>
     </li>
   </ol>
   <div class="highlight">
     <h3>{{ 'home.method.diffTitle' | t }}</h3>
-    <div class="prose">
-      <p>{{ 'home.method.diffP1' | t }}</p>
-      <p>{{ 'home.method.diffP2' | t }}</p>
-    </div>
+    <p class="intro">{{ 'home.method.diffLead' | t }}</p>
+    <h4>{{ 'home.method.diffWhyTitle' | t }}</h4>
+    <ul class="diff">
+      <li *ngFor="let index of diffReasons">
+        <h4>{{ diffReasonKey(index, 'title') | t }}</h4>
+        <p>{{ diffReasonKey(index, 'body') | t }}</p>
+      </li>
+    </ul>
+    <h4>{{ 'home.method.diffRoiTitle' | t }}</h4>
+    <ul class="diff">
+      <li *ngFor="let index of diffReturns">
+        <h4>{{ diffReturnKey(index, 'title') | t }}</h4>
+        <p>{{ diffReturnKey(index, 'body') | t }}</p>
+      </li>
+    </ul>
+    <p class="closing">{{ 'home.method.diffClose' | t }}</p>
   </div>
 </section>
 

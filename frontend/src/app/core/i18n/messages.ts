@@ -109,11 +109,31 @@ const ptBR = {
   'home.method.step3.title': 'Grupo focal',
   'home.method.step3.body':
     'A Dra. Renata Stephan conduz grupos focais nas áreas que apresentam risco elevado. Quem faz o trabalho situa os números, explica o trabalho real por trás deles e indica o que precisa mudar. Dessa escuta saem as ações propostas para a organização.',
-  'home.method.diffTitle': 'Diferencial',
-  'home.method.diffP1':
-    'Instrumento validado no Brasil. O HSE-IT foi validado para o português brasileiro por Lucca et al. (2013), com propriedades psicométricas satisfatórias: alfa de Cronbach superior a 0,70 nas sete subescalas e ajuste aceitável no modelo fatorial. A Dra. Renata Sobral aplicou o instrumento e o método misto do HSE — questionário seguido de grupo focal — em 2.284 trabalhadores de call center, hospitais, bancos, unidades básicas de saúde e indústrias, em pesquisa publicada na Revista Brasileira de Medicina do Trabalho.',
-  'home.method.diffP2':
-    'Não usamos questionário traduzido às pressas nem modelo genérico. Usamos o instrumento validado, aplicado por quem o validou e o pesquisou no Brasil.',
+  'home.method.diffTitle': 'A Diferença Stephan: Ciência, Segurança Jurídica e ROI',
+  'home.method.diffLead':
+    'Na Stephan, transformamos a gestão de riscos psicossociais (NR-1) em um investimento estratégico de alto retorno. Unimos psicologia do trabalho, epidemiologia e tecnologia para proteger seu capital humano e blindar suas margens de resultado.',
+  'home.method.diffWhyTitle': 'Por que escolher a Stephan?',
+  'home.method.diffWhy.1.title': 'Rigor científico e normativo',
+  'home.method.diffWhy.1.body':
+    'Pioneiros na validação do HSE-IT no Brasil e em total conformidade com a Resolução CFP nº 14/2023, garantimos diagnósticos seguros, éticos e alinhados às exigências do Ministério do Trabalho.',
+  'home.method.diffWhy.2.title': 'Visão multidisciplinar única',
+  'home.method.diffWhy.2.body':
+    'Nossa liderança integra Psicologia (Doutorado Unicamp), Epidemiologia (Pós-doutorado em saúde pública) e Tecnologia (Engenharia de sistemas de dados). Uma entrega que conversa com o RH, o jurídico e a alta gestão.',
+  'home.method.diffRoiTitle': 'O retorno sobre o investimento (ROI)',
+  'home.method.diffRoi.1.title': 'Redução de absenteísmo',
+  'home.method.diffRoi.1.body':
+    'Menos licenças e afastamentos por esgotamento (burnout), recuperando a produtividade diária.',
+  'home.method.diffRoi.2.title': 'Zero passivos trabalhistas',
+  'home.method.diffRoi.2.body':
+    'Blindagem técnica para o seu PGR contra autuações e fiscalizações do MTE e MPT.',
+  'home.method.diffRoi.3.title': 'Queda no turnover',
+  'home.method.diffRoi.3.body':
+    'Ambientes organizados e seguros que retêm talentos e reduzem custos com novas contratações.',
+  'home.method.diffRoi.4.title': 'Ação direta e sem desperdício',
+  'home.method.diffRoi.4.body':
+    'Intervenções precisas baseadas em dados, eliminando gastos com programas genéricos que não dão resultado.',
+  'home.method.diffClose':
+    'Cuidar de quem faz sua empresa acontecer é inteligência de negócios.',
 
   'home.deliver.eyebrow': '05 — Entregáveis',
   'home.deliver.title': 'O que a organização recebe',
@@ -736,11 +756,31 @@ export const en: Record<MsgKey, string> = {
   'home.method.step3.title': 'Focus group',
   'home.method.step3.body':
     'Dr. Renata Stephan leads focus groups in areas with elevated risk. The people who do the work place the numbers, explain the real work behind them, and say what needs to change. From that listening come proposed actions for the organization.',
-  'home.method.diffTitle': 'What sets us apart',
-  'home.method.diffP1':
-    'Instrument validated in Brazil. The HSE-IT was validated for Brazilian Portuguese by Lucca et al. (2013), with satisfactory psychometric properties: Cronbach’s alpha above 0.70 on all seven subscales and acceptable fit in the factor model. Dr. Renata Sobral applied the instrument and the HSE mixed method—questionnaire followed by focus group—in 2,284 workers in call centres, hospitals, banks, primary care units, and industry, in research published in the Revista Brasileira de Medicina do Trabalho.',
-  'home.method.diffP2':
-    'We do not use a hastily translated questionnaire or a generic model. We use the validated instrument, applied by the person who validated and researched it in Brazil.',
+  'home.method.diffTitle': 'The Stephan difference: science, legal certainty, and ROI',
+  'home.method.diffLead':
+    'At Stephan, psychosocial risk management (NR-1) becomes a strategic investment with a high return. We join work psychology, epidemiology, and technology to protect your human capital and defend your margins.',
+  'home.method.diffWhyTitle': 'Why choose Stephan?',
+  'home.method.diffWhy.1.title': 'Scientific and regulatory rigor',
+  'home.method.diffWhy.1.body':
+    'Pioneers in validating the HSE-IT in Brazil, and fully aligned with CFP Resolution No. 14/2023, we deliver diagnoses that are sound, ethical, and matched to the Ministry of Labor’s requirements.',
+  'home.method.diffWhy.2.title': 'A singular multidisciplinary view',
+  'home.method.diffWhy.2.body':
+    'Our leadership brings together psychology (a doctorate at Unicamp), epidemiology (postdoctoral work in public health), and technology (data-systems engineering). A delivery that speaks to HR, legal, and senior management.',
+  'home.method.diffRoiTitle': 'Return on investment (ROI)',
+  'home.method.diffRoi.1.title': 'Less absenteeism',
+  'home.method.diffRoi.1.body':
+    'Fewer leaves and absences from exhaustion (burnout), recovering day-to-day productivity.',
+  'home.method.diffRoi.2.title': 'Zero labor liabilities',
+  'home.method.diffRoi.2.body':
+    'Technical protection for your PGR against fines and inspections by the MTE and the MPT.',
+  'home.method.diffRoi.3.title': 'Lower turnover',
+  'home.method.diffRoi.3.body':
+    'Organized, safer workplaces that keep people and cut the cost of hiring again.',
+  'home.method.diffRoi.4.title': 'Direct action, without waste',
+  'home.method.diffRoi.4.body':
+    'Precise interventions based on data, dropping the spend on generic programs that do not deliver.',
+  'home.method.diffClose':
+    'Looking after the people who make your company happen is business intelligence.',
 
   'home.deliver.eyebrow': '05 — Deliverables',
   'home.deliver.title': 'What the organization receives',
