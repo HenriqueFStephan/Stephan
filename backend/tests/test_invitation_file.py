@@ -151,6 +151,17 @@ def test_one_column_keeps_an_email_and_a_phone_together():
     assert present_address("551133334444") == "+55 11 3333-4444"
 
 
+def test_a_number_with_a_country_code_is_kept():
+    parsed = parse_invitation_file(
+        "people.csv",
+        "henrique.f.stephan@gmail.com;\n+4915116976415\n".encode(),
+    )
+    assert parsed.emails == ["henrique.f.stephan@gmail.com"]
+    assert parsed.phones == ["4915116976415"]
+    assert parsed.invalid == []
+    assert present_address("4915116976415") == "+4915116976415"
+
+
 def test_contato_header_and_json_accept_either_key():
     parsed = parse_invitation_file(
         "people.csv",

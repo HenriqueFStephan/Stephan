@@ -3,7 +3,9 @@
 The header `email` or `contato` is optional. When the first cell is one of
 those words, that row is the header. Otherwise every row is an address. A
 value with @ that is a valid email is
-sent by email. A Brazilian phone number is sent on WhatsApp. JSON uses the
+sent by email. A phone number is sent on WhatsApp. A Brazilian number may omit
+the country code. Any other country must start with + and the country code.
+JSON uses the
 same two keys, one per row. Unknown columns reject the whole file so a name
 is never stored by accident.
 """
@@ -61,7 +63,7 @@ def parse_invitation_file(filename: str, data: bytes) -> ParsedInvitations:
 
 
 def present_address(address: str) -> str:
-    """Show a stored phone as +55 19 99877-2525. An email is returned as stored."""
+    """Show a stored phone with its country code. An email is returned as stored."""
     if address.isdigit() and address.startswith("55") and len(address) in (12, 13):
         national = address[2:]
         ddd = national[:2]
@@ -71,6 +73,8 @@ def present_address(address: str) -> str:
         else:
             pretty = f"{rest[:4]}-{rest[4:]}"
         return f"+55 {ddd} {pretty}"
+    if address.isdigit() and 8 <= len(address) <= 15:
+        return f"+{address}"
     return address
 
 
@@ -249,6 +253,10 @@ def _normalize_phone(text: str) -> str | None:
     if any(ch not in _PHONE_CHARS for ch in text):
         return None
     digits = re.sub(r"\D", "", text)
+    if text.lstrip().startswith("+"):
+        if 8 <= len(digits) <= 15 and not digits.startswith("0"):
+            return digits
+        return None
     if digits.startswith("0") and len(digits) - 1 in (10, 11, 12, 13):
         digits = digits[1:]
     if digits.startswith("55") and len(digits) in (12, 13):
