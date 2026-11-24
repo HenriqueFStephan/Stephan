@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-09T16:48:56.903788+00:00",
+  "updated_at": "2026-11-23T18:43:17.765973+00:00",
   "notes": "Sources already posted in weekly law-report issues. The weekly report skips these DOIs and URLs.",
   "papers": [
     {
@@ -683,6 +683,226 @@
       "published": "2026-10-26",
       "category": "methods",
       "first_seen": "2026-11-09"
+    },
+    {
+      "title": "Associations between digital and automated work and psychosocial outcomes: Cross-sectional results from the Gutenberg Health Study",
+      "url": "https://doi.org/10.1007/s00420-026-02252-0",
+      "doi": "10.1007/s00420-026-02252-0",
+      "journal": "International Archives of Occupational and Environmental Health",
+      "authors": "Alice Freiberg et al.",
+      "year": 2026,
+      "published": "2026-11-10",
+      "category": "psychosocial",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Establishing cut-off values on COPSOQ scales using depressive symptoms as criterion: a longitudinal study with a random sample of employees in Germany",
+      "url": "https://doi.org/10.1007/s00420-026-02255-x",
+      "doi": "10.1007/s00420-026-02255-x",
+      "journal": "International Archives of Occupational and Environmental Health",
+      "authors": "Ruth Schäfers et al.",
+      "year": 2026,
+      "published": "2026-11-10",
+      "category": "methods",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Aviso Público: 5ª Sessão Extraordinária e Tomada de Subsídios nº 3/2026 — Fatores de risco psicossociais (Capítulo 1.5 da NR-1)",
+      "url": "https://www.gov.br/agu/pt-br/assuntos-1/sejan/Aviso.pdf",
+      "doi": "",
+      "journal": "Advocacia-Geral da União — Câmara Sejan",
+      "authors": "Flavio José Roman",
+      "year": 2026,
+      "published": "2026-10-20",
+      "category": "nr-1",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Algorithmic management and employees’ work withdrawal behavior: the roles of AI anxiety and perceived algorithmic transparency",
+      "url": "https://doi.org/10.3389/fpsyg.2026.1916936",
+      "doi": "10.3389/fpsyg.2026.1916936",
+      "journal": "Frontiers in Psychology",
+      "authors": "Zheyu Lyu et al.",
+      "year": 2026,
+      "published": "2026-10-21",
+      "category": "psychosocial",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Low Employment Precariousness as a Structural Determinant of Nurses’ Well-Being: The Mediating Role of Psychosocial Working Conditions",
+      "url": "https://doi.org/10.1155/jonm/7165363",
+      "doi": "10.1155/jonm/7165363",
+      "journal": "Journal of Nursing Management",
+      "authors": "Marja Hult et al.",
+      "year": 2026,
+      "published": "2026-10-31",
+      "category": "methods",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "How Personality Types Shape the Link Between Nursing Work Environment and Subjective Well-Being",
+      "url": "https://doi.org/10.1155/jonm/1147669",
+      "doi": "10.1155/jonm/1147669",
+      "journal": "Journal of Nursing Management",
+      "authors": "Yan Li et al.",
+      "year": 2026,
+      "published": "2026-11-04",
+      "category": "psychosocial",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Neurodivergent healthcare employees and psychosocial workplace harm: A scoping review of bullying, exclusion, and organizational culture",
+      "url": "https://doi.org/10.1016/j.rin.2026.100087",
+      "doi": "10.1016/j.rin.2026.100087",
+      "journal": "Research in Neurodiversity",
+      "authors": "Vasudha Rao et al.",
+      "year": 2026,
+      "published": "2026-10-20",
+      "category": "psychosocial",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Anteprojeto de Proposta de Conciliação — Fatores de risco psicossociais relacionados ao trabalho (ADPFs 1.316, 1.333 e 1.340)",
+      "url": "https://www.gov.br/agu/pt-br/comunicacao/noticias/camara-de-seguranca-juridica-da-agu-fara-tomada-de-subsidios-sobre-a-nr-1/Anteprojeto.pdf",
+      "doi": "",
+      "journal": "Advocacia-Geral da União / Ministério do Trabalho e Emprego",
+      "authors": "Ministério do Trabalho e Emprego",
+      "year": 2026,
+      "published": "2026-10-29",
+      "category": "nr-1",
+      "first_seen": "2026-11-16"
+    },
+    {
+      "title": "Structural associations between psychosocial risks and burnout syndrome among mining workers in Peru",
+      "url": "https://doi.org/10.3389/fpsyg.2026.1878865",
+      "doi": "10.3389/fpsyg.2026.1878865",
+      "journal": "Frontiers in Psychology",
+      "authors": "Ramirez et al.",
+      "year": 2026,
+      "published": "2026-11-02",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Algorithmic Pressure and Psycho-Emotional Risk Among Airport Employees: A Two-Level Mamdani Fuzzy Model",
+      "url": "https://doi.org/10.3390/safety12060140",
+      "doi": "10.3390/safety12060140",
+      "journal": "Safety",
+      "authors": "Anayatova et al.",
+      "year": 2026,
+      "published": "2026-10-23",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Is gig work the same for everyone? Psychosocial job demands, resources, and well-being in platform work across Europe: evidence from the GIG-OSH study",
+      "url": "https://doi.org/10.13075/ijomeh.1896.02881",
+      "doi": "10.13075/ijomeh.1896.02881",
+      "journal": "International Journal of Occupational Medicine and Environmental Health",
+      "authors": "Merecz-Kot et al.",
+      "year": 2026,
+      "published": "2026-11-12",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Psychosocial work conditions and the severity of insomnia symptoms and daytime sleepiness among nurses",
+      "url": "https://doi.org/10.3389/fpubh.2026.1984035",
+      "doi": "10.3389/fpubh.2026.1984035",
+      "journal": "Frontiers in Public Health",
+      "authors": "Lisowicz et al.",
+      "year": 2026,
+      "published": "2026-11-12",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "The mental health of workers: Associations with work-related hyperconnectivity and individual and organisational factors",
+      "url": "https://doi.org/10.1080/15555240.2026.2758757",
+      "doi": "10.1080/15555240.2026.2758757",
+      "journal": "Journal of Workplace Behavioral Health",
+      "authors": "García-González et al.",
+      "year": 2026,
+      "published": "2026-11-05",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Physical and psychosocial risk factors associated with work-related musculoskeletal disorders among workers in the stone-cutting industry in Shiraz, Iran",
+      "url": "https://doi.org/10.1080/10803548.2026.2752733",
+      "doi": "10.1080/10803548.2026.2752733",
+      "journal": "International Journal of Occupational Safety and Ergonomics",
+      "authors": "Keshavarz et al.",
+      "year": 2026,
+      "published": "2026-11-16",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Psychosocial job factors, safety climate, and safety behavior among hospital radiation workers: An integrated path analysis and machine learning study",
+      "url": "https://doi.org/10.1016/j.hfh.2026.100167",
+      "doi": "10.1016/j.hfh.2026.100167",
+      "journal": "Human Factors in Healthcare",
+      "authors": "Mahdavi et al.",
+      "year": 2026,
+      "published": "2026-11-01",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Cumulative years of biomechanical and psychosocial work exposures and long-term sickness absence: A register-based cohort study among early-career Norwegian employees",
+      "url": "https://doi.org/10.5271/sjweh/242580",
+      "doi": "10.5271/sjweh/242580",
+      "journal": "Scandinavian Journal of Work, Environment & Health",
+      "authors": "Kleven et al.",
+      "year": 2026,
+      "published": "2026-11-16",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Prospective associations between psychosocial work factors and smoking",
+      "url": "https://doi.org/10.1097/JOM.0000000000003933",
+      "doi": "10.1097/JOM.0000000000003933",
+      "journal": "Journal of Occupational and Environmental Medicine",
+      "authors": "Niedhammer et al.",
+      "year": 2026,
+      "published": "2026-11-09",
+      "category": "psychosocial",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Psychosocial drivers of occupational stress in industrial employees: implications for workplace health management",
+      "url": "https://doi.org/10.1108/IJWHM-03-2026-0103",
+      "doi": "10.1108/IJWHM-03-2026-0103",
+      "journal": "International Journal of Workplace Health Management",
+      "authors": "Akbarzadeh et al.",
+      "year": 2026,
+      "published": "2026-11-10",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Institutional blind spots in occupational mental health: a data-driven identification and prioritization of psychosocial risk factors using administrative records, interpretable machine learning, and psychosocial safety climate theory",
+      "url": "https://doi.org/10.1016/j.ssci.2026.107567",
+      "doi": "10.1016/j.ssci.2026.107567",
+      "journal": "Safety Science",
+      "authors": "Rachid et al.",
+      "year": 2026,
+      "published": "2026-11-12",
+      "category": "methods",
+      "first_seen": "2026-11-23"
+    },
+    {
+      "title": "Validation for the Core version of the Copenhagen Psychosocial Questionnaire III in Korean",
+      "url": "https://doi.org/10.1016/j.shaw.2026.11.004",
+      "doi": "10.1016/j.shaw.2026.11.004",
+      "journal": "Safety and Health at Work",
+      "authors": "Song et al.",
+      "year": 2026,
+      "published": "2026-11-15",
+      "category": "methods",
+      "first_seen": "2026-11-23"
     }
   ]
 }
