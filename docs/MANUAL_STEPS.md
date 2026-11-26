@@ -23,17 +23,17 @@ The number that sends is **+55 19 99591-4369**. The company does not choose a ch
   - Name: `stephan_questionario`
   - Language: Portuguese (BR) — `pt_BR`
   - Category: Utility
-  - Body, with a single variable. The variable has text before it and text after it:
+  - Body, with a single named variable, `{{linkform}}`. The variable has text before it and text after it:
 
 ```
 Este é o seu link para o questionário das condições de trabalho.
 
-{{1}}
+{{linkform}}
 
 O link é só seu. Não o reencaminhe.
 ```
 
-  - Sample value for `{{1}}`: `https://stephan.net.br/tool?t=exemplo`
+  - Sample value for `{{linkform}}`: `https://stephan.net.br/tool?t=exemplo`
 - [ ] Put these two lines in the repo-root `debt.txt`, and store the same values as Actions secrets `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`. The deploy writes those two lines into `/opt/stephan/debt.txt` and leaves every other line there:
 
 ```

@@ -2,8 +2,9 @@
 
 The business number is +55 19 99591-4369. Meta's Cloud API sends a template,
 because the company starts the conversation. The template name is
-stephan_questionario, language pt_BR, and {{1}} is the full link. The wording
-to approve is in docs/MANUAL_STEPS.md. Tokens are not logged.
+stephan_questionario, language pt_BR, and the named variable {{linkform}} is
+the full link. A named variable must be sent with its name. The wording to
+approve is in docs/MANUAL_STEPS.md. Tokens are not logged.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ log = logging.getLogger(__name__)
 GRAPH_VERSION = "v26.0"
 TEMPLATE_NAME = "stephan_questionario"
 TEMPLATE_LANG = "pt_BR"
+TEMPLATE_VARIABLE = "linkform"
 
 
 class WhatsAppNotConfigured(Exception):
@@ -51,7 +53,7 @@ def build_payload(phone: str, link: str) -> dict:
             "components": [
                 {
                     "type": "body",
-                    "parameters": [{"type": "text", "text": link}],
+                    "parameters": [{"type": "text", "parameter_name": TEMPLATE_VARIABLE, "text": link}],
                 }
             ],
         },

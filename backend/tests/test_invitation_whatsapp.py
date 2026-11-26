@@ -48,7 +48,10 @@ def test_the_template_carries_the_link_and_not_the_token(monkeypatch):
     assert body["type"] == "template"
     assert body["template"]["name"] == TEMPLATE_NAME
     assert body["template"]["language"]["code"] == TEMPLATE_LANG
-    link = body["template"]["components"][0]["parameters"][0]["text"]
+    parameter = body["template"]["components"][0]["parameters"][0]
+    assert parameter["type"] == "text"
+    assert parameter["parameter_name"] == "linkform"
+    link = parameter["text"]
     assert link.endswith("/tool?t=link-token")
     assert "test-token" not in json.dumps(body)
 
