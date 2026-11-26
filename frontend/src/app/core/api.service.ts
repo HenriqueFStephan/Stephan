@@ -23,6 +23,8 @@ import {
   ListQuote,
   InvitationRetryResult,
   InvitationUploadResult,
+  SendFormsRequest,
+  SendFormsResult,
   ToolAccessResult,
   ToolDraft,
   ToolSubmitResult,
@@ -159,6 +161,12 @@ export class ApiService {
       { method },
       { headers: new HttpHeaders({ 'X-Company-Token': passage }) },
     );
+  }
+
+  sendCompanyInvitations(passage: string, request: SendFormsRequest): Observable<SendFormsResult> {
+    return this.http.post<SendFormsResult>(`${this.base}/company/invitations/send`, request, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
   }
 
   retryCompanyInvitations(passage: string): Observable<InvitationRetryResult> {

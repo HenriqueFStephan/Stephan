@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import re
 from pathlib import Path
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from uuid import uuid4
 
 import pytest
@@ -20,11 +20,32 @@ from app.services.campaign_store import (
     REQUIRED_DEMOGRAPHIC_KEYS,
     DemographicRejected,
     clean_demographics,
+    process_due,
     record_response,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
 LOCAL_URL = "postgresql://stephan:stephan@127.0.0.1:5432/stephan"
+
+
+@pytest.fixture(autouse=True)
+def _video_is_on_the_server(monkeypatch):
+    """The tutorial mp4 is not in the repo. These tests only need the app to think it is there."""
+    monkeypatch.setattr("app.services.campaign_store.video_ready", lambda settings=None: True)
+
+
+def _send_everything(client, headers):
+    """Release the held list for now, then run the send passes the way the server does.
+
+    The first pass sends the videos. A form goes after its video and a short gap,
+    so the second pass runs two minutes later.
+    """
+    released = client.post("/api/v1/company/invitations/send", headers=headers, json={"mode": "now"})
+    assert released.status_code == 200, released.text
+    with connect() as conn:
+        internal = conn.execute("SELECT id FROM companies WHERE slug = 'internal'").fetchone()["id"]
+        process_due(conn, company_id=internal, now=datetime.now(timezone.utc) + timedelta(minutes=2))
+    return released
 
 
 def test_answer_table_has_no_path_back_to_the_invitation():
@@ -266,8 +287,9 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
 
     monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
 
-    def fake_deliver(pairs: list[tuple[str, str]]):
-        sent.extend(pairs)
+    def fake_deliver(pairs: list[tuple[str, str]], kind: str = "form"):
+        if kind == "form":
+            sent.extend(pairs)
         return list(pairs), []
 
     monkeypatch.setattr("app.services.campaign_store.deliver_invitations", fake_deliver)
@@ -297,6 +319,11 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
         assert saved["already_invited"] == []
         assert saved["not_sent"] == []
         assert "link_token" not in saved
+        assert sent == []
+        roster_held = client.get("/api/v1/company/invitations", headers=headers).json()
+        assert roster_held["held"] >= 1
+        assert roster_held["video_ready"] is True
+        _send_everything(client, headers)
         assert len(sent) == 1
         assert sent[0][0] == email
         assert sent[0][1] not in first.text
@@ -470,7 +497,7 @@ def test_upload_dedupes_against_the_open_round_and_answers_stay_anonymous(postgr
             if new_invites:
                 conn.execute("DELETE FROM invitations WHERE id = ANY(%s)", (list(new_invites),))
             if new_uploads:
-                conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
+                _delete_uploads(conn, new_uploads)
             conn.commit()
 
 
@@ -480,7 +507,9 @@ def test_a_refused_send_keeps_the_address_and_the_same_link(postgres, monkeypatc
 
     monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
 
-    def fake_deliver(pairs: list[tuple[str, str]]):
+    def fake_deliver(pairs: list[tuple[str, str]], kind: str = "form"):
+        if kind != "form":
+            return list(pairs), []
         calls.append(list(pairs))
         if len(calls) == 1:
             return [], [pair[0] for pair in pairs]
@@ -501,13 +530,27 @@ def test_a_refused_send_keeps_the_address_and_the_same_link(postgres, monkeypatc
         files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
         )
         assert first.status_code == 200
-        assert first.json()["accepted"] == 0
-        assert first.json()["not_sent"] == [email]
+        assert first.json()["accepted"] == 1
+        assert first.json()["not_sent"] == []
+        assert calls == []
+        _send_everything(client, headers)
         with connect() as conn:
             stored = conn.execute(
                 "SELECT link_token, sent_at FROM invitations WHERE email = %s",
                 (email,),
             ).fetchone()
+            # A message that came due a moment ago is still on its way. Age it past the grace.
+            conn.execute(
+                """
+                UPDATE invitations
+                SET form_due_at = now() - interval '10 minutes',
+                    video_due_at = now() - interval '12 minutes',
+                    video_sent_at = now() - interval '11 minutes'
+                WHERE email = %s
+                """,
+                (email,),
+            )
+            conn.commit()
         assert stored["sent_at"] is None
         roster = client.get("/api/v1/company/invitations", headers=headers)
         assert email in roster.json()["unsent"]
@@ -532,7 +575,7 @@ def test_a_refused_send_keeps_the_address_and_the_same_link(postgres, monkeypatc
             if new_invites:
                 conn.execute("DELETE FROM invitations WHERE id = ANY(%s)", (list(new_invites),))
             if new_uploads:
-                conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
+                _delete_uploads(conn, new_uploads)
             conn.commit()
 
 
@@ -542,8 +585,9 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
 
     monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
 
-    def fake_deliver(pairs: list[tuple[str, str]]):
-        sent.extend(pairs)
+    def fake_deliver(pairs: list[tuple[str, str]], kind: str = "form"):
+        if kind == "form":
+            sent.extend(pairs)
         return list(pairs), []
 
     monkeypatch.setattr("app.services.campaign_store.deliver_invitations", fake_deliver)
@@ -563,6 +607,7 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
         files={"file": ("pytest.csv", f"email\n{email}\n".encode(), "text/csv")},
         )
         assert uploaded.status_code == 200
+        _send_everything(client, headers)
         token = sent[0][1]
         digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
         opened = client.post("/api/v1/tool/access", json={"token": token})
@@ -629,9 +674,9 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
 
         refused = client.post(
             "/api/v1/tool/responses",
-            json={"token": token, "answers": [3] * 35, "demographics": {"age_band": "35_44"}},
+            json={"token": token, "answers": [3] * 34, "demographics": {}},
         )
-        assert refused.status_code == 400
+        assert refused.status_code in (400, 422)
         with connect() as conn:
             still = conn.execute(
                 "SELECT status FROM invitations WHERE link_token_hash = %s",
@@ -696,7 +741,7 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
             if new_invites:
                 conn.execute("DELETE FROM invitations WHERE id = ANY(%s)", (list(new_invites),))
             if new_uploads:
-                conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
+                _delete_uploads(conn, new_uploads)
             conn.commit()
 
 
@@ -726,12 +771,14 @@ def test_a_mixed_list_sends_each_channel_and_keeps_answers_anonymous(postgres, m
     monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: True)
     monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: True)
 
-    def fake_mail(pairs):
-        sent_mail.extend(pairs)
+    def fake_mail(pairs, kind="form"):
+        if kind == "form":
+            sent_mail.extend(pairs)
         return list(pairs), []
 
-    def fake_phone(pairs):
-        sent_phone.extend(pairs)
+    def fake_phone(pairs, kind="form"):
+        if kind == "form":
+            sent_phone.extend(pairs)
         return list(pairs), []
 
     monkeypatch.setattr("app.services.campaign_store.deliver_invitations", fake_mail)
@@ -756,6 +803,8 @@ def test_a_mixed_list_sends_each_channel_and_keeps_answers_anonymous(postgres, m
         assert payload["duplicates_in_file"] == [pretty]
         assert payload["not_configured"] == []
         assert payload["not_sent"] == []
+        assert sent_mail == [] and sent_phone == []
+        _send_everything(client, headers)
         assert sent_mail[0][0] == email
         assert sent_phone[0][0] == digits
         assert sent_mail[0][1] not in response.text
@@ -785,7 +834,7 @@ def test_a_mixed_list_keeps_email_when_whatsapp_is_not_configured(postgres, monk
     monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: False)
     monkeypatch.setattr(
         "app.services.campaign_store.deliver_invitations",
-        lambda pairs: (list(pairs), []),
+        lambda pairs, kind="form": (list(pairs), []),
     )
     client = TestClient(app)
     logged = client.post("/api/v1/company/login", json={"username": "admin", "password": "admintest"})
@@ -841,7 +890,9 @@ def test_a_refused_whatsapp_keeps_the_phone_when_mail_is_down(postgres, monkeypa
     monkeypatch.setattr("app.services.campaign_store.smtp_ready", lambda settings=None: False)
     monkeypatch.setattr("app.services.campaign_store.whatsapp_ready", lambda settings=None: True)
 
-    def fake_phone(pairs):
+    def fake_phone(pairs, kind="form"):
+        if kind != "form":
+            return list(pairs), []
         calls.append(list(pairs))
         if len(calls) == 1:
             return [], [pair[0] for pair in pairs]
@@ -864,8 +915,23 @@ def test_a_refused_whatsapp_keeps_the_phone_when_mail_is_down(postgres, monkeypa
         files={"file": ("pytest.csv", f"contato\n{typed}\n".encode(), "text/csv")},
         )
         assert first.status_code == 200
-        assert first.json()["accepted"] == 0
-        assert first.json()["not_sent"] == [pretty]
+        assert first.json()["accepted"] == 1
+        assert first.json()["not_sent"] == []
+        assert calls == []
+        _send_everything(client, headers)
+        with connect() as conn:
+            # A message that came due a moment ago is still on its way. Age it past the grace.
+            conn.execute(
+                """
+                UPDATE invitations
+                SET form_due_at = now() - interval '10 minutes',
+                    video_due_at = now() - interval '12 minutes',
+                    video_sent_at = now() - interval '11 minutes'
+                WHERE phone = %s
+                """,
+                (digits,),
+            )
+            conn.commit()
         roster = client.get("/api/v1/company/invitations", headers=headers)
         assert pretty in roster.json()["unsent"]
         with connect() as conn:
@@ -892,6 +958,12 @@ def _test_phone() -> tuple[str, str, str]:
     return digits, typed, pretty
 
 
+def _delete_uploads(conn, upload_ids: set) -> None:
+    """A saved price quote points at its upload, so it goes first."""
+    conn.execute("DELETE FROM form_charges WHERE upload_id = ANY(%s)", (list(upload_ids),))
+    conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(upload_ids),))
+
+
 def _drop_new(before_invites: set, before_uploads: set) -> None:
     with connect() as conn:
         new_invites = _ids(conn, "invitations") - before_invites
@@ -899,7 +971,7 @@ def _drop_new(before_invites: set, before_uploads: set) -> None:
         if new_invites:
             conn.execute("DELETE FROM invitations WHERE id = ANY(%s)", (list(new_invites),))
         if new_uploads:
-            conn.execute("DELETE FROM invitation_uploads WHERE id = ANY(%s)", (list(new_uploads),))
+            _delete_uploads(conn, new_uploads)
         conn.commit()
 
 

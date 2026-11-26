@@ -40,7 +40,8 @@ def build_confirmation_message(recipient: str, token: str, settings: Settings | 
 
 
 def build_reset_message(recipient: str, token: str, settings: Settings | None = None) -> EmailMessage:
-    link = reset_link(token, settings)
+    current = settings or get_settings()
+    link = reset_link(token, current)
     return _message(
         recipient,
         "Stephan — nova senha",
@@ -51,6 +52,7 @@ def build_reset_message(recipient: str, token: str, settings: Settings | None = 
         "Escolher outra senha",
         link,
         settings,
+        sender=(current.smtp_from_reset or "").strip(),
     )
 
 
@@ -77,9 +79,10 @@ def _message(
     button: str,
     link: str,
     settings: Settings | None,
+    sender: str = "",
 ) -> EmailMessage:
     current = settings or get_settings()
-    sender = (current.smtp_from or current.smtp_username).strip()
+    sender = sender or (current.smtp_from or current.smtp_username).strip()
     message = EmailMessage()
     message["Subject"] = subject
     message["From"] = sender
@@ -121,7 +124,8 @@ def _html(preview: str, title: str, lead: str, note: str, button: str, link: str
                   </td>
                 </tr>
               </table>
-              <p style="margin:28px 0 0;font-size:15px;line-height:1.5;color:#5c6b73;">{note}</p>
+              <p style="margin:24px 0 0;font-size:13px;line-height:1.5;color:#5c6b73;word-break:break-all;">Se o botão não abrir, copie este endereço no navegador:<br><a href="{link}" style="color:#0f3f62;">{link}</a></p>
+              <p style="margin:20px 0 0;font-size:15px;line-height:1.5;color:#5c6b73;">{note}</p>
             </td>
           </tr>
         </table>

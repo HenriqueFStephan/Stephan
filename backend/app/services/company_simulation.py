@@ -254,9 +254,9 @@ def _insert_invitation(
         """
         INSERT INTO invitations (
             id, company_id, round_id, upload_id, email,
-            link_token, link_token_hash, status, submitted_at, sent_at
+            link_token, link_token_hash, status, submitted_at, sent_at, form_due_at
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             uuid4(),
@@ -268,6 +268,7 @@ def _insert_invitation(
             digest,
             "submitted" if submitted_on else "pending",
             submitted_at,
+            datetime.combine(sent_on, time(8, 0)),
             datetime.combine(sent_on, time(8, 0)),
         ),
     )

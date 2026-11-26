@@ -14,6 +14,8 @@ import {
   CompanySectorRow,
   InvitationUploadResult,
   ListQuote,
+  ScheduledSend,
+  SendFormsResult,
 } from '../../core/models';
 import {
   BAND_COPY,
@@ -83,6 +85,16 @@ export class CompanyComponent implements OnInit {
   payErrorKey = '';
   unsent: string[] = [];
   retrying = false;
+  held = 0;
+  scheduled: ScheduledSend[] = [];
+  sendOpen = false;
+  sendMode: 'now' | 'schedule' = 'now';
+  sendTogether = true;
+  videoAt = '';
+  formAt = '';
+  sending = false;
+  sendErrorKey = '';
+  sendResult: SendFormsResult | null = null;
   rounds: CompanyRoundRow[] | null = null;
   roundsError = false;
   selectedRound = '';
@@ -159,6 +171,10 @@ export class CompanyComponent implements OnInit {
     this.quoting = false;
     this.unsent = [];
     this.retrying = false;
+    this.held = 0;
+    this.scheduled = [];
+    this.closeSend();
+    this.sendResult = null;
     this.inviteErrorKey = '';
     this.inviteUnknownColumns = '';
     this.rounds = null;
@@ -281,6 +297,161 @@ export class CompanyComponent implements OnInit {
     } else {
       this.inviteErrorKey = 'company.inviteBadFile';
     }
+  }
+
+  openSend(): void {
+    this.sendOpen = true;
+    this.sendErrorKey = '';
+    this.sendResult = null;
+  }
+
+  closeSend(): void {
+    this.sendOpen = false;
+    this.sendMode = 'now';
+    this.sendTogether = true;
+    this.videoAt = '';
+    this.formAt = '';
+    this.sending = false;
+    this.sendErrorKey = '';
+  }
+
+  /** The earliest value a time field accepts: now, in the browser's own zone. */
+  minLocal(): string {
+    const now = new Date();
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return (
+      `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` +
+      `T${pad(now.getHours())}:${pad(now.getMinutes())}`
+    );
+  }
+
+  /** Why the chosen times cannot be sent, or an empty string when they can. */
+  sendProblem(): string {
+    if (this.sendMode === 'now') {
+      return '';
+    }
+    const video = this.parseLocal(this.videoAt);
+    if (video === null) {
+      return 'company.sendNeedVideo';
+    }
+    // A minute of slack: the field has no seconds, so "now" is already a little in the past.
+    if (video < Date.now() - 60_000) {
+      return 'company.sendPast';
+    }
+    if (video > Date.now() + 365 * 24 * 3600 * 1000) {
+      return 'company.sendTooFar';
+    }
+    if (this.sendTogether) {
+      return '';
+    }
+    const form = this.parseLocal(this.formAt);
+    if (form === null) {
+      return 'company.sendNeedForm';
+    }
+    if (form < video) {
+      return 'company.sendFormBefore';
+    }
+    if (form > Date.now() + 365 * 24 * 3600 * 1000) {
+      return 'company.sendTooFar';
+    }
+    return '';
+  }
+
+  confirmSend(): void {
+    const passage = this.readPassage();
+    const problem = this.sendProblem();
+    if (!passage || this.sending) {
+      return;
+    }
+    if (problem) {
+      this.sendErrorKey = problem;
+      return;
+    }
+    this.sending = true;
+    this.sendErrorKey = '';
+    const request =
+      this.sendMode === 'now'
+        ? { mode: 'now' as const }
+        : {
+            mode: 'schedule' as const,
+            video_at: new Date(this.videoAt).toISOString(),
+            form_at: new Date(this.sendTogether ? this.videoAt : this.formAt).toISOString(),
+          };
+    this.api.sendCompanyInvitations(passage, request).subscribe({
+      next: (result) => {
+        this.sending = false;
+        this.sendResult = result;
+        this.sendOpen = false;
+        this.videoAt = '';
+        this.formAt = '';
+        this.refreshUnsent(passage);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.sending = false;
+        if (err.status === 401) {
+          this.logout();
+          return;
+        }
+        const detail = err.error && err.error.detail;
+        const code = detail && typeof detail === 'object' ? String(detail.code ?? '') : '';
+        this.sendErrorKey = this.sendErrorFor(code);
+        if (code === 'nothing_to_send') {
+          this.refreshUnsent(passage);
+        }
+      },
+    });
+  }
+
+  /** A moment as day/month/year hour:minute, in the browser's own time zone. */
+  stamp(iso: string | null): string {
+    if (!iso) {
+      return '-';
+    }
+    const when = new Date(iso);
+    if (Number.isNaN(when.getTime())) {
+      return '-';
+    }
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return (
+      `${pad(when.getDate())}/${pad(when.getMonth() + 1)}/${when.getFullYear()} ` +
+      `${pad(when.getHours())}:${pad(when.getMinutes())}`
+    );
+  }
+
+  /** A scheduled send whose form time has passed is already on its way. */
+  sendingNow(item: ScheduledSend): boolean {
+    return new Date(item.form_at).getTime() <= Date.now();
+  }
+
+  private sendErrorFor(code: string): string {
+    switch (code) {
+      case 'form_before_video':
+        return 'company.sendFormBefore';
+      case 'too_far':
+        return 'company.sendTooFar';
+      case 'nothing_to_send':
+        return 'company.sendNothing';
+      case 'video_not_configured':
+        return 'company.sendNoVideo';
+      case 'mail_not_configured':
+        return 'company.inviteMail';
+      case 'whatsapp_not_configured':
+        return 'company.inviteWhatsapp';
+      case 'channels_not_configured':
+        return 'company.inviteChannels';
+      case 'database_unavailable':
+        return 'company.inviteUnreachable';
+      default:
+        return 'company.sendFailed';
+    }
+  }
+
+  private parseLocal(value: string): number | null {
+    if (!value) {
+      return null;
+    }
+    const time = new Date(value).getTime();
+    return Number.isNaN(time) ? null : time;
   }
 
   retryUnsent(): void {
@@ -570,6 +741,8 @@ export class CompanyComponent implements OnInit {
     this.api.getCompanyInvitations(passage).subscribe({
       next: (roster) => {
         this.unsent = roster.unsent || [];
+        this.held = roster.held ?? 0;
+        this.scheduled = roster.scheduled ?? [];
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 401) {

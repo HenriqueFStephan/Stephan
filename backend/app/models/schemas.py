@@ -1,5 +1,6 @@
 """Pydantic schemas for the API."""
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -421,12 +422,38 @@ class InvitationRetryResult(BaseModel):
     not_sent: list[str] = []
 
 
+class ScheduledSend(BaseModel):
+    """People whose video and form go out at the same two times."""
+
+    video_at: str | None = None
+    form_at: str
+    people: int
+
+
 class InvitationRoster(BaseModel):
     round_label: str
     invited: int
     responded_percent: int | None
     waiting_percent: int | None
     unsent: list[str] = []
+    held: int = 0
+    scheduled: list[ScheduledSend] = []
+    video_ready: bool = False
+
+
+class SendFormsRequest(BaseModel):
+    """now sends the video and the form at once. schedule needs both times, with their offset."""
+
+    mode: Literal["now", "schedule"]
+    video_at: datetime | None = None
+    form_at: datetime | None = None
+
+
+class SendFormsResult(BaseModel):
+    people: int
+    video_at: str
+    form_at: str
+    immediate: bool
 
 
 class CompanyRoundRow(BaseModel):

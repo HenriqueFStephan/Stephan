@@ -40,22 +40,52 @@ def invitation_link(token: str, settings: Settings | None = None) -> str:
     return f"{origin}/tool?t={token}"
 
 
-def build_invitation_message(recipient: str, token: str, settings: Settings | None = None) -> EmailMessage:
+_COPY = {
+    "form": {
+        "subject": "Stephan — link para o questionário",
+        "title": "Questionário das condições de trabalho",
+        "lead": "Este é o seu link para o questionário das condições de trabalho.",
+        "button": "Abrir o questionário",
+    },
+    "video": {
+        "subject": "Stephan — vídeo antes do questionário",
+        "title": "Um vídeo antes do questionário",
+        "lead": "Assista a este vídeo curto. Ele explica como responder ao questionário das condições de trabalho.",
+        "button": "Assistir ao vídeo",
+    },
+}
+
+
+def build_invitation_message(
+    recipient: str, token: str, settings: Settings | None = None, kind: str = "form"
+) -> EmailMessage:
+    """The form link, or with kind="video" the link to the tutorial video."""
     current = settings or get_settings()
     sender = (current.smtp_from or current.smtp_username).strip()
-    link = invitation_link(token, current)
+    if kind == "video":
+        from app.services.invitation_video import video_link
+
+        link = video_link(token, current)
+    else:
+        link = invitation_link(token, current)
+    copy = _COPY["video" if kind == "video" else "form"]
     message = EmailMessage()
-    message["Subject"] = "Stephan — link para o questionário"
+    message["Subject"] = copy["subject"]
     message["From"] = sender
     message["To"] = recipient
-    message.set_content(_plain(link))
-    message.add_alternative(_html(link), subtype="html")
+    message.set_content(_plain(link, copy))
+    message.add_alternative(_html(link, copy), subtype="html")
     attach_lockup(message)
     return message
 
 
-def deliver_invitations(pairs: list[tuple[str, str]]) -> tuple[list[tuple[str, str]], list[str]]:
-    """Send each (email, token). Return the pairs that left, and the addresses that did not."""
+def deliver_invitations(
+    pairs: list[tuple[str, str]], kind: str = "form"
+) -> tuple[list[tuple[str, str]], list[str]]:
+    """Send each (email, token). Return the pairs that left, and the addresses that did not.
+
+    kind is "form" for the questionnaire link and "video" for the tutorial video.
+    """
     if not pairs:
         return [], []
     current = get_settings()
@@ -75,7 +105,7 @@ def deliver_invitations(pairs: list[tuple[str, str]]) -> tuple[list[tuple[str, s
     try:
         for recipient, token in pairs:
             try:
-                smtp.send_message(build_invitation_message(recipient, token, current))
+                smtp.send_message(build_invitation_message(recipient, token, current, kind))
             except Exception as exc:
                 log.warning("invitation mail was refused: %s", type(exc).__name__)
                 failed.append(recipient)
@@ -159,17 +189,19 @@ def _password(settings: Settings) -> str:
     return (settings.smtp_password or "").replace(" ", "")
 
 
-def _plain(link: str) -> str:
+def _plain(link: str, copy: dict[str, str] | None = None) -> str:
+    copy = copy or _COPY["form"]
     return (
         "stephan\n\n"
-        "Questionário das condições de trabalho\n\n"
-        "Este é o seu link para o questionário das condições de trabalho.\n\n"
+        f"{copy['title']}\n\n"
+        f"{copy['lead']}\n\n"
         f"{link}\n\n"
         "O link é só seu. Não o reencaminhe.\n"
     )
 
 
-def _html(link: str) -> str:
+def _html(link: str, copy: dict[str, str] | None = None) -> str:
+    copy = copy or _COPY["form"]
     mark = ""
     if _lockup_bytes():
         mark = (
@@ -183,7 +215,7 @@ def _html(link: str) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body style="margin:0;padding:0;background:#f7f4ec;">
-  <div style="display:none;max-height:0;overflow:hidden;">Este é o seu link para o questionário das condições de trabalho.</div>
+  <div style="display:none;max-height:0;overflow:hidden;">{copy['lead']}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f4ec;">
     <tr>
       <td align="center" style="padding:48px 24px;">
@@ -191,12 +223,12 @@ def _html(link: str) -> str:
           <tr>
             <td style="padding:0;font-family:'Source Sans 3',Helvetica,Arial,sans-serif;color:#1c2b33;text-align:left;">
               {mark}
-              <h1 style="margin:0 0 12px;font-family:Outfit,'Source Sans 3',Helvetica,Arial,sans-serif;font-size:28px;line-height:1.15;font-weight:500;letter-spacing:-0.03em;color:#0f3f62;">Questionário das condições de trabalho</h1>
-              <p style="margin:0 0 28px;font-size:18px;line-height:1.5;color:#1c2b33;">Este é o seu link para o questionário das condições de trabalho.</p>
+              <h1 style="margin:0 0 12px;font-family:Outfit,'Source Sans 3',Helvetica,Arial,sans-serif;font-size:28px;line-height:1.15;font-weight:500;letter-spacing:-0.03em;color:#0f3f62;">{copy['title']}</h1>
+              <p style="margin:0 0 28px;font-size:18px;line-height:1.5;color:#1c2b33;">{copy['lead']}</p>
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td bgcolor="#0f3f62" style="border-radius:999px;background:#0f3f62;">
-                    <a href="{link}" style="display:inline-block;padding:14px 22px;font-family:'Source Sans 3',Helvetica,Arial,sans-serif;font-size:16px;line-height:1;color:#f7f4ec;text-decoration:none;border-radius:999px;">Abrir o questionário</a>
+                    <a href="{link}" style="display:inline-block;padding:14px 22px;font-family:'Source Sans 3',Helvetica,Arial,sans-serif;font-size:16px;line-height:1;color:#f7f4ec;text-decoration:none;border-radius:999px;">{copy['button']}</a>
                   </td>
                 </tr>
               </table>

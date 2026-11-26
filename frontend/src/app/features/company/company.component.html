@@ -30,7 +30,6 @@
             [(ngModel)]="password"
           />
         </label>
-        <a class="forgot" routerLink="/senha">{{ 'company.forgot' | t }}</a>
         <button type="submit" class="button" [disabled]="submitting || !username.trim() || !password.trim()">
           {{ submitting ? ('company.checking' | t) : ('company.enter' | t) }}
         </button>
@@ -38,6 +37,7 @@
         <a class="forgot" *ngIf="errorKey === 'company.unconfirmed'" routerLink="/confirmar">{{ 'company.resendConfirm' | t }}</a>
       </form>
     </section>
+    <a class="forgot forgot--below" routerLink="/senha">{{ 'company.forgot' | t }}</a>
   </div>
 
   <div class="main main--wide" *ngIf="phase === 'ready'">
@@ -173,6 +173,111 @@
         <button type="button" class="button" (click)="retryUnsent()" [disabled]="retrying">
           {{ (retrying ? 'company.inviteRetrying' : 'company.inviteRetry') | t }}
         </button>
+      </div>
+      <div class="pay send" *ngIf="held > 0 || sendResult || scheduled.length" id="send-block">
+        <h3>{{ 'company.sendTitle' | t }}</h3>
+        <ng-container *ngIf="held > 0">
+          <p>{{ 'company.sendHeld' | t:{ count: held } }}</p>
+          <p class="note">{{ 'company.sendLead' | t }}</p>
+          <button type="button" class="button" *ngIf="!sendOpen" (click)="openSend()">
+            {{ 'company.sendOpen' | t }}
+          </button>
+        </ng-container>
+        <form class="send__form" *ngIf="sendOpen" (ngSubmit)="confirmSend()">
+          <p class="pay__legend">{{ 'company.sendWhen' | t }}</p>
+          <label class="choice">
+            <input type="radio" name="send-mode" value="now" [(ngModel)]="sendMode" />
+            <span>
+              <strong>{{ 'company.sendNow' | t }}</strong>
+              <small>{{ 'company.sendNowNote' | t }}</small>
+            </span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="send-mode" value="schedule" [(ngModel)]="sendMode" />
+            <span>
+              <strong>{{ 'company.sendLater' | t }}</strong>
+              <small>{{ 'company.sendLaterNote' | t }}</small>
+            </span>
+          </label>
+          <div class="send__later" *ngIf="sendMode === 'schedule'">
+            <label class="choice">
+              <input type="radio" name="send-together" [value]="true" [(ngModel)]="sendTogether" />
+              <span>
+                <strong>{{ 'company.sendTogether' | t }}</strong>
+                <small>{{ 'company.sendTogetherNote' | t }}</small>
+              </span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="send-together" [value]="false" [(ngModel)]="sendTogether" />
+              <span>
+                <strong>{{ 'company.sendApart' | t }}</strong>
+                <small>{{ 'company.sendApartNote' | t }}</small>
+              </span>
+            </label>
+            <div class="send__times">
+              <label *ngIf="sendTogether">
+                <span>{{ 'company.sendAt' | t }}</span>
+                <input type="datetime-local" name="send-video-at" [min]="minLocal()" [(ngModel)]="videoAt" />
+              </label>
+              <ng-container *ngIf="!sendTogether">
+                <label>
+                  <span>{{ 'company.sendVideoAt' | t }}</span>
+                  <input type="datetime-local" name="send-video-at" [min]="minLocal()" [(ngModel)]="videoAt" />
+                </label>
+                <label>
+                  <span>{{ 'company.sendFormAt' | t }}</span>
+                  <input
+                    type="datetime-local"
+                    name="send-form-at"
+                    [min]="videoAt || minLocal()"
+                    [(ngModel)]="formAt"
+                  />
+                </label>
+              </ng-container>
+            </div>
+            <p class="note">{{ 'company.sendTimezone' | t }}</p>
+          </div>
+          <p class="error" *ngIf="sendErrorKey" role="alert">{{ sendErrorKey | t }}</p>
+          <div class="pay__actions">
+            <button type="submit" class="button" [disabled]="sending">
+              {{ (sending ? 'company.sendSaving' : 'company.sendConfirm') | t }}
+            </button>
+            <button type="button" class="pay__skip" [disabled]="sending" (click)="closeSend()">
+              {{ 'company.sendCancel' | t }}
+            </button>
+          </div>
+        </form>
+        <p class="error" *ngIf="!sendOpen && sendErrorKey" role="alert">{{ sendErrorKey | t }}</p>
+        <p class="note" *ngIf="sendResult && sendResult.immediate">
+          {{ 'company.sendDoneNow' | t:{ count: sendResult.people } }}
+        </p>
+        <p class="note" *ngIf="sendResult && !sendResult.immediate">
+          {{
+            'company.sendDoneLater'
+              | t:{
+                  count: sendResult.people,
+                  video: stamp(sendResult.video_at),
+                  form: stamp(sendResult.form_at)
+                }
+          }}
+        </p>
+        <ng-container *ngIf="scheduled.length">
+          <h3>{{ 'company.scheduledTitle' | t }}</h3>
+          <ul class="roster">
+            <li *ngFor="let item of scheduled">
+              <ng-container *ngIf="sendingNow(item); else later">{{ 'company.scheduledSending' | t }}: </ng-container>
+              <ng-template #later></ng-template>
+              {{
+                'company.scheduledLine'
+                  | t:{
+                      people: item.people,
+                      video: stamp(item.video_at),
+                      form: stamp(item.form_at)
+                    }
+              }}
+            </li>
+          </ul>
+        </ng-container>
       </div>
     </section>
 

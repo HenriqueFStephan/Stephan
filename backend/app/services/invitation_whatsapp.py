@@ -4,7 +4,8 @@ The business number is +55 19 99591-4369. Meta's Cloud API sends a template,
 because the company starts the conversation. The template name is
 stephan_questionario, language pt_BR, and the named variable {{linkform}} is
 the full link. A named variable must be sent with its name. The wording to
-approve is in docs/MANUAL_STEPS.md. Tokens are not logged.
+approve is in docs/MANUAL_STEPS.md. The tutorial video goes first, as the
+template stephan_video (pt_BR) with the video as its header. Tokens are not logged.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ import httpx
 
 from app.core.config import Settings, get_settings
 from app.services.invitation_mail import invitation_link
+from app.services.invitation_video import video_link
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +24,8 @@ GRAPH_VERSION = "v26.0"
 TEMPLATE_NAME = "stephan_questionario"
 TEMPLATE_LANG = "pt_BR"
 TEMPLATE_VARIABLE = "linkform"
+VIDEO_TEMPLATE_NAME = "stephan_video"
+VIDEO_TEMPLATE_LANG = "pt_BR"
 
 
 class WhatsAppNotConfigured(Exception):
@@ -60,8 +64,33 @@ def build_payload(phone: str, link: str) -> dict:
     }
 
 
-def deliver_whatsapp(pairs: list[tuple[str, str]]) -> tuple[list[tuple[str, str]], list[str]]:
-    """Send each (phone, token). Return the pairs that were accepted, and the numbers that were not."""
+def build_video_payload(phone: str, link: str) -> dict:
+    """The tutorial video. The template has the video as its header and no variable in the body."""
+    return {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": phone,
+        "type": "template",
+        "template": {
+            "name": VIDEO_TEMPLATE_NAME,
+            "language": {"code": VIDEO_TEMPLATE_LANG},
+            "components": [
+                {
+                    "type": "header",
+                    "parameters": [{"type": "video", "video": {"link": link}}],
+                }
+            ],
+        },
+    }
+
+
+def deliver_whatsapp(
+    pairs: list[tuple[str, str]], kind: str = "form"
+) -> tuple[list[tuple[str, str]], list[str]]:
+    """Send each (phone, token). Return the pairs that were accepted, and the numbers that were not.
+
+    kind is "form" for the questionnaire link and "video" for the tutorial video.
+    """
     if not pairs:
         return [], []
     current = get_settings()
@@ -75,7 +104,10 @@ def deliver_whatsapp(pairs: list[tuple[str, str]]) -> tuple[list[tuple[str, str]
             failed.append(phone)
             continue
         try:
-            _post(current, phone, invitation_link(token, current))
+            if kind == "video":
+                _post(current, build_video_payload(phone, video_link(token, current)))
+            else:
+                _post(current, build_payload(phone, invitation_link(token, current)))
         except WhatsAppDeliveryError:
             log.warning("whatsapp invitation was refused: auth")
             abort = True
@@ -89,12 +121,12 @@ def deliver_whatsapp(pairs: list[tuple[str, str]]) -> tuple[list[tuple[str, str]
     return sent, failed
 
 
-def _post(settings: Settings, phone: str, link: str) -> None:
+def _post(settings: Settings, payload: dict) -> None:
     number_id = settings.whatsapp_phone_number_id.strip()
     response = httpx.post(
         f"https://graph.facebook.com/{GRAPH_VERSION}/{number_id}/messages",
         headers={"Authorization": f"Bearer {settings.whatsapp_token.strip()}"},
-        json=build_payload(phone, link),
+        json=payload,
         timeout=30,
     )
     if response.status_code in (401, 403):

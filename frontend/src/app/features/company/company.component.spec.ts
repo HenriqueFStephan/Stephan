@@ -38,6 +38,7 @@ describe('CompanyComponent', () => {
       'getCompanyRounds',
       'getCompanyInvitations',
       'retryCompanyInvitations',
+      'sendCompanyInvitations',
     ]);
     api.getCompanyInvitations.and.returnValue(
       of({
@@ -284,16 +285,174 @@ describe('CompanyComponent', () => {
 
     const root = fixture.nativeElement as HTMLElement;
     const confirm = Array.from(root.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Confirmar pagamento e enviar'),
+      button.textContent?.includes('Confirmar pagamento e salvar a lista'),
     ) as HTMLButtonElement;
     expect(confirm.disabled).toBeTrue();
-    expect(root.textContent).toContain('Pular pagamento e enviar');
+    expect(root.textContent).toContain('Pular pagamento e salvar a lista');
     expect(root.textContent).toContain('R$ 10 por formulário. Este valor não é o preço final.');
     expect(root.textContent).toContain('Pix');
 
     component.companySlug = 'hse-it';
     fixture.detectChanges();
-    expect(root.textContent).not.toContain('Pular pagamento e enviar');
-    expect(root.textContent).toContain('Confirmar pagamento e enviar');
+    expect(root.textContent).not.toContain('Pular pagamento e salvar a lista');
+    expect(root.textContent).toContain('Confirmar pagamento e salvar a lista');
+  });
+
+  describe('sending the video and the form', () => {
+    function signIn(held: number): CompanyComponent {
+      api.loginCompany.and.returnValue(
+        of({ success: true, passage: 'clearance', company_name: 'Uso interno', company_slug: 'internal' }),
+      );
+      api.getCompanyInvitations.and.returnValue(
+        of({
+          round_label: 'rodada-1',
+          invited: 0,
+          responded_percent: null,
+          waiting_percent: null,
+          unsent: [],
+          held,
+          scheduled: [],
+          video_ready: true,
+        }),
+      );
+      const component = create();
+      fixture.detectChanges();
+      component.username = 'admin';
+      component.password = 'secret';
+      component.login();
+      fixture.detectChanges();
+      return component;
+    }
+
+    function inDays(days: number): string {
+      const when = new Date(Date.now() + days * 24 * 3600 * 1000);
+      const pad = (value: number) => String(value).padStart(2, '0');
+      return `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}T10:00`;
+    }
+
+    function pick(label: string): HTMLButtonElement {
+      const root = fixture.nativeElement as HTMLElement;
+      return Array.from(root.querySelectorAll('button')).find((button) =>
+        button.textContent?.includes(label),
+      ) as HTMLButtonElement;
+    }
+
+    it('offers nothing to send until a list has been saved', () => {
+      signIn(0);
+      expect((fixture.nativeElement as HTMLElement).querySelector('#send-block')).toBeNull();
+    });
+
+    it('opens the choice from the button and sends at once', () => {
+      api.sendCompanyInvitations.and.returnValue(
+        of({ people: 3, video_at: '2026-11-26T12:00:00Z', form_at: '2026-11-26T12:01:00Z', immediate: true }),
+      );
+      const component = signIn(3);
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.textContent).toContain('Pessoas aguardando o envio: 3.');
+      expect(root.textContent).not.toContain('Confirmar o envio');
+
+      pick('Enviar formulários').click();
+      fixture.detectChanges();
+      expect(root.textContent).toContain('Enviar o vídeo e o formulário agora');
+      expect(root.textContent).toContain('Programar o envio');
+
+      component.confirmSend();
+      fixture.detectChanges();
+      expect(api.sendCompanyInvitations).toHaveBeenCalledWith('clearance', { mode: 'now' });
+      expect(root.textContent).toContain('O vídeo sai agora e o formulário logo depois, para 3 pessoas.');
+    });
+
+    it('sends one time for both when they go together', () => {
+      api.sendCompanyInvitations.and.returnValue(
+        of({ people: 2, video_at: '2030-01-10T09:00:00Z', form_at: '2030-01-10T09:00:00Z', immediate: false }),
+      );
+      const component = signIn(2);
+      component.openSend();
+      component.sendMode = 'schedule';
+      component.videoAt = inDays(10);
+      component.confirmSend();
+
+      const request = api.sendCompanyInvitations.calls.mostRecent().args[1];
+      expect(request.mode).toBe('schedule');
+      expect(request.video_at).toBe(new Date(inDays(10)).toISOString());
+      expect(request.form_at).toBe(request.video_at);
+    });
+
+    it('lets the video go days before the form, and never the other way round', () => {
+      api.sendCompanyInvitations.and.returnValue(
+        of({ people: 2, video_at: '2030-01-05T09:00:00Z', form_at: '2030-01-10T09:00:00Z', immediate: false }),
+      );
+      const component = signIn(2);
+      component.openSend();
+      component.sendMode = 'schedule';
+      component.sendTogether = false;
+
+      component.videoAt = inDays(10);
+      component.formAt = inDays(5);
+      expect(component.sendProblem()).toBe('company.sendFormBefore');
+      component.confirmSend();
+      expect(api.sendCompanyInvitations).not.toHaveBeenCalled();
+      expect(component.sendErrorKey).toBe('company.sendFormBefore');
+
+      component.videoAt = inDays(5);
+      component.formAt = inDays(10);
+      expect(component.sendProblem()).toBe('');
+      component.confirmSend();
+      expect(api.sendCompanyInvitations).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks for a time and refuses one that has passed', () => {
+      const component = signIn(2);
+      component.openSend();
+      component.sendMode = 'schedule';
+      expect(component.sendProblem()).toBe('company.sendNeedVideo');
+      component.videoAt = '2020-01-01T09:00';
+      expect(component.sendProblem()).toBe('company.sendPast');
+      component.videoAt = '2099-01-01T09:00';
+      expect(component.sendProblem()).toBe('company.sendTooFar');
+    });
+
+    it('explains a missing video instead of failing silently', () => {
+      api.sendCompanyInvitations.and.returnValue(
+        throwError(
+          () => new HttpErrorResponse({ status: 503, error: { detail: { code: 'video_not_configured' } } }),
+        ),
+      );
+      const component = signIn(2);
+      component.openSend();
+      component.confirmSend();
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+        'O vídeo de apresentação ainda não está no servidor. Nada foi programado.',
+      );
+      expect(component.sending).toBeFalse();
+    });
+
+    it('lists what is already scheduled', () => {
+      api.loginCompany.and.returnValue(
+        of({ success: true, passage: 'clearance', company_name: 'Uso interno', company_slug: 'internal' }),
+      );
+      api.getCompanyInvitations.and.returnValue(
+        of({
+          round_label: 'rodada-1',
+          invited: 0,
+          responded_percent: null,
+          waiting_percent: null,
+          unsent: [],
+          held: 0,
+          scheduled: [{ video_at: '2099-01-05T12:00:00Z', form_at: '2099-01-10T12:00:00Z', people: 4 }],
+          video_ready: true,
+        }),
+      );
+      const component = create();
+      fixture.detectChanges();
+      component.username = 'admin';
+      component.password = 'secret';
+      component.login();
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.textContent).toContain('Envios programados');
+      expect(root.textContent).toContain('4 pessoas. Vídeo:');
+    });
   });
 });

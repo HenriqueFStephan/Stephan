@@ -34,6 +34,13 @@ O link é só seu. Não o reencaminhe.
 ```
 
   - Sample value for `{{linkform}}`: `https://stephan.net.br/tool?t=exemplo`
+- [ ] Create the second template and wait until Meta marks it **Approved**:
+  - Name: `stephan_video`
+  - Language: Portuguese (BR) — `pt_BR`
+  - Category: Utility
+  - Header: video, with a sample uploaded. The real video is sent by link at send time, so the sample does not have to be the final file.
+  - Body: plain text with **no variables**. The code sends only the header.
+- [ ] Place the tutorial video at `backend/app/assets/video/tutorial.mp4` (or set `TUTORIAL_VIDEO_PATH` on the server). It must be an `mp4`, H.264 video with AAC audio, at most **16 MB** (WhatsApp refuses larger files). Without it, "Enviar formulários" answers that the video is not on the server and nothing is scheduled.
 - [ ] Put these two lines in the repo-root `debt.txt`, and store the same values as Actions secrets `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_NUMBER_ID`. The deploy writes those two lines into `/opt/stephan/debt.txt` and leaves every other line there:
 
 ```

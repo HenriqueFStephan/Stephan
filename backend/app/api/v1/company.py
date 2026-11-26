@@ -5,10 +5,11 @@ Statistics are that company's own round. Invitation lists are stored in PostgreS
 
 from __future__ import annotations
 
+import logging
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Header, HTTPException, Query, UploadFile
 
 from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import (
@@ -26,15 +27,22 @@ from app.models.schemas import (
     InvitationRoster,
     InvitationUploadResult,
     PasswordReset,
+    SendFormsRequest,
+    SendFormsResult,
 )
 from app.services.campaign_store import (
+    BadSchedule,
     ChargeNotFound,
     NoOpenRound,
+    NothingToSend,
+    VideoNotConfigured,
     add_invitations,
     choose_form_charge,
     list_invitations,
     preview_invitations,
     list_rounds,
+    process_due,
+    release_invitations,
     retry_unsent,
 )
 from app.services.form_pricing import (
@@ -63,6 +71,8 @@ from app.services.invitation_whatsapp import (
     WhatsAppDeliveryError,
     WhatsAppNotConfigured,
 )
+
+log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/company", tags=["company"])
 
@@ -312,6 +322,59 @@ def choose_company_charge(
     except ChargeNotFound as exc:
         raise HTTPException(status_code=404, detail={"code": "charge_not_found"}) from exc
     return FormQuote.model_validate(quote)
+
+
+@router.post("/invitations/send", response_model=SendFormsResult)
+def send_company_invitations(
+    body: SendFormsRequest,
+    background: BackgroundTasks,
+    session: CompanySession = Depends(require_company_token),
+) -> SendFormsResult:
+    """Choose when the saved addresses get the video and the form. Nothing leaves in this call.
+
+    The server sends each message when its time comes. "now" makes both due at once, and the
+    form follows the video by about a minute.
+    """
+    if body.mode == "schedule":
+        for value in (body.video_at, body.form_at):
+            if value is None or value.tzinfo is None:
+                raise HTTPException(status_code=422, detail={"code": "bad_schedule"})
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            if body.mode == "now":
+                result = release_invitations(conn, session.company_id)
+            else:
+                result = release_invitations(conn, session.company_id, body.video_at, body.form_at)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except NoOpenRound as exc:
+        raise HTTPException(status_code=409, detail={"code": "no_open_round"}) from exc
+    except NothingToSend as exc:
+        raise HTTPException(status_code=409, detail={"code": "nothing_to_send"}) from exc
+    except BadSchedule as exc:
+        raise HTTPException(status_code=422, detail={"code": exc.code}) from exc
+    except VideoNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "video_not_configured"}) from exc
+    except MailNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
+    except WhatsAppNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "whatsapp_not_configured"}) from exc
+    except ChannelsNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "channels_not_configured"}) from exc
+    if result["immediate"]:
+        background.add_task(_send_due_now, session.company_id)
+    return SendFormsResult.model_validate(result)
+
+
+def _send_due_now(company_id) -> None:
+    """Start the send right after the response, without waiting for the next minute."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            process_due(conn, company_id=company_id)
+    except Exception as exc:  # the scheduler tries again on its next pass
+        log.warning("immediate send did not run: %s", type(exc).__name__)
 
 
 @router.post("/invitations/retry", response_model=InvitationRetryResult)

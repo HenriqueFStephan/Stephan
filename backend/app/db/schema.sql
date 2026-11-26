@@ -427,6 +427,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS invitations_round_phone
     ON invitations (round_id, phone)
     WHERE phone IS NOT NULL;
 
+-- A saved list is held until the company sends it. form_due_at stays empty while
+-- the row is held. video_due_at is when the tutorial video goes out and
+-- form_due_at is when the form link goes out. The form never leaves before its
+-- video. sent_at is the form, video_sent_at is the video.
+ALTER TABLE invitations ADD COLUMN IF NOT EXISTS form_due_at timestamptz;
+ALTER TABLE invitations ADD COLUMN IF NOT EXISTS video_due_at timestamptz;
+ALTER TABLE invitations ADD COLUMN IF NOT EXISTS video_sent_at timestamptz;
+UPDATE invitations SET form_due_at = sent_at WHERE form_due_at IS NULL AND sent_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS invitations_due
+    ON invitations (form_due_at)
+    WHERE sent_at IS NULL;
+
 -- Existing databases already have hse_responses. New installs get these columns
 -- from CREATE TABLE, so each ADD is skipped once the column is there.
 ALTER TABLE hse_responses ADD COLUMN IF NOT EXISTS age_band text CONSTRAINT hse_responses_age_band CHECK (age_band IS NULL OR age_band IN ('18_24', '25_34', '35_44', '45_54', '55_64', '65_plus'));

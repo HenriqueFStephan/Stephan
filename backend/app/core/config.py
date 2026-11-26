@@ -49,12 +49,18 @@ class Settings(BaseSettings):
     smtp_username: str = ""
     smtp_password: str = ""
     smtp_from: str = ""
+    # Sender of the password-reset email. With Gmail SMTP this address must be
+    # a verified "Send mail as" alias of SMTP_USERNAME, or Gmail replaces it.
+    smtp_from_reset: str = "senha@stephan.net.br"
     consulting_notify_to: str = ""
 
     # WhatsApp Cloud API. The sender number is +55 19 99591-4369. The phone
     # number id is Meta's id for that number, not the display number.
     whatsapp_token: str = ""
     whatsapp_phone_number_id: str = ""
+    # The tutorial video that goes out before the form. Empty means
+    # backend/assets/video/tutorial.mp4. WhatsApp accepts an mp4 up to 16 MB.
+    tutorial_video_path: str = ""
 
     # On-site /studio overlay — files GitHub issues with the solve label.
     # GITHUB_STUDIO_TOKEN is preferred so Actions' GITHUB_TOKEN is not reused locally.

@@ -25,8 +25,10 @@ def test_confirmation_link_lands_on_the_confirm_page(monkeypatch):
 def test_reset_link_lands_on_the_password_page(monkeypatch):
     monkeypatch.setenv("PUBLIC_APP_URL", "https://stephan.net.br")
     monkeypatch.setenv("SMTP_FROM", "acesso@example.com")
+    monkeypatch.setenv("SMTP_FROM_RESET", "senha@stephan.net.br")
     get_settings.cache_clear()
     message = build_reset_message("pessoa@example.com", "token-senha")
+    assert message["From"] == "senha@stephan.net.br"
     link = "https://stephan.net.br/senha?t=token-senha"
     plain = message.get_body(preferencelist=("plain",)).get_content()
     html = message.get_body(preferencelist=("html",)).get_content()

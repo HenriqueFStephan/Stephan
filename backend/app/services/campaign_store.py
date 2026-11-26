@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import secrets
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from uuid import UUID, uuid4
@@ -24,6 +24,7 @@ from app.services.invitation_mail import (
     deliver_invitations,
     smtp_ready,
 )
+from app.services.invitation_video import video_ready
 from app.services.invitation_whatsapp import (
     ChannelsNotConfigured,
     WhatsAppDeliveryError,
@@ -98,6 +99,17 @@ BLOCKED_DEMOGRAPHIC_KEYS = frozenset(
 
 ITEM_COLUMNS = tuple(f"i{number:02d}" for number in range(1, 36))
 
+# The form goes at least this long after its video, so the person gets them in order.
+VIDEO_LEAD = timedelta(seconds=60)
+# How far ahead the company may schedule a send.
+MAX_SCHEDULE_AHEAD = timedelta(days=365)
+# A message that came due this recently is still on its way. Older ones are failures.
+_FAILURE_GRACE = timedelta(minutes=5)
+# The automatic pass stops retrying a failure after this long. The retry button has no limit.
+AUTO_RETRY_WINDOW = timedelta(hours=24)
+# Postgres advisory lock key so only one send pass runs at a time.
+_DUE_LOCK = 7_203_041
+
 
 class NoOpenRound(Exception):
     """This company has no open round to attach the list or the answer to."""
@@ -151,42 +163,36 @@ def add_invitations(
     method: str | None = None,
     skipped: bool = False,
 ) -> dict[str, Any]:
-    """Store new addresses whose channel is ready, commit them, and only then send.
+    """Store new addresses whose channel is ready. Nothing is sent here.
 
-    A phone number goes out on WhatsApp. An email goes by email. A crash after
-    the commit leaves the row in place with the same token. An address whose
-    message already left is not sent again. A channel that is not configured
-    does not get a new row.
+    The list is held until the company chooses when the video and the form go
+    out (see release_invitations). An address already in this round, whether
+    held, scheduled or sent, is not added again. A channel that is not
+    configured does not get a new row.
     """
     company_id, round_id, round_label = _open_round(conn, company_id)
-    existing: dict[str, Any] = {}
+    existing: set[str] = set()
     for row in conn.execute(
-        "SELECT channel, email, phone, link_token, sent_at FROM invitations WHERE round_id = %s",
+        "SELECT channel, email, phone FROM invitations WHERE round_id = %s",
         (round_id,),
     ).fetchall():
         address = _row_address(row)
         if address:
-            existing[address] = row
+            existing.add(address)
     contacts = [("email", address) for address in parsed.emails] + [
         ("whatsapp", address) for address in parsed.phones
     ]
     already: list[str] = []
-    waiting: list[tuple[str, str, str]] = []
     fresh: list[tuple[str, str]] = []
     for channel, address in contacts:
-        row = existing.get(address)
-        if row is None:
-            fresh.append((channel, address))
-        elif row["sent_at"] is not None:
+        if address in existing:
             already.append(address)
         else:
-            waiting.append((channel, address, row["link_token"]))
+            fresh.append((channel, address))
     send_fresh = [(channel, address) for channel, address in fresh if _channel_ready(channel)]
     blocked_fresh = [(channel, address) for channel, address in fresh if not _channel_ready(channel)]
-    send_waiting = [item for item in waiting if _channel_ready(item[0])]
-    blocked_waiting = [item for item in waiting if not _channel_ready(item[0])]
-    if (fresh or waiting) and not send_fresh and not send_waiting:
-        _raise_unconfigured({channel for channel, _address in fresh} | {channel for channel, _address, _token in waiting})
+    if fresh and not send_fresh:
+        _raise_unconfigured({channel for channel, _address in fresh})
 
     upload_id = conn.execute(
         """
@@ -196,7 +202,6 @@ def add_invitations(
         """,
         (uuid4(), company_id, round_id, _source_name(filename), parsed.format),
     ).fetchone()["id"]
-    pending = [(address, token, channel) for channel, address, token in send_waiting]
     for channel, address in send_fresh:
         token = secrets.token_urlsafe(32)
         email = address if channel == "email" else None
@@ -221,7 +226,6 @@ def add_invitations(
                 hashlib.sha256(token.encode("utf-8")).hexdigest(),
             ),
         )
-        pending.append((address, token, channel))
     quote = quote_forms(len(send_fresh), method)
     charge_id = uuid4()
     status = "skipped" if skipped else ("method_chosen" if method else "quoted")
@@ -248,16 +252,14 @@ def add_invitations(
     quote["charge_id"] = str(charge_id)
     conn.commit()
 
-    sent, not_sent = _deliver_pending(conn, pending)
-    not_sent = not_sent + [address for _channel, address, _token in blocked_waiting]
     return {
         "round_label": round_label,
-        "accepted": len(sent),
+        "accepted": len(send_fresh),
         "ignored_empty": parsed.ignored_empty,
         "duplicates_in_file": _show(parsed.duplicates_in_file),
         "already_invited": _show(already),
         "invalid": parsed.invalid,
-        "not_sent": _show(not_sent),
+        "not_sent": [],
         "not_configured": _show([address for _channel, address in blocked_fresh]),
         "quote": quote,
     }
@@ -288,47 +290,141 @@ def choose_form_charge(conn, company_id, charge_id, method: str) -> dict:
     return quote
 
 
-def retry_unsent(conn, company_id) -> dict[str, Any]:
-    """Send the stored link again for addresses in the open round that never left."""
+class VideoNotConfigured(Exception):
+    """The tutorial video file is not on the server."""
+
+
+class NothingToSend(Exception):
+    """This round has no saved addresses waiting to be sent."""
+
+
+class BadSchedule(Exception):
+    """The times are not allowed. code is form_before_video or too_far."""
+
+    def __init__(self, code: str) -> None:
+        super().__init__(code)
+        self.code = code
+
+
+def release_invitations(
+    conn,
+    company_id,
+    video_at: datetime | None = None,
+    form_at: datetime | None = None,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """Choose when the held addresses get the video and the form.
+
+    Nothing leaves here. The send step (process_due) picks each message up when
+    its time comes. None means now. The video may be days ahead. The form is
+    never earlier than the video, and it only goes after the video has gone.
+    """
+    moment = now or datetime.now(timezone.utc)
+    video_when = _aware(video_at) if video_at is not None else moment
+    form_when = _aware(form_at) if form_at is not None else video_when
+    if video_when < moment:
+        video_when = moment
+    if form_when < video_when:
+        raise BadSchedule("form_before_video")
+    if form_when > moment + MAX_SCHEDULE_AHEAD or video_when > moment + MAX_SCHEDULE_AHEAD:
+        raise BadSchedule("too_far")
+    if not video_ready():
+        raise VideoNotConfigured()
     _company_id, round_id, _label = _open_round(conn, company_id)
-    rows = conn.execute(
+    channels = {
+        row.get("channel") or "email"
+        for row in conn.execute(
+            "SELECT channel FROM invitations WHERE round_id = %s AND form_due_at IS NULL",
+            (round_id,),
+        ).fetchall()
+    }
+    if not channels:
+        raise NothingToSend()
+    missing = {channel for channel in channels if not _channel_ready(channel)}
+    if missing:
+        _raise_unconfigured(missing)
+    people = conn.execute(
         """
-        SELECT channel, email, phone, link_token
-        FROM invitations
+        UPDATE invitations
+        SET video_due_at = %s, form_due_at = %s
         WHERE round_id = %s
-          AND sent_at IS NULL
-        ORDER BY created_at
+          AND form_due_at IS NULL
         """,
-        (round_id,),
-    ).fetchall()
-    pending: list[tuple[str, str, str]] = []
-    held: list[str] = []
-    held_channels: set[str] = set()
-    for row in rows:
-        channel = row.get("channel") or "email"
-        address = _row_address(row)
-        if not address:
-            continue
-        if _channel_ready(channel):
-            pending.append((address, row["link_token"], channel))
-        else:
-            held.append(address)
-            held_channels.add(channel)
-    if not pending and held_channels:
-        _raise_unconfigured(held_channels)
-    sent, not_sent = _deliver_pending(conn, pending)
-    return {"sent": len(sent), "not_sent": _show(not_sent + held)}
+        (video_when, form_when, round_id),
+    ).rowcount
+    conn.commit()
+    return {
+        "people": people,
+        "video_at": video_when.isoformat(),
+        "form_at": form_when.isoformat(),
+        "immediate": video_when <= moment + timedelta(seconds=1),
+    }
 
 
-def dispatch_unsent(conn) -> int:
-    """Send every stored link whose channel is ready. Used when the API process starts."""
-    rows = conn.execute(
+def process_due(
+    conn,
+    company_id=None,
+    now: datetime | None = None,
+    max_age: timedelta | None = None,
+) -> dict[str, int]:
+    """Send every video and every form whose time has come.
+
+    A video goes first. A form goes only after its video was sent and the
+    VIDEO_LEAD gap has passed, so the person gets them in that order. A channel
+    that is not configured is skipped and tried again on the next pass. Only one
+    pass runs at a time, so a second worker cannot send the same message twice.
+    max_age keeps the automatic pass from retrying an old failure forever: a
+    message that came due longer ago than that waits for the company's retry.
+    """
+    moment = now or datetime.now(timezone.utc)
+    locked = conn.execute("SELECT pg_try_advisory_lock(%s) AS ok", (_DUE_LOCK,)).fetchone()["ok"]
+    if not locked:
+        conn.rollback()
+        return {"videos": 0, "forms": 0}
+    try:
+        videos = _send_due(conn, "video", company_id, moment, max_age)
+        forms = _send_due(conn, "form", company_id, moment, max_age)
+    finally:
+        conn.rollback()
+        conn.execute("SELECT pg_advisory_unlock(%s)", (_DUE_LOCK,))
+        conn.commit()
+    return {"videos": videos, "forms": forms}
+
+
+def _send_due(conn, kind: str, company_id, moment: datetime, max_age: timedelta | None = None) -> int:
+    scope = "" if company_id is None else "AND company_id = %s"
+    oldest = moment - (timedelta(days=36500) if max_age is None else max_age)
+    if kind == "video":
+        condition = """
+            video_due_at IS NOT NULL
+            AND video_due_at <= %s
+            AND video_due_at > %s
+            AND video_sent_at IS NULL
+            AND sent_at IS NULL
         """
+        params: list[Any] = [moment, oldest]
+        order = "video_due_at, created_at"
+    else:
+        condition = """
+            form_due_at <= %s
+            AND form_due_at > %s
+            AND sent_at IS NULL
+            AND (video_due_at IS NULL OR (video_sent_at IS NOT NULL AND video_sent_at <= %s))
+        """
+        params = [moment, oldest, moment - VIDEO_LEAD]
+        order = "form_due_at, created_at"
+    if company_id is not None:
+        params.append(company_id)
+    rows = conn.execute(
+        f"""
         SELECT channel, email, phone, link_token
         FROM invitations
-        WHERE sent_at IS NULL
-        ORDER BY created_at
-        """
+        WHERE form_due_at IS NOT NULL
+          AND {condition}
+          {scope}
+        ORDER BY {order}
+        """,
+        params,
     ).fetchall()
     pending: list[tuple[str, str, str]] = []
     for row in rows:
@@ -338,12 +434,60 @@ def dispatch_unsent(conn) -> int:
             pending.append((address, row["link_token"], channel))
     if not pending:
         return 0
-    sent, _failed = _deliver_pending(conn, pending)
+    sent, _failed = _deliver_pending(conn, pending, kind, moment)
     return len(sent)
 
 
-def _deliver_pending(conn, pairs: list[tuple[str, str, str]]) -> tuple[list[tuple[str, str]], list[str]]:
-    """Send pairs that are already stored. Mark the ones that left, then commit that mark."""
+def retry_unsent(conn, company_id) -> dict[str, Any]:
+    """Try again for the addresses in the open round whose message is due and never left."""
+    _company_id, round_id, _label = _open_round(conn, company_id)
+    rows = _due_unsent(conn, round_id, datetime.now(timezone.utc), grace=timedelta(0))
+    ready = [row for row in rows if _channel_ready(row.get("channel") or "email")]
+    stuck = {row.get("channel") or "email" for row in rows if not _channel_ready(row.get("channel") or "email")}
+    if rows and not ready and stuck:
+        _raise_unconfigured(stuck)
+    moment = datetime.now(timezone.utc)
+    done = process_due(conn, company_id=company_id, now=moment)
+    remaining = _due_unsent(conn, round_id, moment, grace=timedelta(0))
+    return {
+        "sent": done["forms"],
+        "not_sent": _show([_row_address(row) for row in remaining if _row_address(row)]),
+    }
+
+
+def dispatch_unsent(conn) -> int:
+    """One pass over every company. The API runs it at start and then every minute."""
+    done = process_due(conn, max_age=AUTO_RETRY_WINDOW)
+    return done["videos"] + done["forms"]
+
+
+def _due_unsent(conn, round_id, moment: datetime, grace: timedelta | None = None) -> list[dict]:
+    """Rows whose form time came, at least `grace` ago, and whose form has not left."""
+    wait = _FAILURE_GRACE if grace is None else grace
+    return conn.execute(
+        """
+        SELECT channel, email, phone, link_token
+        FROM invitations
+        WHERE round_id = %s
+          AND form_due_at IS NOT NULL
+          AND form_due_at <= %s
+          AND sent_at IS NULL
+        ORDER BY created_at
+        """,
+        (round_id, moment - wait),
+    ).fetchall()
+
+
+def _deliver_pending(
+    conn,
+    pairs: list[tuple[str, str, str]],
+    kind: str = "form",
+    moment: datetime | None = None,
+) -> tuple[list[tuple[str, str]], list[str]]:
+    """Send pairs that are already stored. Mark the ones that left, then commit that mark.
+
+    kind is "form" or "video". A video is marked in video_sent_at, a form in sent_at.
+    """
     if not pairs:
         return [], []
     email_pairs = [(address, token) for address, token, channel in pairs if channel == "email"]
@@ -352,19 +496,19 @@ def _deliver_pending(conn, pairs: list[tuple[str, str, str]]) -> tuple[list[tupl
     failed: list[str] = []
     if email_pairs:
         try:
-            email_sent, email_failed = deliver_invitations(email_pairs)
+            email_sent, email_failed = deliver_invitations(email_pairs, kind)
         except (MailDeliveryError, MailNotConfigured):
             email_sent, email_failed = [], [address for address, _token in email_pairs]
         sent.extend(email_sent)
         failed.extend(email_failed)
     if phone_pairs:
         try:
-            phone_sent, phone_failed = deliver_whatsapp(phone_pairs)
+            phone_sent, phone_failed = deliver_whatsapp(phone_pairs, kind)
         except (WhatsAppDeliveryError, WhatsAppNotConfigured):
             phone_sent, phone_failed = [], [address for address, _token in phone_pairs]
         sent.extend(phone_sent)
         failed.extend(phone_failed)
-    mark_sent(conn, sent)
+    mark_sent(conn, sent, kind, moment)
     return sent, failed
 
 
@@ -393,57 +537,82 @@ def _show(addresses: list[str]) -> list[str]:
     return [present_address(address) for address in addresses]
 
 
-def mark_sent(conn, sent: list[tuple[str, str]]) -> None:
-    for _email, token in sent:
+def mark_sent(
+    conn,
+    sent: list[tuple[str, str]],
+    kind: str = "form",
+    moment: datetime | None = None,
+) -> None:
+    """Record that a message left. A form sets sent_at and a video sets video_sent_at."""
+    column = "video_sent_at" if kind == "video" else "sent_at"
+    when = moment or datetime.now(timezone.utc)
+    for _address, token in sent:
         conn.execute(
-            """
+            f"""
             UPDATE invitations
-            SET sent_at = now()
+            SET {column} = %s
             WHERE link_token = %s
-              AND sent_at IS NULL
+              AND {column} IS NULL
             """,
-            (token,),
+            (when, token),
         )
     if sent:
         conn.commit()
+
+
+def _aware(value: datetime) -> datetime:
+    """A time with no zone is read as UTC. The browser sends one with its offset."""
+    return value if value.tzinfo is not None else value.replace(tzinfo=timezone.utc)
 
 
 def list_invitations(conn, company_id) -> dict[str, Any]:
     """Participation for this company's open round.
 
     Counts stay aggregate. The only addresses returned are the ones whose
-    message has not left, so the company can retry that same link.
+    message was due and has not left, so the company can retry that same link.
+    held counts the saved addresses that have no send time yet. scheduled
+    groups the others by the time their video and their form go out.
     """
     _company_id, round_id, round_label = _open_round(conn, company_id)
+    moment = datetime.now(timezone.utc)
     row = conn.execute(
         """
         SELECT
           count(*) FILTER (WHERE status = 'pending') AS waiting,
-          count(*) FILTER (WHERE status = 'submitted') AS responded
+          count(*) FILTER (WHERE status = 'submitted') AS responded,
+          count(*) FILTER (WHERE form_due_at IS NULL) AS held
         FROM invitations
         WHERE round_id = %s
         """,
         (round_id,),
     ).fetchone()
     unsent = _show(
-        [
-            item["address"]
-            for item in conn.execute(
-                """
-                SELECT CASE
-                    WHEN COALESCE(channel, 'email') = 'whatsapp' THEN phone
-                    ELSE email
-                END AS address
-                FROM invitations
-                WHERE round_id = %s
-                  AND sent_at IS NULL
-                ORDER BY address
-                """,
-                (round_id,),
-            ).fetchall()
-            if item["address"]
-        ]
+        sorted(
+            address
+            for address in (_row_address(item) for item in _due_unsent(conn, round_id, moment))
+            if address
+        )
     )
+    scheduled = [
+        {
+            "video_at": item["video_due_at"].isoformat() if item["video_due_at"] else None,
+            "form_at": item["form_due_at"].isoformat(),
+            "people": int(item["people"]),
+        }
+        for item in conn.execute(
+            """
+            SELECT video_due_at, form_due_at, count(*) AS people
+            FROM invitations
+            WHERE round_id = %s
+              AND sent_at IS NULL
+              AND form_due_at IS NOT NULL
+              AND form_due_at > %s
+            GROUP BY video_due_at, form_due_at
+            ORDER BY form_due_at, video_due_at
+            """,
+            (round_id, moment - _FAILURE_GRACE),
+        ).fetchall()
+    ]
     waiting = int(row["waiting"])
     responded = int(row["responded"])
     invited = waiting + responded
@@ -455,6 +624,9 @@ def list_invitations(conn, company_id) -> dict[str, Any]:
         "responded_percent": responded_percent,
         "waiting_percent": waiting_percent,
         "unsent": unsent,
+        "held": int(row["held"]),
+        "scheduled": scheduled,
+        "video_ready": video_ready(),
     }
 
 

@@ -1,54 +1,102 @@
 @import '../../../styles/variables';
 
+// The app shell fills the viewport; the card is centred in the space between header and footer.
+:host {
+  display: flex;
+  flex: 1;
+}
+
 .contact {
-  padding: $section-y 0 6rem;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  padding: 0.5rem 0 1rem;
+}
+
+.contact__card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  max-width: 62rem;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-surface;
+  box-shadow: 0 24px 60px -30px rgba(15, 63, 98, 0.35);
+}
+
+.contact__side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem 2.25rem;
+  overflow: hidden;
+  background: linear-gradient(155deg, $color-primary 0%, $color-bg-dark 100%);
+  color: #f7f4ec;
+
+  // soft decorative circles
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::before {
+    right: -4rem;
+    bottom: -4rem;
+    width: 14rem;
+    height: 14rem;
+    background: rgba(215, 228, 236, 0.1);
+  }
+
+  &::after {
+    right: 3rem;
+    bottom: 5rem;
+    width: 5rem;
+    height: 5rem;
+    background: rgba(215, 228, 236, 0.08);
+  }
 }
 
 h1 {
+  position: relative;
   margin: 0 0 0.75rem;
+  color: #f7f4ec;
   font-size: clamp(2rem, 3vw, 2.7rem);
   letter-spacing: -0.03em;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 2.5rem;
+    height: 3px;
+    margin-top: 0.85rem;
+    border-radius: 2px;
+    background: $color-primary-light;
+  }
 }
 
 .intro {
-  max-width: 28rem;
+  position: relative;
+  max-width: 18rem;
   margin: 0;
-  color: $color-text-muted;
-  font-size: 1.15rem;
+  color: rgba(247, 244, 236, 0.82);
+  font-size: 1.1rem;
 }
 
-.contact__grid {
+.contact__form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
-  gap: 3rem;
-  align-items: start;
+  gap: 0.75rem;
+  padding: 1.75rem 2.25rem;
 }
 
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.85rem 1.35rem;
-  border: 0;
-  border-radius: 999px;
-  background: $color-primary;
-  color: #f7f4ec;
-  cursor: pointer;
-  letter-spacing: 0.01em;
-
-  &:hover {
-    background: $color-primary-mid;
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: default;
-  }
-}
-
-form {
+.row {
   display: grid;
-  gap: 0.9rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 label {
@@ -61,30 +109,92 @@ label {
 input,
 textarea {
   width: 100%;
-  padding: 0.7rem 0.8rem;
+  padding: 0.55rem 0.85rem;
   border: 1px solid $color-border;
   border-radius: $radius-md;
-  background: $color-surface;
+  background: #fff;
   color: $color-text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 5rem;
+  max-height: 14rem;
 }
 
 input:focus,
 textarea:focus {
-  outline: 2px solid rgba(15, 63, 98, 0.35);
+  outline: none;
   border-color: $color-primary;
+  box-shadow: 0 0 0 3px rgba(15, 63, 98, 0.15);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.1rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: $color-primary;
+  color: #f7f4ec;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, transform 0.15s;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-mid;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
 }
 
 .form-note {
   margin: 0;
   color: $color-primary;
+  font-size: 0.95rem;
 }
 
 .form-note--bad {
   color: #8a3b2a;
 }
 
-@media (max-width: 900px) {
-  .contact__grid {
+@media (max-width: 800px) {
+  .contact {
+    display: block;
+  }
+
+  .contact__card {
+    grid-template-columns: 1fr;
+  }
+
+  .contact__side {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .intro {
+    max-width: none;
+  }
+
+  .contact__form {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .row {
     grid-template-columns: 1fr;
   }
 }

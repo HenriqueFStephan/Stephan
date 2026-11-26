@@ -185,12 +185,34 @@ export interface InvitationUploadResult {
   quote: FormQuote;
 }
 
+export interface ScheduledSend {
+  video_at: string | null;
+  form_at: string;
+  people: number;
+}
+
 export interface InvitationRoster {
   round_label: string;
   invited: number;
   responded_percent: number | null;
   waiting_percent: number | null;
   unsent: string[];
+  held?: number;
+  scheduled?: ScheduledSend[];
+  video_ready?: boolean;
+}
+
+export interface SendFormsRequest {
+  mode: 'now' | 'schedule';
+  video_at?: string;
+  form_at?: string;
+}
+
+export interface SendFormsResult {
+  people: number;
+  video_at: string;
+  form_at: string;
+  immediate: boolean;
 }
 
 export interface InvitationRetryResult {

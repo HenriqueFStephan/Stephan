@@ -24,8 +24,15 @@ import { HeaderComponent } from './shared/header/header.component';
     </ng-template>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
     main {
-      min-height: calc(100vh - 140px);
+      display: flex;
+      flex: 1;
+      flex-direction: column;
     }
   `],
 })
