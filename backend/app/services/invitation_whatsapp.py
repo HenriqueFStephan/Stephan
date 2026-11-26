@@ -1,6 +1,6 @@
 """Send one invitation link per phone on WhatsApp.
 
-The business number is +55 19 99877-2525. Meta's Cloud API sends a template,
+The business number is +55 19 99591-4369. Meta's Cloud API sends a template,
 because the company starts the conversation. The template name is
 stephan_questionario, language pt_BR, and {{1}} is the full link. The wording
 to approve is in docs/MANUAL_STEPS.md. Tokens are not logged.
@@ -80,7 +80,7 @@ def deliver_whatsapp(pairs: list[tuple[str, str]]) -> tuple[list[tuple[str, str]
             failed.append(phone)
             continue
         except Exception as exc:
-            log.warning("whatsapp invitation was refused: %s", type(exc).__name__)
+            log.warning("whatsapp invitation was refused: %s %s", type(exc).__name__, exc)
             failed.append(phone)
             continue
         sent.append((phone, token))
@@ -98,4 +98,15 @@ def _post(settings: Settings, phone: str, link: str) -> None:
     if response.status_code in (401, 403):
         raise WhatsAppDeliveryError()
     if response.status_code >= 400:
-        raise RuntimeError(str(response.status_code))
+        raise RuntimeError(_meta_reason(response))
+
+
+def _meta_reason(response: httpx.Response) -> str:
+    """The HTTP status and Meta's error code, for the log. Never the token or the number."""
+    code = ""
+    try:
+        error = response.json().get("error") or {}
+        code = f" meta_code={error.get('code')} meta_subcode={error.get('error_subcode')}"
+    except Exception:
+        pass
+    return f"status={response.status_code}{code}"

@@ -13,11 +13,11 @@ The server does not pick up this file, the backup script, or the WhatsApp list u
 
 ## WhatsApp for the form link
 
-The number that sends is **+55 19 99877-2525**. The company does not choose a channel. A phone number in the list is sent on WhatsApp. An email is sent by email. One file can contain both.
+The number that sends is **+55 19 99591-4369**. The company does not choose a channel. A phone number in the list is sent on WhatsApp. An email is sent by email. One file can contain both.
 
 - [ ] In Meta Business Suite, open WhatsApp Manager and use the WhatsApp Business Platform (Cloud API). This is not WhatsApp Web and not a session of the phone app.
-- [ ] Register **+55 19 99877-2525** as the business number. That SIM cannot stay logged in to the regular WhatsApp app at the same time. Meta sends a code to it by text or call.
-- [ ] Copy the **Phone number ID** from the API setup. It is a long numeric id. It is not +55 19 99877-2525.
+- [ ] Register **+55 19 99591-4369** as the business number. That SIM cannot stay logged in to the regular WhatsApp app at the same time. Meta sends a code to it by text or call.
+- [ ] Copy the **Phone number ID** from the API setup. It is a long numeric id. It is not +55 19 99591-4369, and it is not the id of the Meta app or of the business account. In the app, open WhatsApp, then API Setup, and copy the id shown under the sender number.
 - [ ] Create a permanent access token (a system user in Business Settings, with `whatsapp_business_messaging`). A token from the API explorer expires in about a day. Do not put this token in the Angular app.
 - [ ] Create a message template and wait until Meta marks it **Approved**.
   - Name: `stephan_questionario`

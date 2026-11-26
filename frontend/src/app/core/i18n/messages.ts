@@ -359,7 +359,7 @@ const ptBR = {
   'company.colInvited': 'Convidados',
   'company.colLatest': 'Última resposta',
   'company.inviteLead':
-    'Cada linha da lista é um e-mail ou um telefone. Os dois podem vir no mesmo arquivo. E-mail sai por e-mail. Telefone sai pelo WhatsApp +55 19 99877-2525. Não há o que escolher. A primeira linha pode ser o cabeçalho email ou contato, ou já o primeiro endereço. Uma coluna a mais é recusada e não fica gravada. Quem já recebeu o link nesta rodada, ou aparece duas vezes, não ganha outro. Se o envio falhar, o endereço fica guardado e o mesmo link é tentado de novo.',
+    'Cada linha da lista é um e-mail ou um telefone. Os dois podem vir no mesmo arquivo. E-mail sai por e-mail. Telefone sai pelo WhatsApp +55 19 99591-4369. Não há o que escolher. A primeira linha pode ser o cabeçalho email ou contato, ou já o primeiro endereço. Uma coluna a mais é recusada e não fica gravada. Quem já recebeu o link nesta rodada, ou aparece duas vezes, não ganha outro. Se o envio falhar, o endereço fica guardado e o mesmo link é tentado de novo.',
   'company.inviteFile': 'Arquivo JSON, CSV ou Excel',
   'company.inviteChoose': 'Escolher arquivo',
   'company.inviteNone': 'Nenhum arquivo selecionado',
@@ -1005,7 +1005,7 @@ export const en: Record<MsgKey, string> = {
   'company.colInvited': 'Invited',
   'company.colLatest': 'Latest answer',
   'company.inviteLead':
-    'Each line of the list is an email or a phone number. Both can be in the same file. An email goes out by email. A phone number goes out on WhatsApp from +55 19 99877-2525. There is nothing to choose. The first line can be the header email or contato, or already the first address. An extra column is rejected and is not stored. Someone who already received the link in this round, or who is listed twice, does not get another. If sending fails, the address is kept and the same link is tried again.',
+    'Each line of the list is an email or a phone number. Both can be in the same file. An email goes out by email. A phone number goes out on WhatsApp from +55 19 99591-4369. There is nothing to choose. The first line can be the header email or contato, or already the first address. An extra column is rejected and is not stored. Someone who already received the link in this round, or who is listed twice, does not get another. If sending fails, the address is kept and the same link is tried again.',
   'company.inviteFile': 'JSON, CSV, or Excel file',
   'company.inviteChoose': 'Choose file',
   'company.inviteNone': 'No file selected',

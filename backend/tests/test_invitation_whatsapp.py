@@ -33,18 +33,18 @@ def test_the_template_carries_the_link_and_not_the_token(monkeypatch):
     get_settings.cache_clear()
     monkeypatch.setattr("app.services.invitation_whatsapp.httpx.post", fake_post)
     try:
-        sent, failed = deliver_whatsapp([("5519998772525", "link-token")])
+        sent, failed = deliver_whatsapp([("5519987654321", "link-token")])
     finally:
         get_settings.cache_clear()
 
     assert failed == []
-    assert sent == [("5519998772525", "link-token")]
+    assert sent == [("5519987654321", "link-token")]
     assert captured["url"] == "https://graph.facebook.com/v26.0/12345/messages"
     assert captured["headers"]["Authorization"] == "Bearer test-token"
     assert captured["timeout"] == 30
     body = captured["json"]
     assert body["messaging_product"] == "whatsapp"
-    assert body["to"] == "5519998772525"
+    assert body["to"] == "5519987654321"
     assert body["type"] == "template"
     assert body["template"]["name"] == TEMPLATE_NAME
     assert body["template"]["language"]["code"] == TEMPLATE_LANG
@@ -85,6 +85,6 @@ def test_missing_whatsapp_settings_refuse_the_send(monkeypatch):
     get_settings.cache_clear()
     try:
         with pytest.raises(WhatsAppNotConfigured):
-            deliver_whatsapp([("5519998772525", "link-token")])
+            deliver_whatsapp([("5519987654321", "link-token")])
     finally:
         get_settings.cache_clear()

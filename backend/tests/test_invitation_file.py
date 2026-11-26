@@ -136,18 +136,18 @@ def test_one_column_keeps_an_email_and_a_phone_together():
         (
             "email\n"
             "pessoa.um@example.com\n"
-            "+55 19 99877-2525\n"
-            "(19) 99877-2525\n"
-            "019998772525\n"
-            "998772525\n"
+            "+55 19 98765-4321\n"
+            "(19) 98765-4321\n"
+            "019987654321\n"
+            "987654321\n"
             "not-an-email\n"
         ).encode(),
     )
     assert parsed.emails == ["pessoa.um@example.com"]
-    assert parsed.phones == ["5519998772525"]
-    assert parsed.duplicates_in_file == ["5519998772525", "5519998772525"]
-    assert parsed.invalid == ["998772525", "not-an-email"]
-    assert present_address("5519998772525") == "+55 19 99877-2525"
+    assert parsed.phones == ["5519987654321"]
+    assert parsed.duplicates_in_file == ["5519987654321", "5519987654321"]
+    assert parsed.invalid == ["987654321", "not-an-email"]
+    assert present_address("5519987654321") == "+55 19 98765-4321"
     assert present_address("551133334444") == "+55 11 3333-4444"
 
 
@@ -172,15 +172,15 @@ def test_contato_header_and_json_accept_either_key():
 
     mixed = parse_invitation_file(
         "list.json",
-        b'{"invitations":[{"email":"pessoa.um@example.com"},{"contato":"(19) 99877-2525"}]}',
+        b'{"invitations":[{"email":"pessoa.um@example.com"},{"contato":"(19) 98765-4321"}]}',
     )
     assert mixed.emails == ["pessoa.um@example.com"]
-    assert mixed.phones == ["5519998772525"]
+    assert mixed.phones == ["5519987654321"]
 
     with pytest.raises(InvitationFileError) as both:
         parse_invitation_file(
             "list.json",
-            b'{"invitations":[{"email":"pessoa.um@example.com","contato":"19998772525"}]}',
+            b'{"invitations":[{"email":"pessoa.um@example.com","contato":"19987654321"}]}',
         )
     assert both.value.code == "bad_file"
 
@@ -189,10 +189,10 @@ def test_xlsx_reads_a_phone_stored_as_a_number():
     workbook = Workbook()
     sheet = workbook.active
     sheet.append(["contato"])
-    sheet.append([11998772525])
+    sheet.append([11987654321])
     sheet.append([11988887777.0])
     parsed = parse_invitation_file("lista.xlsx", _workbook_bytes(workbook))
-    assert parsed.phones == ["5511998772525", "5511988887777"]
+    assert parsed.phones == ["5511987654321", "5511988887777"]
     assert parsed.emails == []
 
 

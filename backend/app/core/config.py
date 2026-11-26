@@ -51,8 +51,8 @@ class Settings(BaseSettings):
     smtp_from: str = ""
     consulting_notify_to: str = ""
 
-    # WhatsApp Cloud API. The sender number is +55 19 99877-2525 once that
-    # number is registered. The phone number id is Meta's id, not the display number.
+    # WhatsApp Cloud API. The sender number is +55 19 99591-4369. The phone
+    # number id is Meta's id for that number, not the display number.
     whatsapp_token: str = ""
     whatsapp_phone_number_id: str = ""
 
