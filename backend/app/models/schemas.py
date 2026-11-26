@@ -302,6 +302,7 @@ class ToolDraft(BaseModel):
 
 class ToolAccessResponse(BaseModel):
     state: str
+    company_name: str
     draft: ToolDraft | None = None
 
 

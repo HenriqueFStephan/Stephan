@@ -18,29 +18,40 @@ describe('ToolComponent', () => {
     fixture.detectChanges();
   });
 
-  it('opens on the introduction, then the first HSE item', () => {
+  it('opens on the consent page, then the first HSE item', () => {
     const text = (): string => fixture.nativeElement.textContent as string;
-    expect(text()).toContain('Indicador das condições de trabalho');
-    expect(text()).toContain('Suas respostas são inteiramente anônimas e livres de identificação nominal.');
-    expect(text()).toContain('Começar');
-    expect(text()).not.toContain('Questionário sociodemográfico e ocupacional');
-    expect(text()).not.toContain('Trinta e cinco perguntas');
+    expect(text()).toContain('Avaliação de fatores psicossociais no trabalho');
+    expect(text()).toContain('Participação voluntária');
+    expect(text()).toContain('Li e concordo em participar da avaliação nas condições acima.');
+    expect(text()).toContain('renatasobral@stephan.net.br');
+    expect(text()).not.toContain('Indicador das condições de trabalho');
     expect(text()).not.toContain('Sei com clareza');
-    expect(text()).not.toContain('Faixa Etária');
 
-    const start = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
-    start.click();
+    const next = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
+    expect(next.disabled).toBeTrue();
+    next.click();
+    fixture.detectChanges();
+    expect(text()).toContain('Participação voluntária');
+
+    const box = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    box.click();
+    fixture.detectChanges();
+    expect(next.disabled).toBeFalse();
+    next.click();
     fixture.detectChanges();
 
     expect(text()).toContain('1 de 35');
     expect(text()).toContain('Sei claramente o que é esperado de mim no trabalho.');
     expect(text()).toContain('Nunca');
+    expect(text()).not.toContain('Questionário sociodemográfico e ocupacional');
+    expect(text()).not.toContain('Trinta e cinco perguntas');
+    expect(text()).not.toContain('Faixa Etária');
     expect(fixture.nativeElement.querySelector('.choice__n')).toBeNull();
 
     const back = fixture.nativeElement.querySelector('.text') as HTMLButtonElement;
     back.click();
     fixture.detectChanges();
-    expect(text()).toContain('Começar');
+    expect(text()).toContain('Li e concordo em participar da avaliação nas condições acima.');
     expect(text()).not.toContain('Faixa Etária');
   });
 
@@ -82,6 +93,27 @@ describe('ToolComponent campaign draft', () => {
     window.history.replaceState({}, '', '/tool');
   });
 
+  it('names the company on the consent page and waits for agreement', () => {
+    const opened = http.expectOne('http://localhost:8000/api/v1/tool/access');
+    opened.flush({ state: 'ready', company_name: 'Oficina Ltda', draft: null });
+    fixture.detectChanges();
+
+    const text = (): string => fixture.nativeElement.textContent as string;
+    expect(text()).toContain('Avaliação de fatores psicossociais no trabalho — Oficina Ltda');
+    expect(text()).toContain('A Oficina Ltda contratou a Stephan');
+    expect(text()).not.toContain('Sei com clareza');
+
+    const next = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
+    expect(next.disabled).toBeTrue();
+    const box = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    box.click();
+    fixture.detectChanges();
+    next.click();
+    fixture.detectChanges();
+    expect(text()).toContain('1 de 35');
+    expect(text()).toContain('Sei claramente o que é esperado de mim no trabalho.');
+  });
+
   it('restores a draft on the saved question and can save it again', () => {
     const opened = http.expectOne('http://localhost:8000/api/v1/tool/access');
     const answers = Array(35).fill(null);
@@ -89,6 +121,7 @@ describe('ToolComponent campaign draft', () => {
     answers[1] = 2;
     opened.flush({
       state: 'ready',
+      company_name: 'Uso interno',
       draft: {
         place: 'ask',
         index: 2,
@@ -127,7 +160,10 @@ describe('ToolComponent campaign draft', () => {
 });
 
 function openQuestions(fixture: ComponentFixture<ToolComponent>): void {
-  const start = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
-  start.click();
+  const box = fixture.nativeElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
+  box.click();
+  fixture.detectChanges();
+  const agree = fixture.nativeElement.querySelector('.button') as HTMLButtonElement;
+  agree.click();
   fixture.detectChanges();
 }

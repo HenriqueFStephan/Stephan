@@ -24,10 +24,29 @@
       <p class="lead">{{ 'tool.used' | t }}</p>
     </section>
 
-    <section *ngIf="phase === 'intro'" class="card card--intro">
-      <h1>{{ 'tool.title' | t }}</h1>
-      <p class="lead">{{ 'tool.intro' | t }}</p>
-      <button type="button" class="button button--start" (click)="start()">{{ 'tool.start' | t }}</button>
+    <section *ngIf="phase === 'consent'" class="card card--consent">
+      <h1 *ngIf="companyName">{{ 'tool.consentTitle' | t:{ company: companyName } }}</h1>
+      <h1 *ngIf="!companyName">{{ 'tool.consentTitleOpen' | t }}</h1>
+      <p class="lead" *ngIf="companyName">{{ 'tool.consentLead' | t:{ company: companyName } }}</p>
+      <p class="lead" *ngIf="!companyName">{{ 'tool.consentLeadOpen' | t }}</p>
+      <ul class="consent">
+        <li>{{ 'tool.consentVoluntary' | t }}</li>
+        <li>{{ 'tool.consentIdentity' | t }}</li>
+        <li>{{ 'tool.consentResults' | t }}</li>
+        <li>{{ 'tool.consentPurpose' | t }}</li>
+        <li>{{ 'tool.consentSecrecy' | t }}</li>
+        <li>
+          {{ 'tool.consentData' | t }}
+          <a href="mailto:renatasobral@stephan.net.br">renatasobral@stephan.net.br</a>.
+        </li>
+      </ul>
+      <label class="consent__check">
+        <input type="checkbox" [checked]="agreed" (change)="onAgreeChange($event)" />
+        <span>{{ 'tool.consentAgree' | t }}</span>
+      </label>
+      <button type="button" class="button button--start" (click)="acceptConsent()" [disabled]="!agreed">
+        {{ 'tool.consentNext' | t }}
+      </button>
     </section>
 
     <section *ngIf="phase === 'ask'" class="card">

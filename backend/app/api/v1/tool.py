@@ -35,14 +35,19 @@ def tool_access(body: ToolAccessRequest) -> ToolAccessResponse:
     try:
         with connect() as conn:
             ensure_schema(conn)
-            draft = open_pending_invitation(conn, body.token)
+            opened = open_pending_invitation(conn, body.token)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
     except UnknownInvitation as exc:
         raise HTTPException(status_code=404, detail={"code": "unknown_link"}) from exc
     except InvitationAlreadySubmitted as exc:
         raise HTTPException(status_code=409, detail={"code": "link_used"}) from exc
-    return ToolAccessResponse(state="ready", draft=ToolDraft.model_validate(draft) if draft else None)
+    draft = opened["draft"]
+    return ToolAccessResponse(
+        state="ready",
+        company_name=opened["company_name"],
+        draft=ToolDraft.model_validate(draft) if draft else None,
+    )
 
 
 @router.post("/drafts", response_model=ToolSubmitResponse)

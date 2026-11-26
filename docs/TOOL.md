@@ -2,7 +2,7 @@
 
 This is the store for one company’s HSE Management Standards Indicator Tool wave: about 300 anonymous answers, plus the invitation list used to send each person a link. It replaces nothing on the public site. A public-site schema (pages, posts, comments, practice contact details) was drafted elsewhere and has been discarded. Do not rebuild it.
 
-`/tool` shows the introduction, then the 35 items. The sociodemographic questionnaire is not on the page. With `?t=`, that is the campaign form. Without a token, it is the local reading and posts nothing. The 35 sentences live in `frontend/src/app/features/tool/hse-it.ts` and are not copied into the database. Portuguese is the source; English is translated from it. See [Item wording](#item-wording). Older Anexo B codes can still sit on an answer; the sentences that used to ask for them live in `frontend/src/app/features/tool/profile.ts`. The database stores codes.
+`/tool` shows a consent page, then the 35 items. On a campaign link the consent page names the company that owns the invitation. The sociodemographic questionnaire is not on the page. With `?t=`, that is the campaign form. Without a token, it is the local reading and posts nothing. The 35 sentences live in `frontend/src/app/features/tool/hse-it.ts` and are not copied into the database. Portuguese is the source; English is translated from it. See [Item wording](#item-wording). Older Anexo B codes can still sit on an answer; the sentences that used to ask for them live in `frontend/src/app/features/tool/profile.ts`. The database stores codes.
 
 ## Where PostgreSQL runs
 
@@ -182,7 +182,7 @@ Each person gets one link:
 
 The host is `PUBLIC_APP_URL` (default `https://stephan.net.br`), not `FRONTEND_URL`. A local API still sends the public site.
 
-`POST /api/v1/tool/access` with the token opens the form when the invitation is `pending`. If that link has a draft, the response includes it and the form opens where the person left off. `POST /api/v1/tool/drafts` stores the unfinished form and leaves the invitation `pending`. The same link on another device loads that draft. `POST /api/v1/tool/responses` stores the 35 raw marks on that invitation’s company and round, deletes the draft, then marks the invitation `submitted`, in one transaction. The token is not written on the answer. A second post with the same token is refused. No token: `/tool` stays the local reading and posts nothing. `/tool` is not in the header or the footer. Do not link the local reading.
+`POST /api/v1/tool/access` with the token opens the form when the invitation is `pending`. The response includes that company's name, which is shared by the whole wave and is not a person. If that link has a draft, the response includes it and the form opens where the person left off. `POST /api/v1/tool/drafts` stores the unfinished form and leaves the invitation `pending`. The same link on another device loads that draft. `POST /api/v1/tool/responses` stores the 35 raw marks on that invitation’s company and round, deletes the draft, then marks the invitation `submitted`, in one transaction. The token is not written on the answer. A second post with the same token is refused. No token: `/tool` stays the local reading and posts nothing. `/tool` is not in the header or the footer. Do not link the local reading.
 
 The company page does not list drafts. A saved draft still counts as not finished.
 

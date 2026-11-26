@@ -125,6 +125,38 @@ h1 {
   font-size: 1.15rem;
 }
 
+.card--consent h1 {
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+}
+
+.consent {
+  margin: 0 0 1.35rem;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.85rem;
+
+  a {
+    color: $color-primary;
+  }
+}
+
+.consent__check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin: 0 0 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  input {
+    flex: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.2rem;
+    accent-color: $color-primary;
+  }
+}
+
 .progress {
   margin: 0 0 0.45rem;
   color: $color-text-muted;

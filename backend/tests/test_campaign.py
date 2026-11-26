@@ -612,6 +612,7 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
         digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
         opened = client.post("/api/v1/tool/access", json={"token": token})
         assert opened.status_code == 200
+        assert opened.json()["company_name"] == "Uso interno"
         assert opened.json()["draft"] is None
         assert email not in opened.text
         assert token not in opened.text
@@ -663,6 +664,7 @@ def test_a_draft_follows_the_link_and_is_deleted_on_submit(postgres, monkeypatch
         assert again.status_code == 200
         resumed = client.post("/api/v1/tool/access", json={"token": token})
         assert resumed.status_code == 200
+        assert resumed.json()["company_name"] == "Uso interno"
         body = resumed.json()["draft"]
         assert body["place"] == "ask"
         assert body["index"] == 2

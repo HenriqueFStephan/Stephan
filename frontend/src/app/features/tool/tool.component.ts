@@ -18,7 +18,7 @@ import {
 } from './hse-it';
 import { PROFILE_QUESTIONS, profilePayload } from './profile';
 
-type Phase = 'checking' | 'invalid' | 'used' | 'intro' | 'ask' | 'results';
+type Phase = 'checking' | 'invalid' | 'used' | 'consent' | 'ask' | 'results';
 
 const ADVANCE_MS = 180;
 
@@ -32,7 +32,9 @@ const ADVANCE_MS = 180;
 export class ToolComponent implements OnInit, OnDestroy {
   readonly items = HSE_ITEMS;
 
-  phase: Phase = 'intro';
+  phase: Phase = 'consent';
+  agreed = false;
+  companyName = '';
   index = 0;
   sector = '';
   profile: Record<string, string> = {};
@@ -68,10 +70,11 @@ export class ToolComponent implements OnInit, OnDestroy {
     this.phase = 'checking';
     this.api.openTool(token).subscribe({
       next: (body) => {
+        this.companyName = (body.company_name || '').trim();
         if (body.draft) {
           this.applyDraft(body.draft);
         } else {
-          this.phase = 'intro';
+          this.phase = 'consent';
         }
       },
       error: (err: HttpErrorResponse) => {
@@ -94,10 +97,18 @@ export class ToolComponent implements OnInit, OnDestroy {
     this.i18n.setLang(this.i18n.lang() === 'pt-BR' ? 'en' : 'pt-BR');
   }
 
-  start(): void {
+  acceptConsent(): void {
+    if (!this.agreed) {
+      return;
+    }
     this.phase = 'ask';
     this.index = 0;
     this.reveal();
+  }
+
+  onAgreeChange(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.agreed = !!input?.checked;
   }
 
   choose(value: number): void {
@@ -163,7 +174,7 @@ export class ToolComponent implements OnInit, OnDestroy {
       if (this.index > 0) {
         this.index -= 1;
       } else {
-        this.phase = 'intro';
+        this.phase = 'consent';
       }
       this.reveal();
     }
@@ -310,7 +321,7 @@ export class ToolComponent implements OnInit, OnDestroy {
       this.phase = 'ask';
     } else {
       this.index = 0;
-      this.phase = 'intro';
+      this.phase = 'ask';
     }
     this.resumed = true;
     this.reveal();

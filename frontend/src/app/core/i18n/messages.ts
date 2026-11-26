@@ -262,9 +262,26 @@ const ptBR = {
   'tool.opening': 'Abrindo o questionário…',
   'tool.sector': 'Setor ou equipe',
   'tool.sectorHint': 'Opcional. Só para nomear esta leitura.',
-  'tool.start': 'Começar',
-  'tool.intro':
-    'Suas respostas são inteiramente anônimas e livres de identificação nominal. Responda marcando a opção que melhor represente sua situação.',
+  'tool.consentTitle': 'Avaliação de fatores psicossociais no trabalho — {{company}}',
+  'tool.consentTitleOpen': 'Avaliação de fatores psicossociais no trabalho',
+  'tool.consentLead':
+    'A {{company}} contratou a Stephan, sob responsabilidade técnica da psicóloga Renata Cristina Sobral Stephan (CRP 06/76943), para avaliar fatores psicossociais relacionados ao trabalho, como exigências, autonomia, apoio e relacionamentos, conforme exige a Norma Regulamentadora nº 1.',
+  'tool.consentLeadOpen':
+    'Sob responsabilidade técnica da psicóloga Renata Cristina Sobral Stephan (CRP 06/76943), esta avaliação cobre fatores psicossociais relacionados ao trabalho, como exigências, autonomia, apoio e relacionamentos, conforme exige a Norma Regulamentadora nº 1.',
+  'tool.consentVoluntary':
+    'Participação voluntária. Você pode não responder, pular perguntas ou parar a qualquer momento. Ninguém saberá se você respondeu, e sua decisão não terá nenhuma consequência.',
+  'tool.consentIdentity':
+    'Sem identificação. O questionário não pede nome, CPF, e-mail ou matrícula. A empresa não tem acesso às respostas individuais, e a Stephan não realiza cruzamento de dados para identificar respondentes.',
+  'tool.consentResults':
+    'O que a empresa recebe. Apenas resultados estatísticos agrupados por setor, sempre com, no mínimo, 5 pessoas. Setores menores são reunidos com outros.',
+  'tool.consentPurpose':
+    'Finalidade exclusiva. Suas respostas são usadas apenas para a avaliação da sua empresa e o planejamento de medidas de prevenção. Não serão publicadas nem utilizadas pela Stephan para qualquer outra finalidade, inclusive pesquisa.',
+  'tool.consentSecrecy':
+    'Sigilo. A Stephan e sua equipe mantêm sigilo profissional sobre todas as informações, nos termos do Código de Ética Profissional do Psicólogo. O material é guardado pelo prazo mínimo de 5 anos exigido pelo Conselho Federal de Psicologia e depois eliminado com segurança.',
+  'tool.consentData':
+    'Seus dados. A empresa é a controladora dos dados desta avaliação, e a Stephan atua em seu nome, nos termos da Lei nº 13.709/2018 (LGPD). Dúvidas:',
+  'tool.consentAgree': 'Li e concordo em participar da avaliação nas condições acima.',
+  'tool.consentNext': 'Continuar',
   'tool.saveDraft': 'Salvar e continuar depois',
   'tool.drafting': 'Salvando…',
   'tool.draftNote': 'Progresso salvo. Abra o mesmo link neste ou noutro aparelho para continuar.',
@@ -943,9 +960,26 @@ export const en: Record<MsgKey, string> = {
   'tool.opening': 'Opening the questionnaire…',
   'tool.sector': 'Area or team',
   'tool.sectorHint': 'Optional. Only to name this reading.',
-  'tool.start': 'Begin',
-  'tool.intro':
-    'Your answers are entirely anonymous and carry no name. Mark the option that best represents your situation.',
+  'tool.consentTitle': 'Assessment of psychosocial factors at work — {{company}}',
+  'tool.consentTitleOpen': 'Assessment of psychosocial factors at work',
+  'tool.consentLead':
+    '{{company}} hired Stephan, under the technical responsibility of psychologist Renata Cristina Sobral Stephan (CRP 06/76943), to assess work-related psychosocial factors, such as demands, autonomy, support, and relationships, as required by Regulatory Standard No. 1.',
+  'tool.consentLeadOpen':
+    'Under the technical responsibility of psychologist Renata Cristina Sobral Stephan (CRP 06/76943), this assessment covers work-related psychosocial factors, such as demands, autonomy, support, and relationships, as required by Regulatory Standard No. 1.',
+  'tool.consentVoluntary':
+    'Voluntary participation. You may choose not to answer, skip questions, or stop at any time. No one will know whether you responded, and your decision will have no consequence.',
+  'tool.consentIdentity':
+    'No identification. The questionnaire does not ask for a name, CPF, email, or employee number. The company has no access to individual answers, and Stephan does not cross-check data to identify respondents.',
+  'tool.consentResults':
+    'What the company receives. Only statistical results grouped by sector, always with at least 5 people. Smaller sectors are combined with others.',
+  'tool.consentPurpose':
+    'Exclusive purpose. Your answers are used only for your company\'s assessment and for planning prevention measures. They will not be published or used by Stephan for any other purpose, including research.',
+  'tool.consentSecrecy':
+    'Confidentiality. Stephan and its team keep professional secrecy over all information, under the Psychologist\'s Code of Professional Ethics. The material is kept for the minimum of 5 years required by the Federal Council of Psychology and is then securely destroyed.',
+  'tool.consentData':
+    'Your data. The company is the controller of the data in this assessment, and Stephan acts on its behalf, under Law No. 13,709/2018 (LGPD). Questions:',
+  'tool.consentAgree': 'I have read and agree to take part in the assessment under the conditions above.',
+  'tool.consentNext': 'Continue',
   'tool.saveDraft': 'Save and continue later',
   'tool.drafting': 'Saving…',
   'tool.draftNote': 'Progress saved. Open the same link on this or another device to continue.',

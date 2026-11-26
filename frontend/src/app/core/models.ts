@@ -110,6 +110,7 @@ export interface ToolDraft {
 
 export interface ToolAccessResult {
   state: string;
+  company_name: string;
   draft: ToolDraft | null;
 }
 

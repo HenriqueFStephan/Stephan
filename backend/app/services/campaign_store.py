@@ -847,18 +847,20 @@ def save_draft(
     )
 
 
-def open_pending_invitation(conn, token: str) -> dict[str, Any] | None:
-    """Return the unfinished form when this link is still pending.
+def open_pending_invitation(conn, token: str) -> dict[str, Any]:
+    """Return the company name and any unfinished form for a pending link.
 
-    None means the link is valid and nothing has been saved yet.
+    draft is None when the link is valid and nothing has been saved yet.
+    The company name is the same for every person in that wave.
     Does not return the address, the token, or the invitation id.
     """
     digest = hashlib.sha256(token.encode("utf-8")).hexdigest()
     mark_columns = ", ".join(f"d.{column}" for column in ITEM_COLUMNS)
     row = conn.execute(
         f"""
-        SELECT i.status, d.place, d.item_index, d.demographics, {mark_columns}
+        SELECT c.name AS company_name, i.status, d.place, d.item_index, d.demographics, {mark_columns}
         FROM invitations AS i
+        JOIN companies AS c ON c.id = i.company_id
         LEFT JOIN hse_drafts AS d ON d.link_token_hash = i.link_token_hash
         WHERE i.link_token_hash = %s
         """,
@@ -868,14 +870,15 @@ def open_pending_invitation(conn, token: str) -> dict[str, Any] | None:
         raise UnknownInvitation()
     if row["status"] != "pending":
         raise InvitationAlreadySubmitted()
-    if row["place"] is None:
-        return None
-    return {
-        "place": row["place"],
-        "index": row["item_index"],
-        "demographics": row["demographics"] or {},
-        "answers": [row[column] for column in ITEM_COLUMNS],
-    }
+    draft = None
+    if row["place"] is not None:
+        draft = {
+            "place": row["place"],
+            "index": row["item_index"],
+            "demographics": row["demographics"] or {},
+            "answers": [row[column] for column in ITEM_COLUMNS],
+        }
+    return {"company_name": row["company_name"], "draft": draft}
 
 
 def _day(value) -> str | None:
