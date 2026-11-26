@@ -17,6 +17,8 @@ Two accounts are seeded in PostgreSQL. Each one is a company. Invitations and an
 
 `POST /api/v1/company/login` checks the pair on the server. A match returns a `passage` plus the company slug and name. The passage is not the password. The browser keeps it in `sessionStorage` under `stephan-company-passage` and sends it as `X-Company-Token`. Closing the tab drops the session. Log out drops it too.
 
+Signed in as `admin`, the page lists every company. Placing a list or sending the video and the form from that list writes the chosen company's round, charge, and invitations. It does not write them on `internal`. The payment rule is that company's: only `internal` can skip it. See `docs/TOOL.md`.
+
 The charts on the page are still the simulated wave. The company name above them is the account that signed in.
 
 ## What the test data is

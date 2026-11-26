@@ -39,7 +39,12 @@ describe('CompanyComponent', () => {
       'getCompanyInvitations',
       'retryCompanyInvitations',
       'sendCompanyInvitations',
+      'getCompanyAccounts',
+      'quoteCompanyAccountInvitations',
+      'uploadCompanyAccountInvitations',
+      'sendCompanyAccountInvitations',
     ]);
+    api.getCompanyAccounts.and.returnValue(of([]));
     api.getCompanyInvitations.and.returnValue(
       of({
         round_label: 'rodada-1',
@@ -454,5 +459,98 @@ describe('CompanyComponent', () => {
       expect(root.textContent).toContain('Envios programados');
       expect(root.textContent).toContain('4 pessoas. Vídeo:');
     });
+  });
+
+  it('lists companies for the admin and writes the list and the send on that company', () => {
+    api.loginCompany.and.returnValue(
+      of({ success: true, passage: 'clearance', company_name: 'Uso interno', company_slug: 'internal' }),
+    );
+    api.getCompanyAccounts.and.returnValue(
+      of([{ slug: 'cnpj-1', name: 'Acme Ltda', username: 'a@acme.com', email: 'a@acme.com', held: 3 }]),
+    );
+    api.uploadCompanyAccountInvitations.and.returnValue(
+      of({
+        round_label: 'rodada-1',
+        accepted: 1,
+        ignored_empty: 0,
+        duplicates_in_file: [],
+        already_invited: [],
+        invalid: [],
+        not_sent: [],
+        not_configured: [],
+        quote: {
+          charge_id: 'c',
+          forms: 1,
+          unit_cents: 1000,
+          total_cents: 1000,
+          provisional: true,
+          methods: ['pix'],
+          method: 'pix',
+          charged: false,
+        },
+      }),
+    );
+    api.sendCompanyAccountInvitations.and.returnValue(
+      of({ people: 3, video_at: '2026-11-26T18:00:00Z', form_at: '2026-11-26T18:01:00Z', immediate: true }),
+    );
+    const component = create();
+    fixture.detectChanges();
+    component.username = 'admin';
+    component.password = 'secret';
+    component.login();
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('#accounts-title')?.textContent).toContain('Contas das empresas');
+    expect(root.textContent).toContain('Acme Ltda');
+    expect(root.textContent).toContain('a@acme.com');
+
+    const place = Array.from(root.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Colocar a lista'),
+    ) as HTMLButtonElement;
+    place.click();
+    fixture.detectChanges();
+    const panel = root.querySelector('.accounts__panel') as HTMLElement;
+    expect(panel.textContent).not.toContain('Pular pagamento');
+
+    component.behalfPreview = {
+      forms: 1,
+      unit_cents: 1000,
+      total_cents: 1000,
+      provisional: true,
+      methods: ['pix'],
+      ignored_empty: 0,
+      duplicates_in_file: [],
+      already_invited: [],
+      invalid: [],
+    };
+    component.behalfPayMethod = 'pix';
+    const file = new File(['email\na@x.com\n'], 'lista.csv', { type: 'text/csv' });
+    component.behalfFile = file;
+    component.releaseBehalf(document.createElement('input'), false);
+    expect(api.uploadCompanyAccountInvitations).toHaveBeenCalledWith('clearance', 'cnpj-1', file, 'pix', false);
+
+    const send = Array.from(root.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Enviar o vídeo e o formulário'),
+    ) as HTMLButtonElement;
+    send.click();
+    fixture.detectChanges();
+    component.confirmBehalfSend();
+    expect(api.sendCompanyAccountInvitations).toHaveBeenCalledWith('clearance', 'cnpj-1', { mode: 'now' });
+  });
+
+  it('hides the company list from a company login', () => {
+    api.loginCompany.and.returnValue(
+      of({ success: true, passage: 'clearance', company_name: 'HSE-IT', company_slug: 'hse-it' }),
+    );
+    const component = create();
+    fixture.detectChanges();
+    component.username = 'artigo';
+    component.password = 'secret';
+    component.login();
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('#accounts-title')).toBeNull();
+    expect(api.getCompanyAccounts).not.toHaveBeenCalled();
   });
 });

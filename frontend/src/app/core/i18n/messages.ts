@@ -358,6 +358,16 @@ const ptBR = {
   'company.reference':
     'Faixas do HSE Management Standards Analysis Tool, com dados de 136 organizações. A média do grupo não substitui a escuta do trabalho.',
   'company.inviteTitle': 'Enviar formulários',
+  'company.accountsTitle': 'Contas das empresas',
+  'company.accountsLead':
+    'Coloque a lista e envie o vídeo e o formulário no lugar de uma empresa. O que fica gravado é dessa empresa: a rodada, o pagamento e os envios são os mesmos que ela teria se fizesse isso.',
+  'company.accountsPlace': 'Colocar a lista',
+  'company.accountsSend': 'Enviar o vídeo e o formulário',
+  'company.accountsHeld': '{{count}} pessoas aguardando o envio.',
+  'company.accountsEmpty': 'Ainda não há empresas.',
+  'company.accountsUnreachable': 'Não foi possível carregar as empresas.',
+  'company.accountsMissing': 'Essa empresa não está mais disponível.',
+  'company.accountsNoRound': 'Essa empresa não tem uma rodada aberta.',
   'company.roundsTitle': 'Rodadas',
   'company.roundSelect': 'Rodada',
   'company.showStats': 'Ver estatísticas',
@@ -1055,6 +1065,16 @@ export const en: Record<MsgKey, string> = {
   'company.reference':
     'Bands from the HSE Management Standards Analysis Tool, using data from 136 organisations. A group mean does not replace listening to the work.',
   'company.inviteTitle': 'Send forms',
+  'company.accountsTitle': 'Company accounts',
+  'company.accountsLead':
+    'Place the list and send the video and the form for a company. What is stored belongs to that company: the round, the payment, and the sends are the same as if they had done it.',
+  'company.accountsPlace': 'Place the list',
+  'company.accountsSend': 'Send the video and the form',
+  'company.accountsHeld': '{{count}} people waiting to be sent.',
+  'company.accountsEmpty': 'There are no companies yet.',
+  'company.accountsUnreachable': 'The companies could not be loaded.',
+  'company.accountsMissing': 'That company is no longer available.',
+  'company.accountsNoRound': 'That company has no open round.',
   'company.roundsTitle': 'Rounds',
   'company.roundSelect': 'Round',
   'company.showStats': 'Show statistics',

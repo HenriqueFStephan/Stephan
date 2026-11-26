@@ -248,6 +248,16 @@ class CompanyLoginResponse(BaseModel):
     company_name: str
 
 
+class CompanyAccountRow(BaseModel):
+    """One company the internal account can place a list for and send as."""
+
+    slug: str
+    name: str
+    username: str = ""
+    email: str = ""
+    held: int = 0
+
+
 class AccountEmail(BaseModel):
     email: str = Field(..., min_length=1, max_length=200)
 

@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 from app.core.config import get_settings
+from app.services.campaign_store import ensure_open_round
 
 # Fixed accounts. Future companies get their own row and are not these two.
 # internal: local tests. hse-it: the paper. Their invitations and answers do not mix.
@@ -106,6 +107,52 @@ def seed_company_accounts(conn) -> None:
         )
 
 
+def list_company_accounts(conn) -> list[dict]:
+    """Every company, with the sign-in that owns it and how many addresses are still held.
+
+    held is the open round only. A company with no open round reports zero.
+    The list does not include invitation addresses.
+    """
+    rows = conn.execute(
+        """
+        SELECT
+            c.slug,
+            c.name,
+            COALESCE(u.username, '') AS username,
+            COALESCE(u.email, '') AS email,
+            COALESCE(h.held, 0) AS held
+        FROM companies AS c
+        LEFT JOIN LATERAL (
+            SELECT username, email
+            FROM company_users
+            WHERE company_id = c.id
+            ORDER BY CASE WHEN role = 'owner' THEN 0 ELSE 1 END, created_at
+            LIMIT 1
+        ) AS u ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT count(i.id) AS held
+            FROM company_rounds AS r
+            LEFT JOIN invitations AS i
+              ON i.round_id = r.id
+             AND i.form_due_at IS NULL
+            WHERE r.company_id = c.id
+              AND r.closed_on IS NULL
+        ) AS h ON TRUE
+        ORDER BY c.name, c.slug
+        """
+    ).fetchall()
+    return [
+        {
+            "slug": row["slug"],
+            "name": row["name"],
+            "username": row["username"] or "",
+            "email": row["email"] or "",
+            "held": int(row["held"] or 0),
+        }
+        for row in rows
+    ]
+
+
 def provision_company_access(
     conn,
     *,
@@ -165,6 +212,7 @@ def provision_company_access(
             _until(CONFIRM_HOURS),
         ),
     )
+    ensure_open_round(conn, company_id)
     return email_norm, token
 
 

@@ -17,6 +17,7 @@ from app.models.schemas import (
     AccountEmail,
     AccountToken,
     ChargeMethodChoice,
+    CompanyAccountRow,
     CompanyLogin,
     CompanyLoginResponse,
     CompanyOverview,
@@ -60,6 +61,7 @@ from app.services.company_accounts import (
     begin_password_reset,
     confirm_access,
     issue_passage,
+    list_company_accounts,
     reissue_confirmation,
     session_from_passage,
 )
@@ -94,6 +96,23 @@ def require_company_token(
     if session is None:
         raise HTTPException(status_code=401, detail="Invalid company session")
     return session
+
+
+def require_internal(session: CompanySession = Depends(require_company_token)) -> CompanySession:
+    """The internal account places lists and sends them for other companies."""
+    if session.slug != "internal":
+        raise HTTPException(status_code=403, detail={"code": "not_admin"})
+    return session
+
+
+def _company_by_slug(conn, slug: str) -> tuple:
+    row = conn.execute(
+        "SELECT id, slug FROM companies WHERE slug = %s",
+        (slug,),
+    ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail={"code": "company_not_found"})
+    return row["id"], row["slug"]
 
 
 @router.post("/login", response_model=CompanyLoginResponse)
@@ -234,17 +253,13 @@ def _parsed_upload(file: UploadFile):
         ) from exc
 
 
-@router.post("/invitations/quote", response_model=ListQuote)
-def quote_company_invitations(
-    file: UploadFile = File(...),
-    session: CompanySession = Depends(require_company_token),
-) -> ListQuote:
+def _quote_for(company_id, file: UploadFile) -> ListQuote:
     """Price the file. The addresses stay unstored and no message goes out."""
     parsed = _parsed_upload(file)
     try:
         with connect() as conn:
             ensure_schema(conn)
-            preview = preview_invitations(conn, session.company_id, parsed)
+            preview = preview_invitations(conn, company_id, parsed)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
     except NoOpenRound as exc:
@@ -252,23 +267,18 @@ def quote_company_invitations(
     return ListQuote.model_validate(preview)
 
 
-@router.post("/invitations", response_model=InvitationUploadResult)
-def upload_company_invitations(
-    file: UploadFile = File(...),
-    method: Annotated[str, Form()] = "",
-    skip: Annotated[str, Form()] = "",
-    session: CompanySession = Depends(require_company_token),
-) -> InvitationUploadResult:
+def _upload_for(company_id, slug: str, file: UploadFile, method: str, skip: str) -> InvitationUploadResult:
+    """Store the list on this company. Payment follows this company's slug, not the caller's."""
     parsed = _parsed_upload(file)
     release = skip.strip().lower() in {"1", "true", "yes"}
-    if release and session.slug != "internal":
+    if release and slug != "internal":
         raise HTTPException(status_code=403, detail={"code": "skip_not_allowed"})
     try:
         with connect() as conn:
             ensure_schema(conn)
-            preview = preview_invitations(conn, session.company_id, parsed)
+            preview = preview_invitations(conn, company_id, parsed)
             try:
-                chosen = gate_payment(session.slug, method, release, preview["forms"])
+                chosen = gate_payment(slug, method, release, preview["forms"])
             except PaymentRequired as exc:
                 raise HTTPException(status_code=409, detail={"code": "payment_required"}) from exc
             except SkipNotAllowed as exc:
@@ -277,7 +287,7 @@ def upload_company_invitations(
                 raise HTTPException(status_code=422, detail={"code": "unknown_method"}) from exc
             stored = add_invitations(
                 conn,
-                session.company_id,
+                company_id,
                 file.filename or "",
                 parsed,
                 method=chosen,
@@ -298,6 +308,121 @@ def upload_company_invitations(
     except WhatsAppDeliveryError as exc:
         raise HTTPException(status_code=502, detail={"code": "whatsapp_failed"}) from exc
     return InvitationUploadResult.model_validate(stored)
+
+
+def _send_for(company_id, body: SendFormsRequest, background: BackgroundTasks) -> SendFormsResult:
+    """Choose when this company's saved addresses get the video and the form."""
+    if body.mode == "schedule":
+        for value in (body.video_at, body.form_at):
+            if value is None or value.tzinfo is None:
+                raise HTTPException(status_code=422, detail={"code": "bad_schedule"})
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            if body.mode == "now":
+                result = release_invitations(conn, company_id)
+            else:
+                result = release_invitations(conn, company_id, body.video_at, body.form_at)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    except NoOpenRound as exc:
+        raise HTTPException(status_code=409, detail={"code": "no_open_round"}) from exc
+    except NothingToSend as exc:
+        raise HTTPException(status_code=409, detail={"code": "nothing_to_send"}) from exc
+    except BadSchedule as exc:
+        raise HTTPException(status_code=422, detail={"code": exc.code}) from exc
+    except VideoNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "video_not_configured"}) from exc
+    except MailNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
+    except WhatsAppNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "whatsapp_not_configured"}) from exc
+    except ChannelsNotConfigured as exc:
+        raise HTTPException(status_code=503, detail={"code": "channels_not_configured"}) from exc
+    if result["immediate"]:
+        background.add_task(_send_due_now, company_id)
+    return SendFormsResult.model_validate(result)
+
+
+@router.get("/accounts", response_model=list[CompanyAccountRow])
+def company_account_list(_session: CompanySession = Depends(require_internal)) -> list[CompanyAccountRow]:
+    """Companies the internal account can place a list for. Other logins cannot read this."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            rows = list_company_accounts(conn)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    return [CompanyAccountRow.model_validate(row) for row in rows]
+
+
+@router.post("/accounts/{slug}/invitations/quote", response_model=ListQuote)
+def quote_account_invitations(
+    slug: str,
+    file: UploadFile = File(...),
+    _session: CompanySession = Depends(require_internal),
+) -> ListQuote:
+    """Price a file for another company. Nothing is stored on the internal account."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            company_id, _slug = _company_by_slug(conn, slug)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    return _quote_for(company_id, file)
+
+
+@router.post("/accounts/{slug}/invitations", response_model=InvitationUploadResult)
+def upload_account_invitations(
+    slug: str,
+    file: UploadFile = File(...),
+    method: Annotated[str, Form()] = "",
+    skip: Annotated[str, Form()] = "",
+    _session: CompanySession = Depends(require_internal),
+) -> InvitationUploadResult:
+    """Place the list on that company, with that company's payment rule."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            company_id, target_slug = _company_by_slug(conn, slug)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    return _upload_for(company_id, target_slug, file, method, skip)
+
+
+@router.post("/accounts/{slug}/invitations/send", response_model=SendFormsResult)
+def send_account_invitations(
+    slug: str,
+    body: SendFormsRequest,
+    background: BackgroundTasks,
+    _session: CompanySession = Depends(require_internal),
+) -> SendFormsResult:
+    """Send the video and the form for addresses held on that company."""
+    try:
+        with connect() as conn:
+            ensure_schema(conn)
+            company_id, _slug = _company_by_slug(conn, slug)
+    except DatabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
+    return _send_for(company_id, body, background)
+
+
+@router.post("/invitations/quote", response_model=ListQuote)
+def quote_company_invitations(
+    file: UploadFile = File(...),
+    session: CompanySession = Depends(require_company_token),
+) -> ListQuote:
+    return _quote_for(session.company_id, file)
+
+
+@router.post("/invitations", response_model=InvitationUploadResult)
+def upload_company_invitations(
+    file: UploadFile = File(...),
+    method: Annotated[str, Form()] = "",
+    skip: Annotated[str, Form()] = "",
+    session: CompanySession = Depends(require_company_token),
+) -> InvitationUploadResult:
+    return _upload_for(session.company_id, session.slug, file, method, skip)
 
 
 @router.post("/charges/{charge_id}", response_model=FormQuote)
@@ -335,36 +460,7 @@ def send_company_invitations(
     The server sends each message when its time comes. "now" makes both due at once, and the
     form follows the video by about a minute.
     """
-    if body.mode == "schedule":
-        for value in (body.video_at, body.form_at):
-            if value is None or value.tzinfo is None:
-                raise HTTPException(status_code=422, detail={"code": "bad_schedule"})
-    try:
-        with connect() as conn:
-            ensure_schema(conn)
-            if body.mode == "now":
-                result = release_invitations(conn, session.company_id)
-            else:
-                result = release_invitations(conn, session.company_id, body.video_at, body.form_at)
-    except DatabaseUnavailable as exc:
-        raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
-    except NoOpenRound as exc:
-        raise HTTPException(status_code=409, detail={"code": "no_open_round"}) from exc
-    except NothingToSend as exc:
-        raise HTTPException(status_code=409, detail={"code": "nothing_to_send"}) from exc
-    except BadSchedule as exc:
-        raise HTTPException(status_code=422, detail={"code": exc.code}) from exc
-    except VideoNotConfigured as exc:
-        raise HTTPException(status_code=503, detail={"code": "video_not_configured"}) from exc
-    except MailNotConfigured as exc:
-        raise HTTPException(status_code=503, detail={"code": "mail_not_configured"}) from exc
-    except WhatsAppNotConfigured as exc:
-        raise HTTPException(status_code=503, detail={"code": "whatsapp_not_configured"}) from exc
-    except ChannelsNotConfigured as exc:
-        raise HTTPException(status_code=503, detail={"code": "channels_not_configured"}) from exc
-    if result["immediate"]:
-        background.add_task(_send_due_now, session.company_id)
-    return SendFormsResult.model_validate(result)
+    return _send_for(session.company_id, body, background)
 
 
 def _send_due_now(company_id) -> None:

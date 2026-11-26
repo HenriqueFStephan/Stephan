@@ -15,6 +15,7 @@ import {
   StudioStatusResponse,
   StudioUnlockResponse,
   AccountAck,
+  CompanyAccount,
   CompanyLoginResponse,
   CompanyOverview,
   CompanyRoundRow,
@@ -167,6 +168,52 @@ export class ApiService {
     return this.http.post<SendFormsResult>(`${this.base}/company/invitations/send`, request, {
       headers: new HttpHeaders({ 'X-Company-Token': passage }),
     });
+  }
+
+  getCompanyAccounts(passage: string): Observable<CompanyAccount[]> {
+    return this.http.get<CompanyAccount[]>(`${this.base}/company/accounts`, {
+      headers: new HttpHeaders({ 'X-Company-Token': passage }),
+    });
+  }
+
+  quoteCompanyAccountInvitations(passage: string, slug: string, file: File): Observable<ListQuote> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    return this.http.post<ListQuote>(
+      `${this.base}/company/accounts/${encodeURIComponent(slug)}/invitations/quote`,
+      body,
+      { headers: new HttpHeaders({ 'X-Company-Token': passage }) },
+    );
+  }
+
+  uploadCompanyAccountInvitations(
+    passage: string,
+    slug: string,
+    file: File,
+    method = '',
+    skip = false,
+  ): Observable<InvitationUploadResult> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    body.append('method', method);
+    body.append('skip', skip ? '1' : '');
+    return this.http.post<InvitationUploadResult>(
+      `${this.base}/company/accounts/${encodeURIComponent(slug)}/invitations`,
+      body,
+      { headers: new HttpHeaders({ 'X-Company-Token': passage }) },
+    );
+  }
+
+  sendCompanyAccountInvitations(
+    passage: string,
+    slug: string,
+    request: SendFormsRequest,
+  ): Observable<SendFormsResult> {
+    return this.http.post<SendFormsResult>(
+      `${this.base}/company/accounts/${encodeURIComponent(slug)}/invitations/send`,
+      request,
+      { headers: new HttpHeaders({ 'X-Company-Token': passage }) },
+    );
   }
 
   retryCompanyInvitations(passage: string): Observable<InvitationRetryResult> {

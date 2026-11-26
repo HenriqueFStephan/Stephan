@@ -195,6 +195,10 @@ def test_signup_is_rolled_back_when_the_confirmation_cannot_be_sent(postgres, mo
 def _drop(email: str, digits: str) -> None:
     with connect() as conn:
         conn.execute(
+            "DELETE FROM company_rounds WHERE company_id IN (SELECT id FROM companies WHERE cnpj = %s)",
+            (digits,),
+        )
+        conn.execute(
             """
             DELETE FROM company_users
             WHERE email = %s

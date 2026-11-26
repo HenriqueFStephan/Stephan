@@ -44,6 +44,213 @@
     <p class="eyebrow">{{ companyLabel() }}</p>
     <h1>{{ 'company.dashboardTitle' | t }}</h1>
 
+    <section class="card" *ngIf="isAdmin()" aria-labelledby="accounts-title">
+      <h2 id="accounts-title">{{ 'company.accountsTitle' | t }}</h2>
+      <p class="note">{{ 'company.accountsLead' | t }}</p>
+      <p class="error" *ngIf="accountsError" role="alert">{{ 'company.accountsUnreachable' | t }}</p>
+      <p class="note" *ngIf="accounts && !accounts.length">{{ 'company.accountsEmpty' | t }}</p>
+      <ul class="accounts" *ngIf="accounts?.length">
+        <li *ngFor="let account of accounts">
+          <div class="accounts__row">
+            <div>
+              <strong>{{ account.name }}</strong>
+              <p class="note">{{ account.username }}<ng-container *ngIf="account.email"> · {{ account.email }}</ng-container></p>
+              <p class="note">{{ 'company.accountsHeld' | t:{ count: account.held } }}</p>
+            </div>
+            <div class="accounts__actions">
+              <button type="button" class="button" (click)="openBehalf(account, 'place')">
+                {{ 'company.accountsPlace' | t }}
+              </button>
+              <button type="button" class="button" (click)="openBehalf(account, 'send')">
+                {{ 'company.accountsSend' | t }}
+              </button>
+            </div>
+          </div>
+
+          <div class="accounts__panel" *ngIf="behalfSlug === account.slug && behalfAction === 'place'">
+            <div class="file-row">
+              <label class="file-field">
+                <span class="file">
+                  <input
+                    #behalfInput
+                    class="file__input"
+                    type="file"
+                    name="behalf-file"
+                    accept=".json,.csv,.xlsx,text/csv,application/json"
+                    (change)="onBehalfFile($event)"
+                  />
+                  <span class="file__pick">{{ 'company.inviteChoose' | t }}</span>
+                  <span class="file__name">{{ behalfFile?.name || ('company.inviteNone' | t) }}</span>
+                </span>
+              </label>
+            </div>
+            <p class="note" *ngIf="behalfQuoting">{{ 'company.payQuoting' | t }}</p>
+            <p class="error" *ngIf="behalfErrorKey" role="alert">
+              {{ behalfErrorKey | t:{ columns: behalfUnknownColumns } }}
+            </p>
+            <div class="pay" *ngIf="behalfPreview as quote">
+              <h3>{{ 'company.payTitle' | t }}</h3>
+              <p>
+                {{ 'company.payCount' | t:{ forms: quote.forms, unit: money(quote.unit_cents), total: money(quote.total_cents) } }}
+              </p>
+              <p class="note">{{ 'company.payProvisional' | t }}</p>
+              <p class="note">{{ 'company.payGate' | t }}</p>
+              <p class="note" *ngIf="quote.forms === 0">{{ 'company.payNone' | t }}</p>
+              <ng-container *ngIf="quote.forms > 0">
+                <p class="pay__legend">{{ 'company.payChoose' | t }}</p>
+                <label class="choice" *ngFor="let method of quote.methods">
+                  <input type="radio" name="behalf-pay-method" [value]="method" [(ngModel)]="behalfPayMethod" />
+                  <span>
+                    <strong>{{ ('company.pay.' + method) | t }}</strong>
+                    <small>{{ ('company.payNote.' + method) | t }}</small>
+                  </span>
+                </label>
+              </ng-container>
+              <div class="pay__actions">
+                <button
+                  type="button"
+                  class="button"
+                  *ngIf="quote.forms > 0"
+                  [disabled]="behalfSubmitting || !behalfPayMethod"
+                  (click)="releaseBehalf(behalfInput, false)"
+                >
+                  {{ behalfSubmitting && !behalfSkip ? ('company.inviteSending' | t) : ('company.payConfirm' | t) }}
+                </button>
+                <button
+                  type="button"
+                  class="pay__skip"
+                  *ngIf="behalfCanSkip()"
+                  [disabled]="behalfSubmitting"
+                  (click)="releaseBehalf(behalfInput, true)"
+                >
+                  {{ behalfSubmitting && behalfSkip ? ('company.inviteSending' | t) : ('company.paySkip' | t) }}
+                </button>
+                <button type="button" class="pay__skip" [disabled]="behalfSubmitting" (click)="closeBehalf()">
+                  {{ 'company.sendCancel' | t }}
+                </button>
+              </div>
+              <p class="error" *ngIf="behalfPayErrorKey" role="alert">{{ behalfPayErrorKey | t }}</p>
+            </div>
+            <div class="invite-result" *ngIf="behalfResult">
+              <p>{{ 'company.inviteAccepted' | t:{ count: behalfResult.accepted } }}</p>
+              <p *ngIf="behalfResult.ignored_empty">
+                {{ 'company.inviteEmpty' | t:{ count: behalfResult.ignored_empty } }}
+              </p>
+              <ng-container *ngIf="behalfResult.duplicates_in_file.length">
+                <h3>{{ 'company.inviteDuplicates' | t }}</h3>
+                <ul class="roster">
+                  <li *ngFor="let email of behalfResult.duplicates_in_file">{{ email }}</li>
+                </ul>
+              </ng-container>
+              <ng-container *ngIf="behalfResult.already_invited.length">
+                <h3>{{ 'company.inviteAlready' | t }}</h3>
+                <ul class="roster">
+                  <li *ngFor="let email of behalfResult.already_invited">{{ email }}</li>
+                </ul>
+              </ng-container>
+              <ng-container *ngIf="behalfResult.not_configured?.length">
+                <h3>{{ 'company.inviteNotConfigured' | t }}</h3>
+                <ul class="roster">
+                  <li *ngFor="let address of behalfResult.not_configured">{{ address }}</li>
+                </ul>
+              </ng-container>
+              <ng-container *ngIf="behalfResult.invalid.length">
+                <h3>{{ 'company.inviteInvalid' | t }}</h3>
+                <ul class="roster">
+                  <li *ngFor="let email of behalfResult.invalid">{{ email }}</li>
+                </ul>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="accounts__panel" *ngIf="behalfSlug === account.slug && behalfAction === 'send'">
+            <div class="pay send">
+              <h3>{{ 'company.sendTitle' | t }}</h3>
+              <p>{{ 'company.sendHeld' | t:{ count: account.held } }}</p>
+              <p class="note">{{ 'company.sendLead' | t }}</p>
+              <form class="send__form" (ngSubmit)="confirmBehalfSend()">
+                <p class="pay__legend">{{ 'company.sendWhen' | t }}</p>
+                <label class="choice">
+                  <input type="radio" name="behalf-send-mode" value="now" [(ngModel)]="behalfSendMode" />
+                  <span>
+                    <strong>{{ 'company.sendNow' | t }}</strong>
+                    <small>{{ 'company.sendNowNote' | t }}</small>
+                  </span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="behalf-send-mode" value="schedule" [(ngModel)]="behalfSendMode" />
+                  <span>
+                    <strong>{{ 'company.sendLater' | t }}</strong>
+                    <small>{{ 'company.sendLaterNote' | t }}</small>
+                  </span>
+                </label>
+                <div class="send__later" *ngIf="behalfSendMode === 'schedule'">
+                  <label class="choice">
+                    <input type="radio" name="behalf-send-together" [value]="true" [(ngModel)]="behalfSendTogether" />
+                    <span>
+                      <strong>{{ 'company.sendTogether' | t }}</strong>
+                      <small>{{ 'company.sendTogetherNote' | t }}</small>
+                    </span>
+                  </label>
+                  <label class="choice">
+                    <input type="radio" name="behalf-send-together" [value]="false" [(ngModel)]="behalfSendTogether" />
+                    <span>
+                      <strong>{{ 'company.sendApart' | t }}</strong>
+                      <small>{{ 'company.sendApartNote' | t }}</small>
+                    </span>
+                  </label>
+                  <div class="send__times">
+                    <label *ngIf="behalfSendTogether">
+                      <span>{{ 'company.sendAt' | t }}</span>
+                      <input type="datetime-local" name="behalf-video-at" [min]="minLocal()" [(ngModel)]="behalfVideoAt" />
+                    </label>
+                    <ng-container *ngIf="!behalfSendTogether">
+                      <label>
+                        <span>{{ 'company.sendVideoAt' | t }}</span>
+                        <input type="datetime-local" name="behalf-video-at" [min]="minLocal()" [(ngModel)]="behalfVideoAt" />
+                      </label>
+                      <label>
+                        <span>{{ 'company.sendFormAt' | t }}</span>
+                        <input
+                          type="datetime-local"
+                          name="behalf-form-at"
+                          [min]="behalfVideoAt || minLocal()"
+                          [(ngModel)]="behalfFormAt"
+                        />
+                      </label>
+                    </ng-container>
+                  </div>
+                  <p class="note">{{ 'company.sendTimezone' | t }}</p>
+                </div>
+                <p class="error" *ngIf="behalfSendErrorKey" role="alert">{{ behalfSendErrorKey | t }}</p>
+                <div class="pay__actions">
+                  <button type="submit" class="button" [disabled]="behalfSending">
+                    {{ (behalfSending ? 'company.sendSaving' : 'company.sendConfirm') | t }}
+                  </button>
+                  <button type="button" class="pay__skip" [disabled]="behalfSending" (click)="closeBehalf()">
+                    {{ 'company.sendCancel' | t }}
+                  </button>
+                </div>
+              </form>
+              <p class="note" *ngIf="behalfSendResult && behalfSendResult.immediate">
+                {{ 'company.sendDoneNow' | t:{ count: behalfSendResult.people } }}
+              </p>
+              <p class="note" *ngIf="behalfSendResult && !behalfSendResult.immediate">
+                {{
+                  'company.sendDoneLater'
+                    | t:{
+                        count: behalfSendResult.people,
+                        video: stamp(behalfSendResult.video_at),
+                        form: stamp(behalfSendResult.form_at)
+                      }
+                }}
+              </p>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
     <section class="card" aria-labelledby="invite-title">
       <h2 id="invite-title">{{ 'company.inviteTitle' | t }}</h2>
       <p class="note">{{ 'company.inviteLead' | t }}</p>

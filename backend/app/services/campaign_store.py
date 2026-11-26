@@ -127,8 +127,27 @@ class DemographicRejected(Exception):
     """A demographic payload tried to carry an identifier or a nested value."""
 
 
+def ensure_open_round(conn, company_id) -> None:
+    """Open rodada-1 when this company has never had a round.
+
+    A company that already closed a wave is left without an open round.
+    Opening the next wave is a separate step.
+    """
+    conn.execute(
+        """
+        INSERT INTO company_rounds (id, company_id, label, opened_on)
+        SELECT %s, %s, 'rodada-1', CURRENT_DATE
+        WHERE NOT EXISTS (
+            SELECT 1 FROM company_rounds WHERE company_id = %s
+        )
+        """,
+        (uuid4(), company_id, company_id),
+    )
+
+
 def preview_invitations(conn, company_id, parsed: ParsedInvitations) -> dict[str, Any]:
     """Price the new addresses on this file. Does not store them and does not send."""
+    ensure_open_round(conn, company_id)
     _company_id, round_id, _round_label = _open_round(conn, company_id)
     existing: set[str] = set()
     for row in conn.execute(
@@ -170,6 +189,7 @@ def add_invitations(
     held, scheduled or sent, is not added again. A channel that is not
     configured does not get a new row.
     """
+    ensure_open_round(conn, company_id)
     company_id, round_id, round_label = _open_round(conn, company_id)
     existing: set[str] = set()
     for row in conn.execute(
@@ -330,6 +350,7 @@ def release_invitations(
         raise BadSchedule("too_far")
     if not video_ready():
         raise VideoNotConfigured()
+    ensure_open_round(conn, company_id)
     _company_id, round_id, _label = _open_round(conn, company_id)
     channels = {
         row.get("channel") or "email"

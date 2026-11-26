@@ -97,6 +97,14 @@ export interface CompanyLoginResponse {
   company_name: string;
 }
 
+export interface CompanyAccount {
+  slug: string;
+  name: string;
+  username: string;
+  email: string;
+  held: number;
+}
+
 export interface AccountAck {
   success: boolean;
 }

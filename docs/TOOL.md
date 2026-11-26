@@ -36,6 +36,8 @@ Two companies are seeded. A later company is another row. It does not share roun
 
 Each has an open round `rodada-1`. `internal` is for tests on this project. `hse-it` is for the paper. Do not upload a client list into either.
 
+A company that signs up gets the same open round, `rodada-1`, with its account. The internal login can place that company's list and send its video and form. Those calls are `GET /api/v1/company/accounts`, `POST /api/v1/company/accounts/{slug}/invitations`, and `POST /api/v1/company/accounts/{slug}/invitations/send`. Another login gets `403` `not_admin`. The stored rows use the chosen company's id, and the payment rule uses that company's slug. A list placed for company A is not stored on `internal`.
+
 `/empresa` is the header Login link. `/tool` stays out of the header and the footer.
 
 ## Rounds
@@ -190,7 +192,7 @@ Saving the list only stores it. Each new address whose channel is ready is writt
 
 ## Admin upload
 
-On `/empresa`, after login, “Enviar formulários” accepts one file. The API is `POST /api/v1/company/invitations` with the company session header and a multipart field named `file`. `GET /api/v1/company/rounds` lists every wave for that company: label, the day it opened, the day it closed (empty while open), how many people were invited, the shares who have finished and who have not, and the day of the latest anonymous answer. It does not return emails, tokens, or answers. `GET /api/v1/company/invitations` still returns the open round only. The counts are the same as before. `unsent` is the only address list, and it holds the addresses whose message has not left. `POST /api/v1/company/invitations/retry` sends those stored links again.
+On `/empresa`, after login, “Enviar formulários” accepts one file. The API is `POST /api/v1/company/invitations` with the company session header and a multipart field named `file`. Signed in as `admin`, the same page lists every company. “Colocar a lista” and “Enviar o vídeo e o formulário” on a row call the account routes above and write that company's round, the same way this section does for the signed-in company. `GET /api/v1/company/rounds` lists every wave for that company: label, the day it opened, the day it closed (empty while open), how many people were invited, the shares who have finished and who have not, and the day of the latest anonymous answer. It does not return emails, tokens, or answers. `GET /api/v1/company/invitations` still returns the open round only. The counts are the same as before. `unsent` is the only address list, and it holds the addresses whose message has not left. `POST /api/v1/company/invitations/retry` sends those stored links again.
 
 ### Sending the video and the form
 

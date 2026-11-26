@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { I18nService, TranslatePipe } from '../../core/i18n';
 import {
+  CompanyAccount,
   CompanyAlphaRow,
   CompanyBandRow,
   CompanyOverview,
@@ -95,6 +96,27 @@ export class CompanyComponent implements OnInit {
   sending = false;
   sendErrorKey = '';
   sendResult: SendFormsResult | null = null;
+  accounts: CompanyAccount[] | null = null;
+  accountsError = false;
+  behalfSlug = '';
+  behalfAction: '' | 'place' | 'send' = '';
+  behalfFile: File | null = null;
+  behalfSubmitting = false;
+  behalfQuoting = false;
+  behalfSkip = false;
+  behalfPreview: ListQuote | null = null;
+  behalfPayMethod = '';
+  behalfPayErrorKey = '';
+  behalfErrorKey = '';
+  behalfUnknownColumns = '';
+  behalfResult: InvitationUploadResult | null = null;
+  behalfSendMode: 'now' | 'schedule' = 'now';
+  behalfSendTogether = true;
+  behalfVideoAt = '';
+  behalfFormAt = '';
+  behalfSending = false;
+  behalfSendErrorKey = '';
+  behalfSendResult: SendFormsResult | null = null;
   rounds: CompanyRoundRow[] | null = null;
   roundsError = false;
   selectedRound = '';
@@ -175,6 +197,9 @@ export class CompanyComponent implements OnInit {
     this.scheduled = [];
     this.closeSend();
     this.sendResult = null;
+    this.accounts = null;
+    this.accountsError = false;
+    this.closeBehalf();
     this.inviteErrorKey = '';
     this.inviteUnknownColumns = '';
     this.rounds = null;
@@ -189,6 +214,204 @@ export class CompanyComponent implements OnInit {
 
   canSkip(): boolean {
     return this.companySlug === 'internal';
+  }
+
+  isAdmin(): boolean {
+    return this.companySlug === 'internal';
+  }
+
+  behalfCanSkip(): boolean {
+    return this.behalfSlug === 'internal';
+  }
+
+  openBehalf(account: CompanyAccount, action: 'place' | 'send'): void {
+    if (this.behalfSlug === account.slug && this.behalfAction === action) {
+      this.closeBehalf();
+      return;
+    }
+    const slug = account.slug;
+    this.closeBehalf();
+    this.behalfSlug = slug;
+    this.behalfAction = action;
+  }
+
+  closeBehalf(): void {
+    this.behalfSlug = '';
+    this.behalfAction = '';
+    this.behalfFile = null;
+    this.behalfSubmitting = false;
+    this.behalfQuoting = false;
+    this.behalfSkip = false;
+    this.behalfPreview = null;
+    this.behalfPayMethod = '';
+    this.behalfPayErrorKey = '';
+    this.behalfErrorKey = '';
+    this.behalfUnknownColumns = '';
+    this.behalfResult = null;
+    this.behalfSendMode = 'now';
+    this.behalfSendTogether = true;
+    this.behalfVideoAt = '';
+    this.behalfFormAt = '';
+    this.behalfSending = false;
+    this.behalfSendErrorKey = '';
+    this.behalfSendResult = null;
+  }
+
+  onBehalfFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.behalfFile = input.files && input.files.length ? input.files[0] : null;
+    this.behalfResult = null;
+    this.behalfPreview = null;
+    this.behalfPayMethod = '';
+    this.behalfPayErrorKey = '';
+    this.behalfErrorKey = '';
+    this.behalfUnknownColumns = '';
+    if (this.behalfFile) {
+      this.quoteBehalf();
+    }
+  }
+
+  quoteBehalf(): void {
+    const passage = this.readPassage();
+    const file = this.behalfFile;
+    const slug = this.behalfSlug;
+    if (!passage || !file || !slug) {
+      return;
+    }
+    this.behalfQuoting = true;
+    this.behalfErrorKey = '';
+    this.behalfUnknownColumns = '';
+    this.api.quoteCompanyAccountInvitations(passage, slug, file).subscribe({
+      next: (preview) => {
+        if (this.behalfFile !== file || this.behalfSlug !== slug) {
+          return;
+        }
+        this.behalfQuoting = false;
+        this.behalfPreview = preview;
+      },
+      error: (err: HttpErrorResponse) => {
+        if (this.behalfFile !== file || this.behalfSlug !== slug) {
+          return;
+        }
+        this.behalfQuoting = false;
+        this.behalfPreview = null;
+        this.applyBehalfError(err);
+      },
+    });
+  }
+
+  releaseBehalf(input: HTMLInputElement, skip: boolean): void {
+    const passage = this.readPassage();
+    const file = this.behalfFile;
+    const slug = this.behalfSlug;
+    const forms = this.behalfPreview ? this.behalfPreview.forms : 0;
+    if (!passage || !file || !slug || this.behalfSubmitting) {
+      return;
+    }
+    if (skip && !this.behalfCanSkip()) {
+      return;
+    }
+    if (!skip && forms > 0 && !this.behalfPayMethod) {
+      return;
+    }
+    this.behalfSubmitting = true;
+    this.behalfSkip = skip;
+    this.behalfErrorKey = '';
+    this.behalfUnknownColumns = '';
+    this.behalfPayErrorKey = '';
+    this.api.uploadCompanyAccountInvitations(passage, slug, file, skip ? '' : this.behalfPayMethod, skip).subscribe({
+      next: (result) => {
+        this.behalfSubmitting = false;
+        this.behalfResult = result;
+        this.behalfPreview = null;
+        this.behalfPayMethod = '';
+        this.behalfFile = null;
+        input.value = '';
+        this.loadAccounts(passage);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.behalfSubmitting = false;
+        this.applyBehalfError(err);
+      },
+    });
+  }
+
+  behalfSendProblem(): string {
+    if (this.behalfSendMode === 'now') {
+      return '';
+    }
+    const video = this.parseLocal(this.behalfVideoAt);
+    if (video === null) {
+      return 'company.sendNeedVideo';
+    }
+    if (video < Date.now() - 60_000) {
+      return 'company.sendPast';
+    }
+    if (video > Date.now() + 365 * 24 * 3600 * 1000) {
+      return 'company.sendTooFar';
+    }
+    if (this.behalfSendTogether) {
+      return '';
+    }
+    const form = this.parseLocal(this.behalfFormAt);
+    if (form === null) {
+      return 'company.sendNeedForm';
+    }
+    if (form < video) {
+      return 'company.sendFormBefore';
+    }
+    if (form > Date.now() + 365 * 24 * 3600 * 1000) {
+      return 'company.sendTooFar';
+    }
+    return '';
+  }
+
+  confirmBehalfSend(): void {
+    const passage = this.readPassage();
+    const slug = this.behalfSlug;
+    const problem = this.behalfSendProblem();
+    if (!passage || !slug || this.behalfSending) {
+      return;
+    }
+    if (problem) {
+      this.behalfSendErrorKey = problem;
+      return;
+    }
+    this.behalfSending = true;
+    this.behalfSendErrorKey = '';
+    const request =
+      this.behalfSendMode === 'now'
+        ? { mode: 'now' as const }
+        : {
+            mode: 'schedule' as const,
+            video_at: new Date(this.behalfVideoAt).toISOString(),
+            form_at: new Date(this.behalfSendTogether ? this.behalfVideoAt : this.behalfFormAt).toISOString(),
+          };
+    this.api.sendCompanyAccountInvitations(passage, slug, request).subscribe({
+      next: (result) => {
+        this.behalfSending = false;
+        this.behalfSendResult = result;
+        this.behalfVideoAt = '';
+        this.behalfFormAt = '';
+        this.loadAccounts(passage);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.behalfSending = false;
+        if (err.status === 401) {
+          this.logout();
+          return;
+        }
+        const detail = err.error && err.error.detail;
+        const code = detail && typeof detail === 'object' ? String(detail.code ?? '') : '';
+        this.behalfSendErrorKey = code === 'company_not_found' ? 'company.accountsMissing' : this.sendErrorFor(code);
+        if (code === 'no_open_round') {
+          this.behalfSendErrorKey = 'company.accountsNoRound';
+        }
+        if (code === 'nothing_to_send') {
+          this.loadAccounts(passage);
+        }
+      },
+    });
   }
 
   onInviteFile(event: Event): void {
@@ -704,6 +927,9 @@ export class CompanyComponent implements OnInit {
       next: (rounds) => {
         this.applyRounds(rounds);
         this.refreshUnsent(passage);
+        if (this.isAdmin()) {
+          this.loadAccounts(passage);
+        }
         this.phase = 'ready';
       },
       error: (err: HttpErrorResponse) => {
@@ -735,6 +961,56 @@ export class CompanyComponent implements OnInit {
         this.roundsError = true;
       },
     });
+  }
+
+  private loadAccounts(passage: string): void {
+    this.api.getCompanyAccounts(passage).subscribe({
+      next: (rows) => {
+        this.accounts = rows;
+        this.accountsError = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 401) {
+          this.logout();
+          return;
+        }
+        this.accountsError = true;
+      },
+    });
+  }
+
+  private applyBehalfError(err: HttpErrorResponse): void {
+    if (err.status === 401) {
+      this.logout();
+      return;
+    }
+    const detail = err.error && err.error.detail;
+    const code = detail && typeof detail === 'object' ? detail.code : '';
+    if (code === 'unknown_columns') {
+      this.behalfErrorKey = 'company.inviteUnknown';
+      const columns = Array.isArray(detail.columns) ? detail.columns : [];
+      this.behalfUnknownColumns = columns.join(', ');
+    } else if (code === 'payment_required') {
+      this.behalfPayErrorKey = 'company.payNeedMethod';
+    } else if (code === 'company_not_found') {
+      this.behalfErrorKey = 'company.accountsMissing';
+    } else if (code === 'no_open_round') {
+      this.behalfErrorKey = 'company.accountsNoRound';
+    } else if (code === 'mail_not_configured') {
+      this.behalfErrorKey = 'company.inviteMail';
+    } else if (code === 'whatsapp_not_configured') {
+      this.behalfErrorKey = 'company.inviteWhatsapp';
+    } else if (code === 'channels_not_configured') {
+      this.behalfErrorKey = 'company.inviteChannels';
+    } else if (code === 'mail_failed') {
+      this.behalfErrorKey = 'company.inviteMailFailed';
+    } else if (code === 'whatsapp_failed') {
+      this.behalfErrorKey = 'company.inviteWhatsappFailed';
+    } else if (code === 'database_unavailable' || err.status === 0 || err.status === 503) {
+      this.behalfErrorKey = 'company.inviteUnreachable';
+    } else {
+      this.behalfErrorKey = 'company.inviteBadFile';
+    }
   }
 
   private refreshUnsent(passage: string): void {

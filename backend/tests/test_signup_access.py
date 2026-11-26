@@ -85,10 +85,25 @@ def test_signup_stays_closed_until_the_email_is_confirmed(postgres, monkeypatch)
                 """,
                 (email,),
             ).fetchone()
+            opened = conn.execute(
+                """
+                SELECT r.label
+                FROM company_rounds AS r
+                JOIN companies AS c ON c.id = r.company_id
+                WHERE c.cnpj = %s
+                  AND r.closed_on IS NULL
+                """,
+                (digits,),
+            ).fetchone()
         assert row["role"] == "owner"
         assert row["email"] == email
         assert row["cnpj"] == digits
+        assert opened["label"] == "rodada-1"
     finally:
         with connect() as conn:
+            conn.execute(
+                "DELETE FROM company_rounds WHERE company_id IN (SELECT id FROM companies WHERE cnpj = %s)",
+                (digits,),
+            )
             conn.execute("DELETE FROM company_users WHERE email = %s OR company_id IN (SELECT id FROM companies WHERE cnpj = %s)", (email, digits))
             conn.execute("DELETE FROM companies WHERE cnpj = %s", (digits,))
