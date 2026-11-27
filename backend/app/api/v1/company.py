@@ -392,14 +392,18 @@ def upload_account_invitations(
     skip: Annotated[str, Form()] = "",
     _session: CompanySession = Depends(require_internal),
 ) -> InvitationUploadResult:
-    """Place the list on that company. The internal login may store it without a charge."""
+    """Place the list on that company. An admin placement is never a charge.
+
+    method and skip are accepted and ignored, so this route cannot record a charge.
+    """
+    del method, skip
     try:
         with connect() as conn:
             ensure_schema(conn)
             company_id, target_slug = _company_by_slug(conn, slug)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
-    return _upload_for(company_id, target_slug, file, method, skip, allow_skip=True)
+    return _upload_for(company_id, target_slug, file, "", "1", allow_skip=True)
 
 
 @router.post("/accounts/{slug}/invitations/send", response_model=SendFormsResult)

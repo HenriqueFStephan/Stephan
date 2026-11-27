@@ -511,7 +511,8 @@ describe('CompanyComponent', () => {
     place.click();
     fixture.detectChanges();
     const panel = root.querySelector('.accounts__panel') as HTMLElement;
-    expect(panel.textContent).toContain('Pular pagamento');
+    expect(panel.textContent).not.toContain('Pular pagamento');
+    expect(panel.textContent).not.toContain('Confirmar pagamento');
 
     component.behalfPreview = {
       forms: 1,
@@ -524,11 +525,13 @@ describe('CompanyComponent', () => {
       already_invited: [],
       invalid: [],
     };
-    component.behalfPayMethod = 'pix';
+    fixture.detectChanges();
+    expect(panel.textContent).toContain('Salvar a lista');
+    expect(panel.textContent).toContain('não gera cobrança');
     const file = new File(['email\na@x.com\n'], 'lista.csv', { type: 'text/csv' });
     component.behalfFile = file;
-    component.releaseBehalf(document.createElement('input'), false);
-    expect(api.uploadCompanyAccountInvitations).toHaveBeenCalledWith('clearance', 'cnpj-1', file, 'pix', false);
+    component.releaseBehalf(document.createElement('input'), true);
+    expect(api.uploadCompanyAccountInvitations).toHaveBeenCalledWith('clearance', 'cnpj-1', file, '', true);
 
     const send = Array.from(root.querySelectorAll('button')).find((button) =>
       button.textContent?.includes('Enviar o vídeo e o formulário'),

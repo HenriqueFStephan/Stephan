@@ -36,7 +36,7 @@ Two companies are seeded. A later company is another row. It does not share roun
 
 Each has an open round `rodada-1`. `internal` is for tests on this project. `hse-it` is for the paper. Do not upload a client list into either.
 
-A company that signs up gets the same open round, `rodada-1`, with its account. The internal login can place that company's list and send its video and form. Those calls are `GET /api/v1/company/accounts`, `POST /api/v1/company/accounts/{slug}/invitations`, and `POST /api/v1/company/accounts/{slug}/invitations/send`. Another login gets `403` `not_admin`. The stored rows use the chosen company's id. The internal login can store that list with no charge. A company signing in as itself can skip payment only when that company is `internal`. A list placed for company A is not stored on `internal`.
+A company that signs up gets the same open round, `rodada-1`, with its account. The internal login can place that company's list and send its video and form. Those calls are `GET /api/v1/company/accounts`, `POST /api/v1/company/accounts/{slug}/invitations`, and `POST /api/v1/company/accounts/{slug}/invitations/send`. Another login gets `403` `not_admin`. The stored rows use the chosen company's id. A list placed from the internal login is never a charge. A company signing in as itself can skip payment only when that company is `internal`. A list placed for company A is not stored on `internal`.
 
 `/empresa` is the header Login link. `/tool` stays out of the header and the footer.
 

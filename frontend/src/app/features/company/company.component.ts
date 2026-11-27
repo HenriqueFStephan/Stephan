@@ -220,10 +220,6 @@ export class CompanyComponent implements OnInit {
     return this.companySlug === 'internal';
   }
 
-  behalfCanSkip(): boolean {
-    return this.isAdmin();
-  }
-
   openBehalf(account: CompanyAccount, action: 'place' | 'send'): void {
     if (this.behalfSlug === account.slug && this.behalfAction === action) {
       this.closeBehalf();
@@ -304,14 +300,10 @@ export class CompanyComponent implements OnInit {
     const passage = this.readPassage();
     const file = this.behalfFile;
     const slug = this.behalfSlug;
-    const forms = this.behalfPreview ? this.behalfPreview.forms : 0;
     if (!passage || !file || !slug || this.behalfSubmitting) {
       return;
     }
-    if (skip && !this.behalfCanSkip()) {
-      return;
-    }
-    if (!skip && forms > 0 && !this.behalfPayMethod) {
+    if (!skip) {
       return;
     }
     this.behalfSubmitting = true;

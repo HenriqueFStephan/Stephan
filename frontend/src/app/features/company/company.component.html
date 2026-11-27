@@ -89,41 +89,16 @@
               {{ behalfErrorKey | t:{ columns: behalfUnknownColumns } }}
             </p>
             <div class="pay" *ngIf="behalfPreview as quote">
-              <h3>{{ 'company.payTitle' | t }}</h3>
-              <p>
-                {{ 'company.payCount' | t:{ forms: quote.forms, unit: money(quote.unit_cents), total: money(quote.total_cents) } }}
-              </p>
-              <p class="note">{{ 'company.payProvisional' | t }}</p>
-              <p class="note">{{ 'company.payGate' | t }}</p>
-              <p class="note" *ngIf="quote.forms === 0">{{ 'company.payNone' | t }}</p>
-              <ng-container *ngIf="quote.forms > 0">
-                <p class="pay__legend">{{ 'company.payChoose' | t }}</p>
-                <label class="choice" *ngFor="let method of quote.methods">
-                  <input type="radio" name="behalf-pay-method" [value]="method" [(ngModel)]="behalfPayMethod" />
-                  <span>
-                    <strong>{{ ('company.pay.' + method) | t }}</strong>
-                    <small>{{ ('company.payNote.' + method) | t }}</small>
-                  </span>
-                </label>
-              </ng-container>
+              <p>{{ 'company.adminPlaceCount' | t:{ forms: quote.forms } }}</p>
+              <p class="note">{{ 'company.adminPlaceNote' | t }}</p>
               <div class="pay__actions">
                 <button
                   type="button"
                   class="button"
-                  *ngIf="quote.forms > 0"
-                  [disabled]="behalfSubmitting || !behalfPayMethod"
-                  (click)="releaseBehalf(behalfInput, false)"
-                >
-                  {{ behalfSubmitting && !behalfSkip ? ('company.inviteSending' | t) : ('company.payConfirm' | t) }}
-                </button>
-                <button
-                  type="button"
-                  class="pay__skip"
-                  *ngIf="behalfCanSkip()"
                   [disabled]="behalfSubmitting"
                   (click)="releaseBehalf(behalfInput, true)"
                 >
-                  {{ behalfSubmitting && behalfSkip ? ('company.inviteSending' | t) : ('company.paySkip' | t) }}
+                  {{ behalfSubmitting ? ('company.inviteSending' | t) : ('company.adminPlaceSave' | t) }}
                 </button>
                 <button type="button" class="pay__skip" [disabled]="behalfSubmitting" (click)="closeBehalf()">
                   {{ 'company.sendCancel' | t }}
