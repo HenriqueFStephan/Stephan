@@ -163,8 +163,10 @@ def provision_company_access(
 ) -> tuple[str, str]:
     """Open a company and its first access email. The password is stored only as a hash.
 
-    The account stays closed. The returned pair is the stored email and the raw
-    confirmation token. Only the hash of that token is kept.
+    While signup_confirm_email is off, the row is stored with confirmed_at set
+    and the token is empty. Otherwise the account stays closed. The returned
+    pair is the stored email and the raw confirmation token. Only the hash of
+    that token is kept.
     """
     email_norm = email.strip().casefold()
     taken = conn.execute(
@@ -193,6 +195,24 @@ def provision_company_access(
         """,
         (company_id, slug, legal_name, cnpj_digits),
     )
+    if not get_settings().signup_confirm_email:
+        conn.execute(
+            """
+            INSERT INTO company_users (
+                id, company_id, username, email, role, password_hash, confirmed_at
+            )
+            VALUES (%s, %s, %s, %s, 'owner', %s, now())
+            """,
+            (
+                uuid4(),
+                company_id,
+                email_norm,
+                email_norm,
+                hash_password(password),
+            ),
+        )
+        ensure_open_round(conn, company_id)
+        return email_norm, ""
     token = secrets.token_urlsafe(32)
     conn.execute(
         """

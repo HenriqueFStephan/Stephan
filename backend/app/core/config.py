@@ -48,10 +48,13 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_username: str = ""
     smtp_password: str = ""
-    smtp_from: str = ""
-    # Sender of the password-reset email. With Gmail SMTP this address must be
-    # a verified "Send mail as" alias of SMTP_USERNAME, or Gmail replaces it.
+    # Questionnaire and video mail. Zoho accepts it as an alias of SMTP_USERNAME.
+    smtp_from: str = "envio@stephan.net.br"
     smtp_from_reset: str = "senha@stephan.net.br"
+    smtp_from_confirm: str = "confmail@stephan.net.br"
+    # Temporary. A new signup is stored already confirmed and no confirmation
+    # mail is sent. Set true to close the account until the link is opened.
+    signup_confirm_email: bool = False
     consulting_notify_to: str = ""
 
     # WhatsApp Cloud API. The sender number is +55 19 99591-4369. The phone

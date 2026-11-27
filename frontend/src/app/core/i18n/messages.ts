@@ -518,7 +518,7 @@ const ptBR = {
   'bill.sectionContact': 'Quem acompanha a investigação',
   'bill.sectionAccess': 'Dados de acesso',
   'bill.accessLead':
-    'Este e-mail abre a página da empresa depois que o link de confirmação for aberto. Quem já entrou pode acrescentar outros e-mails de acesso depois.',
+    'Este e-mail e a senha abrem a página da empresa assim que o cadastro é gravado. Quem já entrou pode acrescentar outros e-mails de acesso depois.',
   'bill.accessEmail': 'E-mail de acesso',
   'bill.accessEmailAgain': 'Confirme o e-mail de acesso',
   'bill.password': 'Senha',
@@ -562,7 +562,7 @@ const ptBR = {
   'bill.contactEmail': 'E-mail',
   'bill.contactPhone': 'Telefone',
   'bill.privacyNote':
-    'Razão social e CNPJ identificam a contratante no contrato e na nota fiscal de serviço. Ao informar o CNPJ, a página consulta o cadastro público da Receita Federal e preenche razão social, CNAE, telefone e endereço. O que vier pode ser corrigido. O e-mail de acesso e a senha abrem a página da empresa depois da confirmação enviada a esse e-mail. A base é a execução do contrato e a obrigação fiscal. A lista de trabalhadores e as respostas do questionário não fazem parte deste cadastro. Na rodada, a resposta segue sem nome e sem e-mail.',
+    'Razão social e CNPJ identificam a contratante no contrato e na nota fiscal de serviço. Ao informar o CNPJ, a página consulta o cadastro público da Receita Federal e preenche razão social, CNAE, telefone e endereço. O que vier pode ser corrigido. O e-mail de acesso e a senha abrem a página da empresa assim que o cadastro é gravado. A base é a execução do contrato e a obrigação fiscal. A lista de trabalhadores e as respostas do questionário não fazem parte deste cadastro. Na rodada, a resposta segue sem nome e sem e-mail.',
   'bill.continue': 'Seguir para o pagamento',
   'bill.optional': 'opcional',
   'bill.err.form': 'Revise o que está marcado.',
@@ -650,7 +650,7 @@ const ptBR = {
   'bill.confirming': 'Registrando…',
   'bill.doneTitle': 'Pedido registrado',
   'bill.doneBody': 'Pedido {{reference}} registrado para {{company}}.',
-  'bill.confirmSent': 'Enviamos uma confirmação para {{email}}. O acesso só abre depois desse link.',
+  'bill.confirmSent': 'O acesso já está aberto para {{email}}. Entre com esse e-mail e a senha deste cadastro.',
   'bill.notCharged':
     'Nenhum valor foi debitado. Pix, boleto e cartão ainda não estão ligados a uma instituição de pagamento.',
   'bill.quoted': 'Mensalidade desta confirmação: {{price}}.',
@@ -1224,7 +1224,7 @@ export const en: Record<MsgKey, string> = {
   'bill.sectionContact': 'Who follows the investigation',
   'bill.sectionAccess': 'Access',
   'bill.accessLead':
-    'This email opens the company page after the confirmation link is opened. Someone who is already in can add other access emails later.',
+    'This email and the password open the company page as soon as the signup is stored. Someone who is already in can add other access emails later.',
   'bill.accessEmail': 'Access email',
   'bill.accessEmailAgain': 'Confirm the access email',
   'bill.password': 'Password',
@@ -1269,7 +1269,7 @@ export const en: Record<MsgKey, string> = {
   'bill.contactEmail': 'Email',
   'bill.contactPhone': 'Phone',
   'bill.privacyNote':
-    'Legal name and CNPJ identify the hiring organization on the contract and on the service invoice. When the CNPJ is entered, the page consults the public federal registry and fills in the legal name, CNAE, phone, and address. What comes back can be corrected. The access email and the password open the company page after the confirmation sent to that email. The basis is performing the contract and the tax duty. The worker list and the questionnaire answers are not part of this signup. In a round, an answer is stored without a name and without an email.',
+    'Legal name and CNPJ identify the hiring organization on the contract and on the service invoice. When the CNPJ is entered, the page consults the public federal registry and fills in the legal name, CNAE, phone, and address. What comes back can be corrected. The access email and the password open the company page as soon as the signup is stored. The basis is performing the contract and the tax duty. The worker list and the questionnaire answers are not part of this signup. In a round, an answer is stored without a name and without an email.',
   'bill.continue': 'Continue to payment',
   'bill.optional': 'optional',
   'bill.err.form': 'Check what is marked.',
@@ -1357,7 +1357,7 @@ export const en: Record<MsgKey, string> = {
   'bill.confirming': 'Recording…',
   'bill.doneTitle': 'Order recorded',
   'bill.doneBody': 'Order {{reference}} recorded for {{company}}.',
-  'bill.confirmSent': 'We sent a confirmation to {{email}}. Access opens only after that link.',
+  'bill.confirmSent': 'Access is already open for {{email}}. Enter with that email and the password from this signup.',
   'bill.notCharged':
     'Nothing was debited. Pix, boleto, and card are not yet connected to a payment institution.',
   'bill.quoted': 'Monthly fee on this confirmation: {{price}}.',

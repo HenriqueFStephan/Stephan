@@ -16,6 +16,54 @@ from tests.test_orders import payload
 client = TestClient(app)
 
 
+def test_signup_is_open_while_confirmation_is_paused(postgres, monkeypatch):
+    email = f"open-{uuid4().hex[:8]}@example.com"
+    cnpj = "00.000.083/0001-28"
+    digits = "00000083000128"
+    password = "senha-segura"
+    sent: list[tuple[str, str]] = []
+    monkeypatch.setenv("SIGNUP_CONFIRM_EMAIL", "false")
+    from app.core.config import get_settings
+
+    get_settings.cache_clear()
+    monkeypatch.setattr("app.api.v1.orders.send_confirmation", lambda address, token: sent.append((address, token)))
+    try:
+        response = client.post(
+            "/api/v1/orders",
+            json=payload(access_email=email, password=password, cnpj=cnpj),
+        )
+        assert response.status_code == 200
+        assert sent == []
+        login = client.post(
+            "/api/v1/company/login",
+            json={"username": email, "password": password},
+        )
+        assert login.status_code == 200
+        with connect() as conn:
+            row = conn.execute(
+                """
+                SELECT confirmed_at, confirm_token_hash
+                FROM company_users
+                WHERE email = %s
+                """,
+                (email,),
+            ).fetchone()
+        assert row["confirmed_at"] is not None
+        assert row["confirm_token_hash"] is None
+    finally:
+        with connect() as conn:
+            conn.execute(
+                "DELETE FROM company_rounds WHERE company_id IN (SELECT id FROM companies WHERE cnpj = %s)",
+                (digits,),
+            )
+            conn.execute(
+                "DELETE FROM company_users WHERE email = %s OR company_id IN (SELECT id FROM companies WHERE cnpj = %s)",
+                (email, digits),
+            )
+            conn.execute("DELETE FROM companies WHERE cnpj = %s", (digits,))
+        get_settings.cache_clear()
+
+
 def test_signup_stays_closed_until_the_email_is_confirmed(postgres, monkeypatch):
     email = f"signup-{uuid4().hex[:8]}@example.com"
     cnpj = "00.000.080/0001-85"

@@ -1,7 +1,9 @@
 """Company signup. Stores the order and does not charge a card, Pix, or boleto.
 
-The access email stays closed until the confirmation link is opened. If that
-message cannot be sent, the company row is not kept.
+While signup_confirm_email is off, the access row is stored already confirmed
+and no confirmation message is sent. Turn that setting on to close the row
+until the link is opened. If that message cannot be sent, the company row is
+not kept.
 """
 
 import json
@@ -11,7 +13,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException
 
-from app.core.config import DATA_DIR
+from app.core.config import DATA_DIR, get_settings
 from app.db.session import DatabaseUnavailable, connect, ensure_schema
 from app.models.schemas import OrderAck, OrderCreate
 from app.services.br_docs import only_digits
@@ -38,7 +40,8 @@ def submit_order(payload: OrderCreate) -> OrderAck:
                 email=payload.access_email,
                 password=payload.password,
             )
-            send_confirmation(email, token)
+            if get_settings().signup_confirm_email:
+                send_confirmation(email, token)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
     except AccessEmailTaken as exc:
