@@ -342,8 +342,9 @@ def issue_passage(session: CompanySession) -> str:
 
 
 def read_passage(passage: str) -> tuple[UUID, str] | None:
-    company_raw, separator, rest = (passage or "").partition(".")
-    username, separator2, signature = rest.partition(".")
+    """The signature is the last segment. The username may contain dots."""
+    body, separator, signature = (passage or "").rpartition(".")
+    company_raw, separator2, username = body.partition(".")
     if not separator or not separator2 or not company_raw or not username or not signature:
         return None
     try:

@@ -52,9 +52,8 @@ class Settings(BaseSettings):
     smtp_from: str = "envio@stephan.net.br"
     smtp_from_reset: str = "senha@stephan.net.br"
     smtp_from_confirm: str = "confmail@stephan.net.br"
-    # Temporary. A new signup is stored already confirmed and no confirmation
-    # mail is sent. Set true to close the account until the link is opened.
-    signup_confirm_email: bool = False
+    # Off stores a new signup already confirmed and sends no confirmation mail.
+    signup_confirm_email: bool = True
     consulting_notify_to: str = ""
 
     # WhatsApp Cloud API. The sender number is +55 19 99591-4369. The phone

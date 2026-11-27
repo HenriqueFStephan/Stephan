@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from app.db.session import connect
 from app.main import app
 from app.services.campaign_store import record_response
+from app.services.company_accounts import CompanySession, issue_passage, read_passage
 from app.services.company_demo import (
     DIMENSION_ORDER,
     ITEMS,
@@ -20,6 +21,12 @@ from app.services.company_demo import (
 )
 
 client = TestClient(app)
+
+
+def test_a_passage_keeps_an_email_username():
+    session = CompanySession(uuid4(), "pessoa@empresa.com.br", "cnpj-1", "Empresa")
+    parsed = read_passage(issue_passage(session))
+    assert parsed == (session.company_id, "pessoa@empresa.com.br")
 
 
 def test_cronbach_is_one_when_items_move_together():
