@@ -293,7 +293,7 @@ def test_the_whatsapp_video_carries_the_video_as_its_header():
     link = "https://stephan.net.br/api/v1/video?t=abc"
     body = build_video_payload("5511987654321", link)
     assert body["to"] == "5511987654321"
-    assert body["template"]["name"] == VIDEO_TEMPLATE_NAME == "stephan_video"
+    assert body["template"]["name"] == VIDEO_TEMPLATE_NAME == "stephan_video_forca_e_luz"
     assert body["template"]["language"]["code"] == VIDEO_TEMPLATE_LANG == "pt_BR"
     assert body["template"]["components"] == [
         {"type": "header", "parameters": [{"type": "video", "video": {"link": link}}]}

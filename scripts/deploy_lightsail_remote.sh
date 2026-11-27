@@ -59,6 +59,32 @@ if [[ -f /opt/stephan/debt.txt ]]; then
   chown www-data:www-data /opt/stephan/debt.txt
   chmod 600 /opt/stephan/debt.txt
 fi
+if [[ -f /opt/stephan/debt.txt ]]; then
+  python3 - << 'PY'
+from pathlib import Path
+
+path = Path("/opt/stephan/debt.txt")
+lines = path.read_text(encoding="utf-8").splitlines()
+out = []
+seen = False
+for line in lines:
+    if line.startswith("APP_ENV="):
+        out.append("APP_ENV=production")
+        seen = True
+    else:
+        out.append(line)
+if not seen:
+    out.insert(0, "APP_ENV=production")
+path.write_text("\n".join(out).rstrip() + "\n", encoding="utf-8")
+print("app env is production")
+PY
+fi
+mkdir -p /etc/systemd/system/stephan-api.service.d
+cat > /etc/systemd/system/stephan-api.service.d/send-loop.conf << 'EOF'
+[Service]
+Environment=APP_ENV=production
+EOF
+systemctl daemon-reload
 systemctl restart stephan-api
 systemctl reload nginx
 for _ in 1 2 3 4 5 6 7 8 9 10; do

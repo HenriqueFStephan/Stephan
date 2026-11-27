@@ -75,18 +75,10 @@ def test_placing_and_sending_for_a_company_writes_that_companys_rows(postgres, m
             data={"skip": "1"},
             files={"file": ("lista.csv", f"email\n{email}\n".encode(), "text/csv")},
         )
-        assert skipped.status_code == 403
-        assert skipped.json()["detail"]["code"] == "skip_not_allowed"
-
-        saved = client.post(
-            f"/api/v1/company/accounts/{slug}/invitations",
-            headers=admin,
-            data={"method": "pix"},
-            files={"file": ("lista.csv", f"email\n{email}\n".encode(), "text/csv")},
-        )
-        assert saved.status_code == 200, saved.text
-        assert saved.json()["accepted"] == 1
-        assert saved.json()["quote"]["method"] == "pix"
+        assert skipped.status_code == 200, skipped.text
+        assert skipped.json()["accepted"] == 1
+        assert skipped.json()["quote"]["method"] is None
+        assert skipped.json()["quote"]["charged"] is False
 
         with connect() as conn:
             row = conn.execute(
@@ -111,8 +103,8 @@ def test_placing_and_sending_for_a_company_writes_that_companys_rows(postgres, m
             ).fetchone()
         assert row["slug"] == slug
         assert row["form_due_at"] is None
-        assert row["method"] == "pix"
-        assert row["status"] == "method_chosen"
+        assert row["method"] is None
+        assert row["status"] == "skipped"
         assert on_internal is None
 
         sent = client.post(

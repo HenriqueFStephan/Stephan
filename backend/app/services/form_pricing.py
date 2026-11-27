@@ -37,7 +37,7 @@ class PaymentRequired(Exception):
 
 
 class SkipNotAllowed(Exception):
-    """Only the internal admin company can release a list without a method."""
+    """A company cannot release its own list without a method, unless it is internal."""
 
 
 def require_method(method: str) -> str:
@@ -47,13 +47,16 @@ def require_method(method: str) -> str:
     return code
 
 
-def gate_payment(slug: str, method: str, skip: bool, forms: int) -> str | None:
+def gate_payment(
+    slug: str, method: str, skip: bool, forms: int, *, allow_skip: bool = False
+) -> str | None:
     """Return the method that releases the list, or None when there is nothing to pay.
 
-    The internal company (slug ``internal``) may skip. That records no debit.
+    The internal company may skip its own list. The internal login may also skip
+    when it places a list on another company (``allow_skip``). That records no debit.
     """
     if skip:
-        if slug != "internal":
+        if slug != "internal" and not allow_skip:
             raise SkipNotAllowed()
         return None
     if forms <= 0:

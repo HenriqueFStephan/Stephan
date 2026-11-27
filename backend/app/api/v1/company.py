@@ -267,18 +267,30 @@ def _quote_for(company_id, file: UploadFile) -> ListQuote:
     return ListQuote.model_validate(preview)
 
 
-def _upload_for(company_id, slug: str, file: UploadFile, method: str, skip: str) -> InvitationUploadResult:
-    """Store the list on this company. Payment follows this company's slug, not the caller's."""
+def _upload_for(
+    company_id,
+    slug: str,
+    file: UploadFile,
+    method: str,
+    skip: str,
+    *,
+    allow_skip: bool = False,
+) -> InvitationUploadResult:
+    """Store the list on this company.
+
+    A company skips only when its own slug is internal. The internal login may
+    skip for another company, which is ``allow_skip``.
+    """
     parsed = _parsed_upload(file)
     release = skip.strip().lower() in {"1", "true", "yes"}
-    if release and slug != "internal":
+    if release and slug != "internal" and not allow_skip:
         raise HTTPException(status_code=403, detail={"code": "skip_not_allowed"})
     try:
         with connect() as conn:
             ensure_schema(conn)
             preview = preview_invitations(conn, company_id, parsed)
             try:
-                chosen = gate_payment(slug, method, release, preview["forms"])
+                chosen = gate_payment(slug, method, release, preview["forms"], allow_skip=allow_skip)
             except PaymentRequired as exc:
                 raise HTTPException(status_code=409, detail={"code": "payment_required"}) from exc
             except SkipNotAllowed as exc:
@@ -380,14 +392,14 @@ def upload_account_invitations(
     skip: Annotated[str, Form()] = "",
     _session: CompanySession = Depends(require_internal),
 ) -> InvitationUploadResult:
-    """Place the list on that company, with that company's payment rule."""
+    """Place the list on that company. The internal login may store it without a charge."""
     try:
         with connect() as conn:
             ensure_schema(conn)
             company_id, target_slug = _company_by_slug(conn, slug)
     except DatabaseUnavailable as exc:
         raise HTTPException(status_code=503, detail={"code": "database_unavailable"}) from exc
-    return _upload_for(company_id, target_slug, file, method, skip)
+    return _upload_for(company_id, target_slug, file, method, skip, allow_skip=True)
 
 
 @router.post("/accounts/{slug}/invitations/send", response_model=SendFormsResult)

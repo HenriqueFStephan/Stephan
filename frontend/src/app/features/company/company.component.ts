@@ -221,7 +221,7 @@ export class CompanyComponent implements OnInit {
   }
 
   behalfCanSkip(): boolean {
-    return this.behalfSlug === 'internal';
+    return this.isAdmin();
   }
 
   openBehalf(account: CompanyAccount, action: 'place' | 'send'): void {

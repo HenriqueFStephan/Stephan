@@ -5,7 +5,8 @@ because the company starts the conversation. The template name is
 stephan_questionario, language pt_BR, and the named variable {{linkform}} is
 the full link. A named variable must be sent with its name. The wording to
 approve is in docs/MANUAL_STEPS.md. The tutorial video goes first, as the
-template stephan_video (pt_BR) with the video as its header. Tokens are not logged.
+template stephan_video_forca_e_luz (pt_BR) with the video as its header
+and no variable in the body. Tokens are not logged.
 """
 
 from __future__ import annotations
@@ -24,7 +25,7 @@ GRAPH_VERSION = "v26.0"
 TEMPLATE_NAME = "stephan_questionario"
 TEMPLATE_LANG = "pt_BR"
 TEMPLATE_VARIABLE = "linkform"
-VIDEO_TEMPLATE_NAME = "stephan_video"
+VIDEO_TEMPLATE_NAME = "stephan_video_forca_e_luz"
 VIDEO_TEMPLATE_LANG = "pt_BR"
 
 

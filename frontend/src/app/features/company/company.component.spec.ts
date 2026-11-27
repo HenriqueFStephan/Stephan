@@ -511,7 +511,7 @@ describe('CompanyComponent', () => {
     place.click();
     fixture.detectChanges();
     const panel = root.querySelector('.accounts__panel') as HTMLElement;
-    expect(panel.textContent).not.toContain('Pular pagamento');
+    expect(panel.textContent).toContain('Pular pagamento');
 
     component.behalfPreview = {
       forms: 1,

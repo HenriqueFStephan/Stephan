@@ -3,7 +3,7 @@
 The file is one mp4 on the server. It is served only at /api/v1/video?t=<token>,
 and the token is the invitation's own link token, so a person can open it with
 the message they received and nobody else can. WhatsApp sends it as the header
-of the template stephan_video (pt_BR). An email carries the same link.
+of the template stephan_video_forca_e_luz (pt_BR). An email carries the same link.
 """
 
 from __future__ import annotations

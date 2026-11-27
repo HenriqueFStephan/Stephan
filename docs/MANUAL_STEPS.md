@@ -35,7 +35,7 @@ O link é só seu. Não o reencaminhe.
 
   - Sample value for `{{linkform}}`: `https://stephan.net.br/tool?t=exemplo`
 - [ ] Create the second template and wait until Meta marks it **Approved**:
-  - Name: `stephan_video`
+  - Name: `stephan_video_forca_e_luz`
   - Language: Portuguese (BR) — `pt_BR`
   - Category: Utility
   - Header: video, with a sample uploaded. The real video is sent by link at send time, so the sample does not have to be the final file.
